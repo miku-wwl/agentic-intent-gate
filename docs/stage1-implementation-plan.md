@@ -1,6 +1,6 @@
 # AgenticIntentGate — Stage 2 implementation plan
 
-**PLAN ONLY — no files/components below exist yet.** Stage 2 implementation is intentionally deferred until 2027. The 2027 Stage 2 entry review and explicit authorization are required before Phase 1; the review itself is not a new architecture redesign stage. This document does not authorize implementation, dependency installation, cloud access, commit, or push. Expected paths are prospective, not created directories.
+**PLAN ONLY — no files/components below exist yet.** This is the deferred reliability/cloud roadmap. [ADR-011](adr/ADR-011-day1-planning-preview.md) supersedes the former blanket 2027 deferral only for the earlier local planning sprint; use the [Day 1 implementation plan](day1-implementation-plan.md) for the next prompt. This document's 2027 entry review and explicit authorization remain required before its Phase 1; the preview does not claim to complete any phase below. This document does not authorize implementation, dependency installation, cloud access, commit, or push. Expected paths are prospective, not created directories.
 
 ## Stage 2 Entry Review — 2027
 

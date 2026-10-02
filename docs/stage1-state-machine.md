@@ -1,5 +1,7 @@
 # AgenticIntentGate — durable state machines
 
+**Scope update — 2026-10-03:** these are the later durable aggregate states. The five [Day 1 preview states](day1-architecture-freeze.md#minimal-state-flow) are request-local and do not create or transition these aggregates; [ADR-011](adr/ADR-011-day1-planning-preview.md) preserves all execution guards.
+
 **OUR DESIGN DECISION — normative Stage 1.** Every transition is conditional on state/version and writes an audit event in the same transaction. An unexpected predecessor is CONCURRENCY_CONFLICT, not a best-effort update. No state change alone authorizes external I/O.
 
 ## Turn

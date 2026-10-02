@@ -1,5 +1,7 @@
 # AgenticIntentGate — final architecture
 
+**Scope update — 2026-10-03:** this is the later durable execution architecture. The current local planning preview is defined by [ADR-011](adr/ADR-011-day1-planning-preview.md) and the [Day 1 freeze](day1-architecture-freeze.md); it uses no durable Turn, tools, or execution gateway. The no-frontend/full-Strands requirements below belong to this later reliability MVP.
+
 **OUR DESIGN DECISION — Stage 1 architecture frozen / PASS, 2026-10-03.** Nothing in this document is an implementation claim. Normative details live in [contracts](stage1-contracts.md), [state machines](stage1-state-machine.md), and [atomic operations](stage1-idempotency-and-concurrency.md).
 
 ## Context and responsibility

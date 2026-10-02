@@ -1,5 +1,7 @@
 # AgenticIntentGate — local/cloud boundary
 
+**Scope update — 2026-10-03:** this table remains the later reliability/cloud mapping. For the earlier planning preview, [ADR-011](adr/ADR-011-day1-planning-preview.md) selects local phi-4-mini as the live lane with deterministic test fixtures, no Strands loop/storage, and no cloud component. Its [Day 1 configuration](day1-architecture-freeze.md#model-provider-boundary-and-local-configuration) is separate from the optional exploratory phase below.
+
 **OUR DESIGN DECISION — Stage 1.** This table freezes component responsibilities, not current deployments. One Python source tree will serve both modes with explicit composition/configuration.
 
 | Capability | Local Mode | AWS Mode | Why |

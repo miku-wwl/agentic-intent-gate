@@ -1,5 +1,7 @@
 # AgenticIntentGate — Stage 1 project charter
 
+**Scope update — 2026-10-03:** this charter describes the later reliability MVP. [ADR-011](adr/ADR-011-day1-planning-preview.md) supersedes the blanket 2027 deferral only for the local planning sprint and allows a small preview display. The [Day 1 freeze](day1-architecture-freeze.md) does not implement this charter's storage, Agent, approval, execution, or cloud scope.
+
 Date: 2026-10-03, Pacific/Auckland. **OUR DESIGN DECISION — frozen design for human review; implementation has not started.** Stage 1 PASS means precise architecture, not proven reliability or cloud readiness.
 
 ## Problem and objective

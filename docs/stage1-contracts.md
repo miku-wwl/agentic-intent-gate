@@ -1,5 +1,7 @@
 # AgenticIntentGate — contracts
 
+**Scope update — 2026-10-03:** these contracts govern later durable execution. The [Day 1 preview contracts](day1-architecture-freeze.md) add Intent/Plan and reuse the risk/tool vocabulary; Approval and ExecutionResult refer back here but are not instantiated in the preview. [ADR-011](adr/ADR-011-day1-planning-preview.md) defines the scope boundary.
+
 **OUR DESIGN DECISION — normative Stage 1 contracts, not Python classes or database migrations.** State names are defined in [state machines](stage1-state-machine.md); transaction groups and identity algorithms in [idempotency and concurrency](stage1-idempotency-and-concurrency.md).
 
 ## Common types and limits

@@ -1,5 +1,7 @@
 # AgenticIntentGate — Stage 1 consistency review
 
+**Historical review / scope update — 2026-10-03:** the baseline SHA, worktree, validation counts, and 2027 schedule below record the earlier Stage 1 review/update, not the current checkout. The current [Day 1 audit](day1-repository-audit.md) establishes today's baseline. [ADR-011](adr/ADR-011-day1-planning-preview.md) scopes the schedule/provider/UI changes for a planning preview; the durable reliability design reviewed here remains selected.
+
 Review date: 2026-10-03, Pacific/Auckland. **STATUS: PASS — Stage 1 architecture is formally frozen.** This records the project's freeze decision; it does not claim implementation, runtime reliability, production readiness, or real-cloud validation.
 
 ## Project stage status

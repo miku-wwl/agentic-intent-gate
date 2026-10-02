@@ -23,7 +23,7 @@
 
 **LocalStack: OPTIONAL.** It is useful specifically for DynamoDB adapter API/conditional-transaction integration tests in the later AWS adapter phase. It is not required for default local operation. SDK request-shape tests alone cannot prove service behavior; the cloud gate must include actual DynamoDB conditional/transaction checks before external action cases, with an emulator parity run where available. Emulator PASS remains separate from real AWS PASS. No reuse of another project's containers/state.
 
-**MiniStack: NO.** The required local property is deterministic Strands tool-call/state behavior, which a custom Model tests directly. A Bedrock-like emulator would add another implementation whose wire fidelity must be proven. Real Bedrock request mapping is tested with SDK fixtures, then one narrow real call later. No concrete MVP requirement justifies MiniStack.
+**MiniStack: NOT REQUIRED BY THE FROZEN ARCHITECTURE.** The required local property is deterministic Strands tool-call/state behavior, which a custom Model tests directly. No MiniStack dependency or emulator implementation is frozen. Re-evaluate MiniStack at the 2027 Stage 2 entry review: if its Bedrock and AgentCore Runtime fidelity has materially improved and it adds useful AWS-boundary validation, record the choice and scope in a new or superseding ADR before implementation. Otherwise, proceed with the existing architecture without MiniStack. The frozen architecture and the current emulator choice are separate decisions.
 
 ## AgentCore boundary and operation mapping
 

@@ -1,6 +1,6 @@
 # AgenticIntentGate — final architecture
 
-**OUR DESIGN DECISION — frozen for Stage 1 human review, 2026-10-03.** Nothing in this document is an implementation claim. Normative details live in [contracts](stage1-contracts.md), [state machines](stage1-state-machine.md), and [atomic operations](stage1-idempotency-and-concurrency.md).
+**OUR DESIGN DECISION — Stage 1 architecture frozen / PASS, 2026-10-03.** Nothing in this document is an implementation claim. Normative details live in [contracts](stage1-contracts.md), [state machines](stage1-state-machine.md), and [atomic operations](stage1-idempotency-and-concurrency.md).
 
 ## Context and responsibility
 

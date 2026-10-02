@@ -1,6 +1,17 @@
 # AgenticIntentGate — Stage 1 consistency review
 
-Review date: 2026-10-03, Pacific/Auckland. **STATUS: PASS for architecture precision and document consistency; ready for human review.** Acceptance by a human is pending. No implementation, runtime reliability, production readiness, or real-cloud validation is claimed.
+Review date: 2026-10-03, Pacific/Auckland. **STATUS: PASS — Stage 1 architecture is formally frozen.** This records the project's freeze decision; it does not claim implementation, runtime reliability, production readiness, or real-cloud validation.
+
+## Project stage status
+
+| Stage | Status |
+| --- | --- |
+| Stage 0 | PASS — reference study complete |
+| Stage 0.5 | PASS — local messaging reproduction complete with the documented import/export alias |
+| Stage 1 | ARCHITECTURE FROZEN / PASS — architecture and contracts are documented |
+| Stage 2 | DEFERRED UNTIL 2027 — implementation has not started |
+
+Before Stage 2 implementation begins in 2027, complete the [Stage 2 Entry Review](stage1-implementation-plan.md#stage-2-entry-review--2027). MiniStack is not required by the frozen architecture; evaluate its then-current Bedrock and AgentCore Runtime fidelity and record any changed decision through a new or superseding ADR. Preserve existing architecture and historical ADR decisions unless current evidence makes them materially stale.
 
 ## Evidence read and workspace boundary
 
@@ -47,7 +58,7 @@ Initial repository: main, HEAD `546b35c6248a9b6a015e6203eb5cf271a052be60`, clean
 | UNKNOWN/retry match | PASS — [failure model](stage1-failure-model.md) requires evidence/capability/quiescence for replay; terminal failures never reopen |
 | Failure taxonomy/A–J | PASS — every required failure and crash window has persisted truth, safe action, retry/evidence and user status |
 | Acknowledgement and Delivery | PASS — 200/202 snapshot semantics distinct from provider SENT; Action success survives delivery failure |
-| Local/cloud mapping | PASS — [boundary](stage1-local-cloud-boundary.md): SQLite/default fake Model; AWS adapters later; Foundry OPTIONAL, LocalStack OPTIONAL, MiniStack NO |
+| Local/cloud mapping | PASS — [boundary](stage1-local-cloud-boundary.md): SQLite/default fake Model; AWS adapters later; Foundry OPTIONAL, LocalStack OPTIONAL, MiniStack NO (not required by frozen architecture) |
 | AgentCore durability | PASS — hosts same application, business truth in external store; session/user binding explicit; no FileSessionManager/sessionStorage correctness dependency |
 | Observability | PASS — canonical identity chain, durable audit versus logs, bounded metric dimensions and later CloudWatch evidence |
 | Infrastructure size/cost | PASS — one application/runtime, gate/demo tables, model, IAM/logs, S3 package; all selected components have an explicit requirement |
@@ -124,4 +135,10 @@ Observed final worktree changes: README.md and 21 new Markdown files under docs/
 | Diagram rendering / runtime tests | NOT VERIFIED / NOT RUN; text structure and design reviewed only |
 | Cloud/API/Git delivery | No real AWS/Twilio/Bedrock calls; no commit/push during Stage 1 |
 
-PASS concerns architecture/design precision only. Human architecture acceptance and explicit Stage 2 authorization remain the next gate.
+Stage 1 PASS concerns architecture/design precision only; it is not an implementation, runtime, or cloud reliability claim. Stage 2 remains deferred until 2027 and requires the entry review and separate authorization.
+
+## Freeze update — 2026-10-03
+
+The project status is now formally recorded as Stage 1 ARCHITECTURE FROZEN / PASS and Stage 2 DEFERRED UNTIL 2027. The README and this status table describe that decision. The 2027 entry review is documented in the implementation plan. The MiniStack entry clarifies that it is not required by the frozen architecture and may be reconsidered through a new or superseding ADR before implementation. No Turn, Action, approval, delivery, idempotency, concurrency, persistence, Agent, AgentCore, tool, failure, or AWS design decision changed.
+
+Validation for this wording update: `git diff -- research/` is empty; only README.md and six directly relevant existing Stage 1 documents (architecture, charter, local/cloud boundary, implementation plan, review, ADR-009) are in scope. The diff and current worktree were reviewed; no implementation or cloud operation is part of this update. No commit or push is authorized by this update request.

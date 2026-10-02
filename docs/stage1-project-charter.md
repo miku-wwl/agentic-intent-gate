@@ -56,7 +56,7 @@ Post-MVP: Twilio or another channel adapter, voice, production identity provider
 
 ## Success and evidence gates
 
-Stage 1 succeeds when identities, state transitions, transaction groups, crash recovery, permissions, and retry rules agree across these documents. Human acceptance is still required before Stage 2.
+Stage 1 is formally ARCHITECTURE FROZEN / PASS: identities, state transitions, transaction groups, crash recovery, permissions, and retry rules agree across these documents. Stage 2 remains deferred until 2027 and requires the entry review and separate implementation authorization.
 
 Stage 2 local acceptance will require real subprocess termination/reconstruction, durable fixture effect counts and receipts, two independent claim contenders, approval races, all crash windows A–J, and independent delivery outcomes. Test assertions on model text alone are insufficient. Later real AWS acceptance is a separate narrow evidence gate and remains NOT VERIFIED now.
 

@@ -1,6 +1,21 @@
 # AgenticIntentGate — Stage 2 implementation plan
 
-**PLAN ONLY — no files/components below exist yet.** Human acceptance of Stage 1 and explicit Stage 2 authorization are entry gates. This document does not authorize implementation, dependency installation, cloud access, commit, or push. Expected paths are prospective, not created directories.
+**PLAN ONLY — no files/components below exist yet.** Stage 2 implementation is intentionally deferred until 2027. The 2027 Stage 2 entry review and explicit authorization are required before Phase 1; the review itself is not a new architecture redesign stage. This document does not authorize implementation, dependency installation, cloud access, commit, or push. Expected paths are prospective, not created directories.
+
+## Stage 2 Entry Review — 2027
+
+Before implementation begins, perform a short ecosystem revalidation against current primary documentation, SDK/package evidence, and the accepted frozen contracts:
+
+1. MiniStack Bedrock API support and fidelity for the boundaries this project uses.
+2. MiniStack Bedrock AgentCore Runtime support and fidelity for invocation, sessions, and error behavior.
+3. Strands Agent API compatibility and a maintainable supported version.
+4. Current AWS Bedrock API changes relevant to the planned Model and tool-use adapter.
+5. Current Bedrock AgentCore API/runtime protocol, Python version, packaging, and lifecycle changes.
+6. boto3, botocore, and Python version/platform compatibility.
+7. Whether the existing ADR decisions still hold against those changes.
+8. Whether any ADR is materially stale and needs a new or superseding ADR before implementation.
+
+This is a bounded entry gate, not an architecture redesign. Preserve existing ADRs and the frozen contracts unless current evidence makes a decision materially stale; do not silently rewrite historical ADRs. MiniStack is not required by the frozen architecture. If its Bedrock and AgentCore fidelity has materially improved and provides useful local validation, record its optional adoption and affected test boundary in a new or superseding ADR before Phase 1. If it adds insufficient value, continue with the frozen architecture without MiniStack. No Phase 1 work begins until this review is recorded and Stage 2 is separately authorized.
 
 Use one future `src/agentic_intent_gate/` package with domain, application and adapter modules. Keep stages small and runnable from deterministic fixtures. A phase PASS requires its acceptance evidence; unresolved safety failures cannot be deferred by renaming them local PASS.
 
@@ -82,7 +97,7 @@ Use one future `src/agentic_intent_gate/` package with domain, application and a
 - Expected later: one Model adapter and exploratory script/configuration.
 - Tests: provider capability mapping, tool-use event parsing, no direct mutation bypass; deterministic suite remains default and independent.
 - Acceptance: exploratory read/proposal case works with documented limitations, or mark this optional phase SKIPPED; local stochastic output is not correctness evidence.
-- Non-goals: making correctness depend on local model availability or adopting MiniStack.
+- Non-goals: making correctness depend on local model availability or adopting MiniStack without the 2027 entry review and an approved ADR.
 
 ## Phase 11 — AWS adapters without resources
 

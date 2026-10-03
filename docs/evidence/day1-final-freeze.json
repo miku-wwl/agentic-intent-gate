@@ -1,0 +1,280 @@
+{
+  "recorded_at_utc": "2026-10-03T21:08:39.251833+00:00",
+  "scope": "Day 1 Prompt 5 final release review; planning preview only",
+  "head": "361b071b8c9dee47d73b666b3ac0e7ad116651a6",
+  "branch": "main",
+  "head_scope": "Review of this HEAD plus the four uncommitted documentation/evidence changes listed below.",
+  "baseline": {
+    "git_status_short": [],
+    "git_diff_check": "PASS",
+    "python": "3.13.9",
+    "lock_check": "PASS; 34 packages; unchanged",
+    "deterministic_tests": {
+      "passed": 191,
+      "deselected_live": 4,
+      "elapsed_seconds": 33.12
+    },
+    "ruff_check_dot": "PASS",
+    "ruff_format_check_dot": "PASS; 65 files",
+    "browser_deterministic_passed": 25,
+    "package_reproducibility": "PASS"
+  },
+  "p0": [],
+  "p1": [],
+  "p2": [
+    {
+      "finding": "CPU phi-4-mini latency remains near the 28-second budget and live reliability is WEAK.",
+      "disposition": "DEFERRED; safe failures verified; no prompt, token, timeout or provider changes."
+    },
+    {
+      "finding": "Intent alignment has only been evaluated for the small fixed supported study; general intent fidelity is not comprehensively evaluated.",
+      "disposition": "DEFERRED beyond Day 1; deterministic validation proves contract compliance only."
+    }
+  ],
+  "architecture": "Intent -> vendor-neutral ModelProvider -> untrusted raw text -> strict parser -> JSON Schema -> deterministic semantics -> PlanValidated or PlanRejected",
+  "documentation_review": {
+    "result": "PASS",
+    "active_clarifications": [
+      "Current final-review status and evidence link.",
+      "Explicit planning-only synthetic context, WEAK live reliability and production NOT VERIFIED.",
+      "Both historical five-attempt browser cohorts and diagnostic request are counted."
+    ],
+    "historical_documents_preserved": true,
+    "duplicate_active_run_guides": "NONE; no consolidation needed"
+  },
+  "mock_live_separation": {
+    "result": "PASS",
+    "production_composition": "main.py always composes LocalOpenAIProvider; no test flag, mock/debug route or success fallback.",
+    "deterministic_and_package_lanes": "Controlled providers/transports are explicitly test evidence.",
+    "live_smoke": "Actual browser -> actual product process -> real LocalOpenAIProvider -> existing CPU phi-4-mini; no interception or provider substitution."
+  },
+  "deterministic_tests": {
+    "result": "PASS",
+    "command": ".venv/Scripts/python.exe -m pytest -q --tb=short",
+    "passed": 191,
+    "failed": 0,
+    "errors": 0,
+    "deselected_live": 4,
+    "elapsed_seconds": 37.11,
+    "backend_and_page_tests": 166,
+    "test_integrity_review": "Parser/schema/semantic negatives, downgrade/tool/target rejection, sanitized provider/HTTP failures, injection, 20-request isolation, safe rendering and stale result clearing exercise behavior. No material suite weakness requiring a Day 1 patch."
+  },
+  "browser_tests": {
+    "result": "PASS",
+    "included_in_complete_default_suite": true,
+    "frontend_passed": 19,
+    "browser_backend_e2e_passed": 6,
+    "total_passed": 25,
+    "browser": "Microsoft Edge 154.0.4258.48; headless Playwright",
+    "all_25_servers_stopped_and_ports_released": true,
+    "all_browser_contexts_and_drivers_closed": true
+  },
+  "quality_gate": {
+    "ruff_check_dot": "PASS",
+    "ruff_format_check_dot": "PASS; 65 files",
+    "uv_lock_check": "PASS; 34 packages; unchanged",
+    "git_diff_check": "PASS",
+    "type_checker": "NOT_CONFIGURED"
+  },
+  "package_reproducibility": {
+    "result": "PASS",
+    "lane": "PACKAGE_CONTROLLED_PROVIDER_NOT_LIVE",
+    "workflow": "uv build; reinstall fresh wheel into the retained Prompt 4 environment; run tests/package_check.py outside repository with PYTHONPATH unset.",
+    "python": "3.13.9",
+    "imports_outside_repository": "PASS; imports from isolated site-packages",
+    "static_page_http_status": 200,
+    "plan_http_status": 200,
+    "provider_calls": 1,
+    "schema_sha256": {
+      "day1-intent.schema.json": "670250dec6877ea99f64f1cd071fdfa9681b1a7cfd97e319dfbe61c961b8efe3",
+      "day1-plan.schema.json": "5730316d6075769771c7d3e4f1aead46cb023e198c562ca1ea61d7ac8cf3a5bd"
+    },
+    "wheel_build": "PASS",
+    "sdist_build": "PASS",
+    "runtime_files_compared": 16,
+    "schemas_compared": 2,
+    "wheel_sdist_and_installed_resources_match_source": true,
+    "wheel_sha256": "871820f1537efbe7eb3dad4233eef4439a93c6a9ec4af3aada850acf4ae091b9"
+  },
+  "evidence_integrity": {
+    "historical_json_records_checked": 7,
+    "prompt4_all_26_live_calls_retained": true,
+    "prompt4_original_runtime_observations_match_curated_records": true,
+    "prompt4_raw_successes_revalidated": 10,
+    "prompt4_normal_latency_recalculated": {
+      "sample_size": 12,
+      "min_seconds": 25.356,
+      "p50_seconds": 26.967,
+      "p95_nearest_rank_seconds": 28.023,
+      "max_seconds": 28.023
+    },
+    "prompt4_successful_latency_recalculated": {
+      "sample_size": 10,
+      "min_seconds": 25.356,
+      "p50_seconds": 26.474,
+      "p95_nearest_rank_seconds": 27.675,
+      "max_seconds": 27.675
+    },
+    "prompt4_browser_render_median_recalculated_seconds": 27.589,
+    "historical_curated_evidence_unchanged": true
+  },
+  "live_smoke": {
+    "recorded_at_utc": "2026-10-03T20:56:32.554631+00:00",
+    "lane": "LIVE_REAL_BROWSER_REAL_PRODUCT_PROCESS",
+    "server": {
+      "lane": "REAL PHI-4-MINI LIVE TEST",
+      "endpoint": "http://127.0.0.1:59656",
+      "wire_model": "Phi-4-mini-instruct-generic-cpu",
+      "port": 53446,
+      "startup": "PASS",
+      "pid": 44852,
+      "process_stopped": true,
+      "exit_code": 1,
+      "port_released": true
+    },
+    "intent": "Plan to read the service-demo record.",
+    "attempts": 1,
+    "browser_interception": false,
+    "mock_provider": false,
+    "automatic_retries": 0,
+    "tool_invocations": 0,
+    "result": "PASS_SAFE_TIMEOUT_HANDLING; no successful Plan generated",
+    "page_load_status": 200,
+    "http_status": 504,
+    "state": "PlanRejected",
+    "response": {
+      "state": "PlanRejected",
+      "plan": null,
+      "error": {
+        "code": "MODEL_TIMEOUT",
+        "message": "The planning deadline was exceeded.",
+        "issues": []
+      }
+    },
+    "request": {
+      "text": "Plan to read the service-demo record."
+    },
+    "seconds_to_response": 28.212,
+    "classification": "SAFE_FAILURE",
+    "error_code": "MODEL_TIMEOUT",
+    "seconds_to_final_render": 28.308,
+    "post_count": 1,
+    "result_visible": false,
+    "error_visible": true,
+    "rendered": {
+      "goal": "",
+      "target": "",
+      "risk": "",
+      "state": "PlanRejected"
+    },
+    "steps_rendered": "",
+    "post_smoke_health_get_status": 200,
+    "wire_model": "Phi-4-mini-instruct-generic-cpu",
+    "browser": "Microsoft Edge 154.0.4258.48",
+    "request_budget_seconds": 30,
+    "model_budget_seconds": 28,
+    "browser_and_driver_closed": true,
+    "cleanup_method": "Owned fixture process terminated and waited after healthy GET; Windows termination exit code 1.",
+    "reliability_reclassification": "NONE; one smoke is not another reliability study"
+  },
+  "security_invariants": {
+    "1": {
+      "result": "PASS",
+      "invariant": "User cannot choose model endpoint",
+      "evidence": "Strict Intent schema forbids extra fields; Settings owns loopback endpoint. tests/test_plans_api.py and tests/test_configuration.py"
+    },
+    "2": {
+      "result": "PASS",
+      "invariant": "Model cannot choose an untrusted tool",
+      "evidence": "Canonical per-tool schema and independent trusted catalog resolution. tests/test_plan_validation.py"
+    },
+    "3": {
+      "result": "PASS",
+      "invariant": "Model cannot lower deterministic risk",
+      "evidence": "Exact aggregate trusted risk match, including injected maintenance downgrade. tests/test_hardening.py"
+    },
+    "4": {
+      "result": "PASS",
+      "invariant": "Model cannot bypass target catalog",
+      "evidence": "Trusted service-demo allowlist, per-step target equality and synthetic revision checks. tests/test_plan_validation.py"
+    },
+    "5": {
+      "result": "PASS",
+      "invariant": "Invalid model output never becomes trusted Plan",
+      "evidence": "Strict parser, schema and semantics precede immutable Plan construction. tests/test_plan_validation.py and tests/test_plans_api.py"
+    },
+    "6": {
+      "result": "PASS",
+      "invariant": "Rejected request never exposes successful Plan",
+      "evidence": "plan:null in API; old fields cleared in browser; final live timeout shows no Plan. tests/browser/test_frontend.py and test_browser_e2e.py"
+    },
+    "7": {
+      "result": "PASS",
+      "invariant": "No automatic retry or repair hides failures",
+      "evidence": "One core/provider call, retries=0, no redirect or repair; final smoke has one POST. tests/test_model_provider.py and tests/test_hardening.py"
+    },
+    "8": {
+      "result": "PASS",
+      "invariant": "No Tool executes in Day 1",
+      "evidence": "Trusted catalog contains descriptions/schemas, no execution callables; production composition only generates and validates text."
+    },
+    "9": {
+      "result": "PASS",
+      "invariant": "Browser never renders raw model HTML",
+      "evidence": "Plan text uses textContent; fixed errors only, with literal HTML-value browser coverage. tests/browser/test_frontend.py"
+    },
+    "10": {
+      "result": "PASS",
+      "invariant": "Service remains loopback-only",
+      "evidence": "Settings rejects non-loopback bind/model addresses; proxies and redirects disabled; live smoke uses 127.0.0.1. tests/test_configuration.py and tests/test_hardening.py"
+    }
+  },
+  "repository_hygiene": {
+    "result": "PASS",
+    "secret_scan": {
+      "result": "PASS_BOUNDED_PATTERN_SCAN",
+      "files_scanned": 83,
+      "patterns": [
+        "private-key",
+        "github-token",
+        "aws-access-key",
+        "api-secret",
+        "long-credential-assignment"
+      ],
+      "findings": []
+    },
+    "tracked_generated_noise": [],
+    "only_curated_binary_files": [
+      "docs/evidence/day1-browser-live-rejection.png",
+      "docs/evidence/day1-browser-live-success.png"
+    ],
+    "ignored_runtime_artifacts": "Existing environments/caches/dist plus bounded review logs/evidence; not staged or tracked. Single-use browser probe removed.",
+    "test_server_or_browser_processes_remaining": 0,
+    "all_current_test_ports_released": true,
+    "foundry_preserved": {
+      "pid": 13032,
+      "state": "ready"
+    },
+    "research_handoff_raw_hashes_matched": 8,
+    "historical_curated_evidence_unchanged": true,
+    "product_code_tests_schemas_dependencies_unchanged": true,
+    "retained_package_environment": "Pre-existing Prompt 4 environment outside repository, reused as authorized; no new environment created.",
+    "staged_files": []
+  },
+  "known_limitations": [
+    "Local CPU phi-4-mini latency is close to timeout; LIVE_RELIABILITY=WEAK.",
+    "Only synthetic service-demo context with revision 1 is supported; no live resource facts.",
+    "Planning preview only; no tool execution, approval workflow, persistence or MCP.",
+    "Authentication/RBAC, cloud providers, sandbox, orchestration and production exposure remain deferred.",
+    "Production reliability is NOT VERIFIED; general intent alignment is not comprehensively evaluated."
+  ],
+  "files_changed": [
+    "README.md",
+    "docs/day1-architecture-freeze.md",
+    "docs/day1-local-run.md",
+    "docs/evidence/day1-final-freeze.json"
+  ],
+  "commit_or_push_performed": false,
+  "freeze_decision": "PASS",
+  "decision_basis": "No unresolved P0/P1; full deterministic/browser/package gates pass; all ten invariants pass; the only live smoke timed out safely with the app healthy. Known limitations remain explicit."
+}

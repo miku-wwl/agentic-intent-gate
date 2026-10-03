@@ -2,7 +2,7 @@
 
 Date: 2026-10-03, Pacific/Auckland. **Contract/design freeze only; application implementation has not started.** [ADR-011](adr/ADR-011-day1-planning-preview.md) defines precedence for this local preview; the [Stage 1 contracts](stage1-contracts.md) retain authority for later durable execution.
 
-**Implementation status:** Prompt 2 implements the backend and Prompt 3 adds the same-origin static preview page and browser tests under this unchanged contract. Implementation-time statements below describe the original Prompt 1 freeze. Current run commands and separate deterministic/live results are in [day1-local-run.md](day1-local-run.md).
+**Implementation status:** Prompt 2 implements the backend, Prompt 3 adds the same-origin static preview page and browser tests, and Prompt 4 hardens their boundaries under this unchanged contract. Prompt 5's [final freeze review](evidence/day1-final-freeze.json) retains the same planning-only architecture, deterministic validation, local phi-4-mini and limited synthetic `service-demo` context. CPU live reliability remains WEAK and production reliability is NOT VERIFIED. Implementation-time statements below describe the original Prompt 1 freeze. Current run commands and separate deterministic/live results are in [day1-local-run.md](day1-local-run.md).
 
 ## Smallest slice and ownership
 

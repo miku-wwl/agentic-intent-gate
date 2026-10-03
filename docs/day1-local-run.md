@@ -96,7 +96,7 @@ This launches the actual application entrypoint on an available loopback port, o
 
 ## Verification evidence and limits
 
-Prompt 4's [hardening evidence](evidence/day1-hardening-verification.json) records the frozen 12-attempt sequential model matrix, three live injection attempts, five real browser attempts, deterministic regressions and package verification. Reproduce the fixed study only with explicit live configuration:
+Prompt 4's [hardening evidence](evidence/day1-hardening-verification.json) records the frozen 12-attempt sequential model matrix, three live injection attempts, two five-attempt real browser cohorts and one diagnostic request, deterministic regressions and package verification. The earlier browser cohort's five compatibility failures remain recorded separately from the final cohort. Reproduce the fixed study only with explicit live configuration:
 
 ```powershell
 $env:HARDENING_EVIDENCE_DIR = '.runtime\hardening'
@@ -116,6 +116,8 @@ Prompt 2 verification is **PASS**: [backend checks and file manifest](evidence/d
 
 Only `service-demo` exists in the trusted preview context; maintenance revision `1` is synthetic. Validation proves the proposal contract, not intent fidelity, live health, authorization, feasibility or execution. Real model output can fail the contract even at temperature zero. The page exposes validated proposals and fixed user-facing error messages; raw model output, prompts and exception text remain outside the UI. Approval/execution, persistence, authentication and cloud adapters remain deferred.
 
-Prompt 4 measured 10/12 aligned normal successes (two maintenance timeouts), three safe live injection outcomes, and 3/5 successful renders in the final browser cohort. The earlier five provider-compatibility failures and one diagnostic timeout are retained separately. Reliability is **WEAK**: CPU-model latency remains close to the unchanged deadline, and maintenance requests succeeded only 2/4. No latency optimization was attempted or retained. These small local samples do not establish production reliability.
+Prompt 4 measured 10/12 aligned normal successes (two maintenance timeouts), three safe live injection outcomes, and 3/5 successful renders in the final browser cohort. The earlier five provider-compatibility failures and one diagnostic timeout are retained separately. Reliability is **WEAK**: CPU-model latency remains close to the unchanged deadline, and maintenance requests succeeded only 2/4. No latency optimization was attempted or retained. Production reliability is **NOT VERIFIED**; general intent alignment has not been comprehensively evaluated.
 
-Stop the app with Ctrl+C and verify its port is released; preserve the pre-existing Foundry daemon. Temporary test evidence/logs, caches, `.venv`, and `dist` are ignored. No commit or push is part of Prompt 4.
+The [Prompt 5 final freeze record](evidence/day1-final-freeze.json) records the repository review, complete deterministic/browser gate and repeated automated package check. Its one real-browser request used `Plan to read the service-demo record.` and returned HTTP 504 / PlanRejected in 28.212 seconds, with `plan: null` and a visible timeout by 28.308 seconds. All Plan fields were empty; a subsequent GET / returned 200. This is a verified safe timeout, not a successful generated Plan or a new reliability estimate. No retry, model/prompt/timeout change or product feature was introduced. Test app/browser cleanup released the port and preserved Foundry.
+
+Stop the app with Ctrl+C and verify its port is released; preserve the pre-existing Foundry daemon. Temporary test evidence/logs, caches, `.venv`, and `dist` are ignored. No commit or push is part of the Prompt 5 freeze review.

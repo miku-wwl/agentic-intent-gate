@@ -18,7 +18,12 @@ dependencies = [
 aig-plans = "agentic_intent_gate.main:main"
 
 [dependency-groups]
-dev = ["pytest>=8,<10", "pytest-asyncio>=1,<2", "ruff>=0.12,<1"]
+dev = [
+    "playwright>=1.50,<2",
+    "pytest>=8,<10",
+    "pytest-asyncio>=1,<2",
+    "ruff>=0.12,<1",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/agentic_intent_gate"]
@@ -30,7 +35,12 @@ packages = ["src/agentic_intent_gate"]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 addopts = "-ra -m 'not live'"
-markers = ["live: opt-in real phi-4-mini integration; no mock substitution"]
+markers = [
+  "live: opt-in real phi-4-mini integration; no mock substitution",
+  "browser: real browser automation using an installed browser",
+  "frontend: deterministic UI behavior with controlled HTTP responses",
+  "live_browser: opt-in real application, browser and phi-4-mini flow",
+]
 
 [tool.ruff]
 target-version = "py313"

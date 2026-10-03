@@ -178,6 +178,9 @@ async def test_service_total_timeout_is_not_delegated_to_provider(validator):
     assert PlanningState.PlanGenerated not in result.states
 
 
-async def test_backend_has_no_ui_routes(validator, provider_factory):
+async def test_app_has_only_preview_and_planning_routes(validator, provider_factory):
     app = create_app(PlanningService(provider_factory(), validator))
-    assert [(route.path, route.methods) for route in app.routes] == [("/api/plans", {"POST"})]
+    assert [(route.path, route.methods) for route in app.routes] == [
+        ("/", {"GET"}),
+        ("/api/plans", {"POST"}),
+    ]

@@ -1,9 +1,10 @@
-"""Backend-only HTTP boundary; the canonical schemas validate request bytes."""
+"""Same-origin preview page and unchanged schema-validated planning API."""
 
 import asyncio
+from importlib.resources import files
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 from agentic_intent_gate.application.generate_plan import REQUEST_TIMEOUT_SECONDS, PlanningService
 from agentic_intent_gate.domain.contracts import ErrorCode, PlanningResult, ValidationIssue
@@ -12,6 +13,11 @@ from agentic_intent_gate.domain.validation import REQUEST_BYTES, ValidationFailu
 
 def create_app(service: PlanningService) -> FastAPI:
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, debug=False)
+    page = files("agentic_intent_gate.adapters").joinpath("static", "index.html").read_text("utf-8")
+
+    @app.get("/", response_class=HTMLResponse)
+    async def planning_preview() -> HTMLResponse:
+        return HTMLResponse(page)
 
     @app.post("/api/plans")
     async def generate_plan(request: Request) -> JSONResponse:

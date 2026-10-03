@@ -1,6 +1,6 @@
-# Day 1 backend: local run and validation
+# Day 1 local planning preview: run and validation
 
-Prompt 2 implements only the stateless planning backend. The frozen [Intent](../schemas/day1-intent.schema.json), [Plan](../schemas/day1-plan.schema.json), [state/error contract](day1-architecture-freeze.md), and [ADR-011](adr/ADR-011-day1-planning-preview.md) remain unchanged. Proposals never execute tools. UI belongs to Prompt 3.
+Prompt 2 implements the stateless planning backend; Prompt 3 adds the same-origin static page. The frozen [Intent](../schemas/day1-intent.schema.json), [Plan](../schemas/day1-plan.schema.json), [state/error contract](day1-architecture-freeze.md), and [ADR-011](adr/ADR-011-day1-planning-preview.md) remain unchanged. Proposals never execute tools.
 
 ## Install and discover the existing model
 
@@ -17,14 +17,14 @@ foundry server status --output json
 foundry model list --loaded --search phi-4-mini --output json
 ```
 
-These Foundry commands inspect the existing daemon. The application does not start/restart it, load/download models, or choose another model. An unavailable service fails visibly. Adjust the Python path to an existing Python 3.13 installation when using another host; all paths above are local workspace caches.
+These Foundry commands inspect the existing daemon. If it is stopped, explicitly run `foundry server start --output json`; to load your already downloaded phi-4-mini, run `foundry model load phi-4-mini --output json`. The application does not manage the daemon/models. An unavailable service fails visibly. Adjust the Python path to an existing Python 3.13 installation when using another host; all paths above are local workspace caches.
 
-At verification time the existing endpoint was `http://127.0.0.1:39839`. Confirm the **current** endpoint and actual wire ID; the port can change, and the catalog ID with `:5` is not the wire ID:
+At Prompt 3 verification time the existing endpoint was `http://127.0.0.1:59656`, with phi-4-mini's CPU variant loaded. Prompt 2's earlier GPU/port observations remain historical. Confirm the **current** endpoint and actual wire ID; the port/variant can change, and the catalog ID with `:5` is not the wire ID:
 
 ```powershell
-$env:FOUNDRY_LOCAL_ENDPOINT = 'http://127.0.0.1:39839'
+$env:FOUNDRY_LOCAL_ENDPOINT = 'http://127.0.0.1:59656'
 Invoke-RestMethod "$env:FOUNDRY_LOCAL_ENDPOINT/v1/models"
-$env:FOUNDRY_LOCAL_MODEL = 'Phi-4-mini-instruct-generic-gpu'
+$env:FOUNDRY_LOCAL_MODEL = 'Phi-4-mini-instruct-generic-cpu'
 $env:MODEL_TIMEOUT_SECONDS = '28'
 $env:API_HOST = '127.0.0.1'
 $env:API_PORT = '8000'
@@ -35,6 +35,8 @@ The equivalent entrypoint is `.venv\Scripts\python.exe -m agentic_intent_gate.ma
 
 ## Send a real request
 
+Open **http://127.0.0.1:8000/** in your browser. Enter `Plan to read the service-demo record.` and click **Generate Plan**, or press Ctrl+Enter in the textarea. The page shows loading, then the validated goal, target, ordered tools/arguments and risk, or a safe error. Each click makes at most one same-origin request. An empty intent stays in the browser; the backend remains authoritative. A new request clears old results/errors and disables duplicate submission until it completes.
+
 From a second terminal:
 
 ```powershell
@@ -42,7 +44,7 @@ $body = @{ text = 'Plan to read the service-demo record to investigate its healt
 Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8000/api/plans' -ContentType 'application/json; charset=utf-8' -Body $body
 ```
 
-The only application route is `POST /api/plans`. A success is HTTP 200 with exactly `{ "state": "PlanValidated", "plan": { ... }, "error": null }`. Every rejection has `plan: null`; input rejected before acceptance has `state: null`, and generated/provider failures have `state: "PlanRejected"`.
+`GET /` serves the static UI and `POST /api/plans` retains its existing contract. A success is HTTP 200 with exactly `{ "state": "PlanValidated", "plan": { ... }, "error": null }`. Every rejection has `plan: null`; input rejected before acceptance has `state: null`, and generated/provider failures have `state: "PlanRejected"`.
 
 | HTTP | Error code | Meaning |
 | --- | --- | --- |
@@ -67,23 +69,35 @@ Provider I/O has a total budget of at most 28 seconds; the application budget is
 .venv\Scripts\python.exe -m pytest -q
 ```
 
-The default suite uses scripted providers and mock HTTP transports exclusively for deterministic tests. These cover valid/invalid contracts, unsafe output, controlled error mapping, immutability and total deadlines; they provide no proof of live model quality. No type checker is configured.
+The default suite now includes 166 deterministic tests: the original 141 backend checks, one page-serving check, 18 frontend interaction cases with controlled HTTP responses, and six browser-to-real-backend cases with a test-only provider and the real validator. UI tests use Python Playwright with the installed Microsoft Edge (`msedge`) channel; there is no browser download, npm pipeline or frontend server. Set `AIG_BROWSER_CHANNEL=chrome` to use an installed Chrome instead. Playwright supports these installed channels ([official browser documentation](https://playwright.dev/python/docs/browsers)). Browser tests use isolated contexts and workspace temporary profiles, then close their browsers and HTTP servers. No type checker is configured.
+
+To run only backend tests, use `pytest -m "not browser and not live"`; to run deterministic browser tests, use `pytest tests/browser -m "browser and not live"`. Both use `.venv\Scripts\python.exe -m pytest` as above. The Playwright fixture closes per module so its synchronous event loop does not remain active during pytest-asyncio backend tests. Controlled responses/providers are deterministic evidence, not live model proof.
 
 With the real endpoint/model variables exported, explicitly enable the separate live lane:
 
 ```powershell
 $env:LIVE_MODEL_EVIDENCE_DIR = '.runtime\live-model'
-.venv\Scripts\python.exe -m pytest -q -m live
+.venv\Scripts\python.exe -m pytest -q tests/test_local_model.py -m live
 ```
 
 This sends a real provider request, saves bounded raw output and independent validation results in a uniquely named evidence file, and fails on timeout, unavailability or invalid output. It never skips or substitutes a mock. Running it again is a manual operator decision; the backend never retries automatically.
 
+For the separate real browser lane:
+
+```powershell
+.venv\Scripts\python.exe -m pytest -q tests/browser/test_live_browser.py -m live_browser
+```
+
+This launches the actual application entrypoint on an available loopback port, opens Edge, enters the intent, clicks the button, observes the real HTTP response and checks every rendered Plan field. It performs no browser interception or provider substitution. Screenshots, timings, requests/responses and cleanup records go to a uniquely named `.runtime/browser-evidence/` directory. Failure remains visible; any repeat is manual. The test stops its own app and browser and verifies port release, while preserving Foundry.
+
 ## Verification evidence and limits
+
+Prompt 3 is **DAY1_LOCAL_E2E=PASS**. [Browser verification evidence](evidence/day1-browser-e2e.json) separates the 166-test deterministic suite (18 frontend cases and six browser/backend cases included) from three manual real-browser/phi-4-mini attempts. The first two CPU-model requests returned safe 504 rejections after about 28 seconds; the third returned 200 / PlanValidated in 26.125 seconds, with all Plan fields rendered in 26.204 seconds. Model, prompt, validation and budgets were unchanged. This is one observed successful flow, not a measured success rate. The [success screenshot](evidence/day1-browser-live-success.png) and [timeout screenshot](evidence/day1-browser-live-rejection.png) show the actual browser states. Test app/browser processes were closed and all test ports released; the existing Foundry PID 13032 remained ready.
 
 Prompt 2 verification is **PASS**: [backend checks and file manifest](evidence/day1-backend-verification.json) record 141 deterministic tests, linter/formatter checks, pinned dependencies, packaged-schema checks and preserved research hashes. [Real model evidence](evidence/day1-backend-live-model.json) preserves all three manual attempts: two 28-second timeouts with prompt v1, then a fully valid phi-4-mini response with prompt v2 in 10.851 seconds. V2 adds an explicit Plan-instance instruction and a short read example; schema, validation and budgets were unchanged. This is one observed success, not a measured success rate.
 
 [Real HTTP smoke evidence](evidence/day1-backend-http-smoke.json) records actual process startup, an empty Intent returning 400, and a live-model `POST /api/plans` returning 200 / PlanValidated in 11.399 seconds. The smoke process was terminated after checks and its port released; Foundry PID 2260 remained ready. The original [Prompt 1 local probe](evidence/day1-local-model-probe.json) and [architecture-only checks](evidence/day1-quality-check.json) remain historical evidence and are not relabeled as backend success.
 
-Only `service-demo` exists in the trusted preview context; maintenance revision `1` is synthetic. Validation proves the proposal contract, not intent fidelity, live health, authorization, feasibility or execution. Real model output can fail the contract even at temperature zero. There is no approval/execution, persistence, authentication, cloud adapter, UI, or browser test in this slice.
+Only `service-demo` exists in the trusted preview context; maintenance revision `1` is synthetic. Validation proves the proposal contract, not intent fidelity, live health, authorization, feasibility or execution. Real model output can fail the contract even at temperature zero. The page exposes validated proposals and fixed user-facing error messages; raw model output, prompts and exception text remain outside the UI. Approval/execution, persistence, authentication and cloud adapters remain deferred.
 
-Stop the app with Ctrl+C and verify its port is released; preserve the pre-existing Foundry daemon. Temporary test evidence/logs, caches, `.venv`, and `dist` are ignored. No commit or push is part of Prompt 2.
+Stop the app with Ctrl+C and verify its port is released; preserve the pre-existing Foundry daemon. Temporary test evidence/logs, caches, `.venv`, and `dist` are ignored. No commit or push is part of Prompt 3.

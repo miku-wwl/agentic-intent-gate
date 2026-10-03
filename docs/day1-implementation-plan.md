@@ -4,6 +4,8 @@
 
 **Prompt 2 scope/status:** the backend paths below are implemented; `adapters/configuration.py` and `tests/test_configuration.py` hold startup configuration and its checks. The historical table/order below includes the later display page: Prompt 2 explicitly defers all static/UI/browser work to Prompt 3, and its acceptance ends at a real live-model `POST /api/plans`. Current setup and evidence are in [day1-local-run.md](day1-local-run.md). Original schemas and deferred reliability scope remain unchanged.
 
+**Prompt 3 scope/status:** `adapters/static/index.html` is now served at `GET /`. `tests/browser/` adds controlled frontend/browser tests and an opt-in actual-application/phi-4-mini browser lane, using Python Playwright and installed Edge. No frontend framework, build pipeline, or separate server is introduced.
+
 ## Exact files and minimal dependencies
 
 Retain the already planned `src/agentic_intent_gate/` package. Create only the following paths and necessary `__init__.py` markers:

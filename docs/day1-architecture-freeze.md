@@ -2,7 +2,7 @@
 
 Date: 2026-10-03, Pacific/Auckland. **Contract/design freeze only; application implementation has not started.** [ADR-011](adr/ADR-011-day1-planning-preview.md) defines precedence for this local preview; the [Stage 1 contracts](stage1-contracts.md) retain authority for later durable execution.
 
-**Prompt 2 status:** the backend is now implemented under this unchanged contract. Implementation-time statements below describe the original Prompt 1 freeze. Current run commands and results are in [day1-local-run.md](day1-local-run.md). UI/browser acceptance is deferred to Prompt 3 by explicit task scope.
+**Implementation status:** Prompt 2 implements the backend and Prompt 3 adds the same-origin static preview page and browser tests under this unchanged contract. Implementation-time statements below describe the original Prompt 1 freeze. Current run commands and separate deterministic/live results are in [day1-local-run.md](day1-local-run.md).
 
 ## Smallest slice and ownership
 

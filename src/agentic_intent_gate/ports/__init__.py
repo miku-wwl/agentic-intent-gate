@@ -1,0 +1,1 @@
+"""Application I/O contracts."""

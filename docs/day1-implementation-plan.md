@@ -2,6 +2,8 @@
 
 **PLAN ONLY**, 2026-10-03, Pacific/Auckland. Implement the [frozen preview](day1-architecture-freeze.md) on the next explicit implementation prompt. No application files below exist today. Do not start the deferred 13-phase reliability/cloud roadmap as part of this slice.
 
+**Prompt 2 scope/status:** the backend paths below are implemented; `adapters/configuration.py` and `tests/test_configuration.py` hold startup configuration and its checks. The historical table/order below includes the later display page: Prompt 2 explicitly defers all static/UI/browser work to Prompt 3, and its acceptance ends at a real live-model `POST /api/plans`. Current setup and evidence are in [day1-local-run.md](day1-local-run.md). Original schemas and deferred reliability scope remain unchanged.
+
 ## Exact files and minimal dependencies
 
 Retain the already planned `src/agentic_intent_gate/` package. Create only the following paths and necessary `__init__.py` markers:

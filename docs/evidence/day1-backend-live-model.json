@@ -1,0 +1,585 @@
+{
+  "lane": "real-provider-http-no-mock",
+  "attempts_are_manual": true,
+  "attempts": [
+    {
+      "source_filename": "20261003T083434841329Z.json",
+      "source_sha256": "05767aa7d1d1840a7b2e72b6fc70c4fd299b4420914173209e38af0e098f342a",
+      "record": {
+        "recorded_at_utc": "2026-10-03T08:34:06.816428+00:00",
+        "lane": "real-local-provider-no-mock",
+        "prompt_version": "day1-json-v1",
+        "endpoint": "http://127.0.0.1:39839",
+        "wire_model": "Phi-4-mini-instruct-generic-gpu",
+        "intent": "Plan to read the service-demo record to investigate its health. Propose only the read step.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "title": "Day 1 planning preview Plan",
+          "description": "Proposal shape only. Trusted catalog, target equality, risk aggregation, byte limits, ordering, counts and revision need independent semantic validation. This schema grants no execution rights.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "goal",
+            "target",
+            "steps",
+            "risk_class"
+          ],
+          "properties": {
+            "goal": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512,
+              "pattern": "\\S"
+            },
+            "target": {
+              "$ref": "#/$defs/service_id"
+            },
+            "steps": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 5,
+              "items": {
+                "$ref": "#/$defs/step"
+              }
+            },
+            "risk_class": {
+              "enum": [
+                "READ_ONLY",
+                "SIDE_EFFECT",
+                "APPROVAL_REQUIRED"
+              ]
+            }
+          },
+          "$defs": {
+            "service_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}(?![\\s\\S])"
+            },
+            "step": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "tool_name",
+                    "tool_version",
+                    "arguments"
+                  ],
+                  "properties": {
+                    "tool_name": {
+                      "const": "get_service_record"
+                    },
+                    "tool_version": {
+                      "const": "1"
+                    },
+                    "arguments": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "service_id"
+                      ],
+                      "properties": {
+                        "service_id": {
+                          "$ref": "#/$defs/service_id"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "tool_name",
+                    "tool_version",
+                    "arguments"
+                  ],
+                  "properties": {
+                    "tool_name": {
+                      "const": "append_service_note"
+                    },
+                    "tool_version": {
+                      "const": "1"
+                    },
+                    "arguments": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "service_id",
+                        "note"
+                      ],
+                      "properties": {
+                        "service_id": {
+                          "$ref": "#/$defs/service_id"
+                        },
+                        "note": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1024,
+                          "pattern": "\\S"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "tool_name",
+                    "tool_version",
+                    "arguments"
+                  ],
+                  "properties": {
+                    "tool_name": {
+                      "const": "set_maintenance_mode"
+                    },
+                    "tool_version": {
+                      "const": "1"
+                    },
+                    "arguments": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "service_id",
+                        "enabled",
+                        "expected_revision"
+                      ],
+                      "properties": {
+                        "service_id": {
+                          "$ref": "#/$defs/service_id"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "expected_revision": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9223372036854775807
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "versions": {
+          "httpx": "0.28.1",
+          "jsonschema": "4.26.0",
+          "fastapi": "0.142.2",
+          "uvicorn": "0.54.0"
+        },
+        "raw_output": null,
+        "validation": "FAIL",
+        "tool_invocations": 0,
+        "automatic_retries_or_repair_calls": 0,
+        "elapsed_seconds": 28.01
+      }
+    },
+    {
+      "source_filename": "20261003T083735937316Z.json",
+      "source_sha256": "9dee18700895ece00e863f1592d802373ce122a91e61d9d31016ae12709c06a8",
+      "record": {
+        "recorded_at_utc": "2026-10-03T08:37:07.921423+00:00",
+        "lane": "real-local-provider-no-mock",
+        "prompt_version": "day1-json-v1",
+        "endpoint": "http://127.0.0.1:39839",
+        "wire_model": "Phi-4-mini-instruct-generic-gpu",
+        "wire_method": "POST",
+        "wire_path": "/v1/chat/completions",
+        "request_parameters": {
+          "n": 1,
+          "stream": false,
+          "temperature": 0,
+          "max_tokens": 1024
+        },
+        "intent": "Plan to read the service-demo record to investigate its health. Propose only the read step.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "title": "Day 1 planning preview Plan",
+          "description": "Proposal shape only. Trusted catalog, target equality, risk aggregation, byte limits, ordering, counts and revision need independent semantic validation. This schema grants no execution rights.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "goal",
+            "target",
+            "steps",
+            "risk_class"
+          ],
+          "properties": {
+            "goal": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512,
+              "pattern": "\\S"
+            },
+            "target": {
+              "$ref": "#/$defs/service_id"
+            },
+            "steps": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 5,
+              "items": {
+                "$ref": "#/$defs/step"
+              }
+            },
+            "risk_class": {
+              "enum": [
+                "READ_ONLY",
+                "SIDE_EFFECT",
+                "APPROVAL_REQUIRED"
+              ]
+            }
+          },
+          "$defs": {
+            "service_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}(?![\\s\\S])"
+            },
+            "step": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "tool_name",
+                    "tool_version",
+                    "arguments"
+                  ],
+                  "properties": {
+                    "tool_name": {
+                      "const": "get_service_record"
+                    },
+                    "tool_version": {
+                      "const": "1"
+                    },
+                    "arguments": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "service_id"
+                      ],
+                      "properties": {
+                        "service_id": {
+                          "$ref": "#/$defs/service_id"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "tool_name",
+                    "tool_version",
+                    "arguments"
+                  ],
+                  "properties": {
+                    "tool_name": {
+                      "const": "append_service_note"
+                    },
+                    "tool_version": {
+                      "const": "1"
+                    },
+                    "arguments": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "service_id",
+                        "note"
+                      ],
+                      "properties": {
+                        "service_id": {
+                          "$ref": "#/$defs/service_id"
+                        },
+                        "note": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1024,
+                          "pattern": "\\S"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "tool_name",
+                    "tool_version",
+                    "arguments"
+                  ],
+                  "properties": {
+                    "tool_name": {
+                      "const": "set_maintenance_mode"
+                    },
+                    "tool_version": {
+                      "const": "1"
+                    },
+                    "arguments": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "service_id",
+                        "enabled",
+                        "expected_revision"
+                      ],
+                      "properties": {
+                        "service_id": {
+                          "$ref": "#/$defs/service_id"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "expected_revision": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9223372036854775807
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "versions": {
+          "httpx": "0.28.1",
+          "jsonschema": "4.26.0",
+          "fastapi": "0.142.2",
+          "uvicorn": "0.54.0"
+        },
+        "raw_output": null,
+        "validation": "FAIL",
+        "tool_invocations": 0,
+        "automatic_retries_or_repair_calls": 0,
+        "provider_error": "MODEL_TIMEOUT",
+        "elapsed_seconds": 28.006
+      }
+    },
+    {
+      "source_filename": "20261003T084157788344Z.json",
+      "source_sha256": "eda6683282b72d63a34dba7f2106c3b6caa0772a5994271cd2472b91923cf0e7",
+      "record": {
+        "recorded_at_utc": "2026-10-03T08:41:46.927998+00:00",
+        "lane": "real-local-provider-no-mock",
+        "prompt_version": "day1-json-v2",
+        "endpoint": "http://127.0.0.1:39839",
+        "wire_model": "Phi-4-mini-instruct-generic-gpu",
+        "wire_method": "POST",
+        "wire_path": "/v1/chat/completions",
+        "request_parameters": {
+          "n": 1,
+          "stream": false,
+          "temperature": 0,
+          "max_tokens": 1024
+        },
+        "intent": "Plan to read the service-demo record.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "title": "Day 1 planning preview Plan",
+          "description": "Proposal shape only. Trusted catalog, target equality, risk aggregation, byte limits, ordering, counts and revision need independent semantic validation. This schema grants no execution rights.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "goal",
+            "target",
+            "steps",
+            "risk_class"
+          ],
+          "properties": {
+            "goal": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512,
+              "pattern": "\\S"
+            },
+            "target": {
+              "$ref": "#/$defs/service_id"
+            },
+            "steps": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 5,
+              "items": {
+                "$ref": "#/$defs/step"
+              }
+            },
+            "risk_class": {
+              "enum": [
+                "READ_ONLY",
+                "SIDE_EFFECT",
+                "APPROVAL_REQUIRED"
+              ]
+            }
+          },
+          "$defs": {
+            "service_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}(?![\\s\\S])"
+            },
+            "step": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "tool_name",
+                    "tool_version",
+                    "arguments"
+                  ],
+                  "properties": {
+                    "tool_name": {
+                      "const": "get_service_record"
+                    },
+                    "tool_version": {
+                      "const": "1"
+                    },
+                    "arguments": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "service_id"
+                      ],
+                      "properties": {
+                        "service_id": {
+                          "$ref": "#/$defs/service_id"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "tool_name",
+                    "tool_version",
+                    "arguments"
+                  ],
+                  "properties": {
+                    "tool_name": {
+                      "const": "append_service_note"
+                    },
+                    "tool_version": {
+                      "const": "1"
+                    },
+                    "arguments": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "service_id",
+                        "note"
+                      ],
+                      "properties": {
+                        "service_id": {
+                          "$ref": "#/$defs/service_id"
+                        },
+                        "note": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1024,
+                          "pattern": "\\S"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "tool_name",
+                    "tool_version",
+                    "arguments"
+                  ],
+                  "properties": {
+                    "tool_name": {
+                      "const": "set_maintenance_mode"
+                    },
+                    "tool_version": {
+                      "const": "1"
+                    },
+                    "arguments": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "service_id",
+                        "enabled",
+                        "expected_revision"
+                      ],
+                      "properties": {
+                        "service_id": {
+                          "$ref": "#/$defs/service_id"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "expected_revision": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9223372036854775807
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "versions": {
+          "httpx": "0.28.1",
+          "jsonschema": "4.26.0",
+          "fastapi": "0.142.2",
+          "uvicorn": "0.54.0"
+        },
+        "raw_output": "{\n  \"goal\": \"Read the service record\",\n  \"target\": \"service-demo\",\n  \"steps\": [\n    {\n      \"tool_name\": \"get_service_record\",\n      \"tool_version\": \"1\",\n      \"arguments\": {\n        \"service_id\": \"service-demo\"\n      }\n    }\n  ],\n  \"risk_class\": \"READ_ONLY\"\n}",
+        "validation": "PASS",
+        "tool_invocations": 0,
+        "automatic_retries_or_repair_calls": 0,
+        "plan": {
+          "goal": "Read the service record",
+          "target": "service-demo",
+          "steps": [
+            {
+              "tool_name": "get_service_record",
+              "tool_version": "1",
+              "arguments": {
+                "service_id": "service-demo"
+              }
+            }
+          ],
+          "risk_class": "READ_ONLY"
+        },
+        "elapsed_seconds": 10.851
+      }
+    }
+  ],
+  "first_attempt_failure": {
+    "code": "MODEL_TIMEOUT",
+    "basis": "Observed pytest exception; first record predates explicit provider_error capture",
+    "raw_completion_received": false
+  },
+  "prompt_change": {
+    "from": "day1-json-v1",
+    "to": "day1-json-v2",
+    "change": "Explicit Plan instance instruction and compact read-only example",
+    "schema_or_validation_changed": false,
+    "timeout_increased": false
+  },
+  "acceptance": "PASS_ONE_REAL_SCHEMA_AND_SEMANTIC_VALID_PLAN",
+  "not_a_success_rate_estimate": true
+}

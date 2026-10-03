@@ -12,19 +12,23 @@ $env:UV_PYTHON_DOWNLOADS = 'never'
 $env:TEMP = Join-Path $PWD '.cache\tmp'
 $env:TMP = $env:TEMP
 New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
-uv sync --frozen --python 'D:\anaconda3\python.exe'
+uv sync --frozen --python 3.13
 foundry server status --output json
 foundry model list --loaded --search phi-4-mini --output json
 ```
 
-These Foundry commands inspect the existing daemon. If it is stopped, explicitly run `foundry server start --output json`; to load your already downloaded phi-4-mini, run `foundry model load phi-4-mini --output json`. The application does not manage the daemon/models. An unavailable service fails visibly. Adjust the Python path to an existing Python 3.13 installation when using another host; all paths above are local workspace caches.
+These Foundry commands inspect the existing daemon. If it is stopped, explicitly run `foundry server start --output json`; to load your already downloaded phi-4-mini, run `foundry model load phi-4-mini --output json`. The application does not manage the daemon/models. An unavailable service fails visibly. Python 3.13 must already be installed and discoverable by `uv`; all paths above are local workspace caches.
 
 At Prompt 3 verification time the existing endpoint was `http://127.0.0.1:59656`, with phi-4-mini's CPU variant loaded. Prompt 2's earlier GPU/port observations remain historical. Confirm the **current** endpoint and actual wire ID; the port/variant can change, and the catalog ID with `:5` is not the wire ID:
 
 ```powershell
-$env:FOUNDRY_LOCAL_ENDPOINT = 'http://127.0.0.1:59656'
-Invoke-RestMethod "$env:FOUNDRY_LOCAL_ENDPOINT/v1/models"
-$env:FOUNDRY_LOCAL_MODEL = 'Phi-4-mini-instruct-generic-cpu'
+$status = foundry server status --output json | ConvertFrom-Json
+if (-not $status.running -or -not $status.webUrls) { throw 'Foundry is unavailable' }
+$env:FOUNDRY_LOCAL_ENDPOINT = @($status.webUrls)[0]
+$models = Invoke-RestMethod "$env:FOUNDRY_LOCAL_ENDPOINT/v1/models"
+$loaded = @($models.data | Where-Object { $_.parent -eq 'phi-4-mini' })
+if ($loaded.Count -ne 1) { throw 'Select the loaded phi-4-mini wire ID explicitly' }
+$env:FOUNDRY_LOCAL_MODEL = $loaded[0].id
 $env:MODEL_TIMEOUT_SECONDS = '28'
 $env:API_HOST = '127.0.0.1'
 $env:API_PORT = '8000'
@@ -64,12 +68,12 @@ Provider I/O has a total budget of at most 28 seconds; the application budget is
 ## Test lanes
 
 ```powershell
-.venv\Scripts\ruff.exe check src tests
-.venv\Scripts\ruff.exe format --check src tests
+.venv\Scripts\ruff.exe check .
+.venv\Scripts\ruff.exe format --check .
 .venv\Scripts\python.exe -m pytest -q
 ```
 
-The default suite now includes 166 deterministic tests: the original 141 backend checks, one page-serving check, 18 frontend interaction cases with controlled HTTP responses, and six browser-to-real-backend cases with a test-only provider and the real validator. UI tests use Python Playwright with the installed Microsoft Edge (`msedge`) channel; there is no browser download, npm pipeline or frontend server. Set `AIG_BROWSER_CHANNEL=chrome` to use an installed Chrome instead. Playwright supports these installed channels ([official browser documentation](https://playwright.dev/python/docs/browsers)). Browser tests use isolated contexts and workspace temporary profiles, then close their browsers and HTTP servers. No type checker is configured.
+The Prompt 3 baseline contained 166 deterministic tests. Prompt 4 adds only missing regression boundaries and a controlled 20-request concurrency check; the current total is recorded in the [hardening evidence](evidence/day1-hardening-verification.json). UI tests use Python Playwright with the installed Microsoft Edge (`msedge`) channel; there is no browser download, npm pipeline or frontend server. Set `AIG_BROWSER_CHANNEL=chrome` to use an installed Chrome instead. Playwright supports these installed channels ([official browser documentation](https://playwright.dev/python/docs/browsers)). Browser tests use isolated contexts and workspace temporary profiles, then close their browsers and HTTP servers. No type checker is configured.
 
 To run only backend tests, use `pytest -m "not browser and not live"`; to run deterministic browser tests, use `pytest tests/browser -m "browser and not live"`. Both use `.venv\Scripts\python.exe -m pytest` as above. The Playwright fixture closes per module so its synchronous event loop does not remain active during pytest-asyncio backend tests. Controlled responses/providers are deterministic evidence, not live model proof.
 
@@ -92,6 +96,18 @@ This launches the actual application entrypoint on an available loopback port, o
 
 ## Verification evidence and limits
 
+Prompt 4's [hardening evidence](evidence/day1-hardening-verification.json) records the frozen 12-attempt sequential model matrix, three live injection attempts, five real browser attempts, deterministic regressions and package verification. Reproduce the fixed study only with explicit live configuration:
+
+```powershell
+$env:HARDENING_EVIDENCE_DIR = '.runtime\hardening'
+.venv\Scripts\python.exe -m pytest -q -s tests/test_live_repeatability.py -m live
+.venv\Scripts\python.exe -m pytest -q -s tests/browser/test_live_browser_repeatability.py -m live_browser
+```
+
+Each command uses a fixed schedule independent of outcomes, with one inference call per attempt. Timeouts/rejections remain observations; they never trigger retries. The study checks at least one successful result and all observed failures for safe handling, rather than requiring 100% success. Raw bounded model observations stay in ignored runtime files. The normal study uses the real network provider and actual API via ASGI; the browser study uses the real product process. Neither substitutes a provider or intercepts browser traffic. Alignment classification is study-only, not a new product validator.
+
+For packaging, run `uv build`, then create a clean environment **outside** this repository with `uv venv --python 3.13 <outside-directory>`. Export pinned runtime dependencies with `uv export --frozen --no-dev --no-emit-project --format requirements-txt --output-file .runtime/package-dependencies.txt`; install them with `uv pip install --python <clean-python> --require-hashes -r .runtime/package-dependencies.txt`, and install the wheel with `uv pip install --python <clean-python> --no-deps dist/agentic_intent_gate-0.1.0-py3-none-any.whl`. From a working directory outside the repository, invoke `<clean-python> <repository>/tests/package_check.py <repository> <evidence-output>`, with `PYTHONPATH` unset. This checks wheel imports, byte-identical schemas, bundled HTML and GET/POST using a controlled provider; it is PACKAGE evidence, not live inference.
+
 Prompt 3 is **DAY1_LOCAL_E2E=PASS**. [Browser verification evidence](evidence/day1-browser-e2e.json) separates the 166-test deterministic suite (18 frontend cases and six browser/backend cases included) from three manual real-browser/phi-4-mini attempts. The first two CPU-model requests returned safe 504 rejections after about 28 seconds; the third returned 200 / PlanValidated in 26.125 seconds, with all Plan fields rendered in 26.204 seconds. Model, prompt, validation and budgets were unchanged. This is one observed successful flow, not a measured success rate. The [success screenshot](evidence/day1-browser-live-success.png) and [timeout screenshot](evidence/day1-browser-live-rejection.png) show the actual browser states. Test app/browser processes were closed and all test ports released; the existing Foundry PID 13032 remained ready.
 
 Prompt 2 verification is **PASS**: [backend checks and file manifest](evidence/day1-backend-verification.json) record 141 deterministic tests, linter/formatter checks, pinned dependencies, packaged-schema checks and preserved research hashes. [Real model evidence](evidence/day1-backend-live-model.json) preserves all three manual attempts: two 28-second timeouts with prompt v1, then a fully valid phi-4-mini response with prompt v2 in 10.851 seconds. V2 adds an explicit Plan-instance instruction and a short read example; schema, validation and budgets were unchanged. This is one observed success, not a measured success rate.
@@ -100,4 +116,6 @@ Prompt 2 verification is **PASS**: [backend checks and file manifest](evidence/d
 
 Only `service-demo` exists in the trusted preview context; maintenance revision `1` is synthetic. Validation proves the proposal contract, not intent fidelity, live health, authorization, feasibility or execution. Real model output can fail the contract even at temperature zero. The page exposes validated proposals and fixed user-facing error messages; raw model output, prompts and exception text remain outside the UI. Approval/execution, persistence, authentication and cloud adapters remain deferred.
 
-Stop the app with Ctrl+C and verify its port is released; preserve the pre-existing Foundry daemon. Temporary test evidence/logs, caches, `.venv`, and `dist` are ignored. No commit or push is part of Prompt 3.
+Prompt 4 measured 10/12 aligned normal successes (two maintenance timeouts), three safe live injection outcomes, and 3/5 successful renders in the final browser cohort. The earlier five provider-compatibility failures and one diagnostic timeout are retained separately. Reliability is **WEAK**: CPU-model latency remains close to the unchanged deadline, and maintenance requests succeeded only 2/4. No latency optimization was attempted or retained. These small local samples do not establish production reliability.
+
+Stop the app with Ctrl+C and verify its port is released; preserve the pre-existing Foundry daemon. Temporary test evidence/logs, caches, `.venv`, and `dist` are ignored. No commit or push is part of Prompt 4.

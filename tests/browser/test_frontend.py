@@ -130,7 +130,7 @@ def test_structured_errors_show_only_safe_user_message(page, ui_url, code, statu
     assert page.locator("#error script").count() == 0
 
 
-@pytest.mark.parametrize("failure", ["network", "nonjson", "bad-success"])
+@pytest.mark.parametrize("failure", ["network", "nonjson", "bad-success", "malformed-error-code"])
 def test_failed_new_request_clears_previous_plan(page, ui_url, valid_plan, failure):
     pending = []
 
@@ -154,6 +154,13 @@ def test_failed_new_request_clears_previous_plan(page, ui_url, valid_plan, failu
         message = "Could not reach the application"
     elif failure == "nonjson":
         pending[1].fulfill(status=500, content_type="text/html", body="<h1>private traceback</h1>")
+        message = "unexpected response"
+    elif failure == "malformed-error-code":
+        fulfill(
+            pending[1],
+            {"state": "PlanRejected", "plan": None, "error": {"code": {"toString": "private"}}},
+            502,
+        )
         message = "unexpected response"
     else:
         fulfill(pending[1], {"state": "PlanValidated", "plan": None, "error": None})

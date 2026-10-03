@@ -28,7 +28,10 @@ def validate_endpoint(endpoint: str) -> str:
     try:
         parsed = urlsplit(endpoint)
         if (
-            parsed.scheme != "http"
+            any(ord(character) <= 32 or ord(character) == 127 for character in endpoint)
+            or "?" in endpoint
+            or "#" in endpoint
+            or parsed.scheme != "http"
             or not parsed.hostname
             or not loopback_host(parsed.hostname)
             or parsed.username is not None
@@ -37,6 +40,7 @@ def validate_endpoint(endpoint: str) -> str:
             or parsed.query
             or parsed.fragment
             or parsed.port is None
+            or not 1 <= parsed.port <= 65535
         ):
             raise ValueError
         return endpoint.rstrip("/")

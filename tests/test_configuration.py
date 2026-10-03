@@ -17,6 +17,10 @@ from agentic_intent_gate.adapters.tool_catalog import build_validator
         "http://user:password@127.0.0.1:1234",
         "http://127.0.0.1",
         "http://127.0.0.1:99999",
+        "http://127.0.0.1:0",
+        "http://127.0.0.1:1234?",
+        "http://127.0.0.1:1234#",
+        "http://127.0.0.1:\n1234",
     ],
 )
 def test_configuration_rejects_nonlocal_or_ambiguous_endpoint(endpoint):

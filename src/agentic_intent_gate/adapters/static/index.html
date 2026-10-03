@@ -126,7 +126,7 @@
           ? "The generated plan failed semantic validation. No plan was accepted."
           : "The generated plan failed validation. No plan was accepted.";
       }
-      return Object.hasOwn(messages, code)
+      return typeof code === "string" && Object.hasOwn(messages, code)
         ? messages[code] : "The application returned an unexpected response. Please try again.";
     }
 

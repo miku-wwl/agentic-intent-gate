@@ -108,6 +108,12 @@ class LocalOpenAIProvider:
                             raise ModelProviderError(ErrorCode.MODEL_UNAVAILABLE)
                         if response.status_code != 200:
                             raise ModelProviderError(ErrorCode.MODEL_RESPONSE_ERROR)
+                        # Do not allocate a decoded compressed body before enforcing the cap.
+                        # The request explicitly asks for identity encoding.
+                        if response.headers.get("content-encoding", "identity").strip().lower() != (
+                            "identity"
+                        ):
+                            raise ModelProviderError(ErrorCode.MODEL_RESPONSE_ERROR)
                         body = bytearray()
                         async for chunk in response.aiter_bytes():
                             if len(body) + len(chunk) > ENVELOPE_BYTES:
@@ -129,9 +135,12 @@ class LocalOpenAIProvider:
                         if (
                             choice["finish_reason"] != "stop"
                             or message.get("role") != "assistant"
-                            or message.get("tool_calls")
-                            or message.get("function_call")
-                            or message.get("refusal")
+                            # An empty list explicitly contains no tool calls. Reject
+                            # actual calls and malformed falsey types, preserving this
+                            # ordinary text-completion representation.
+                            or message.get("tool_calls") not in (None, [])
+                            or message.get("function_call") is not None
+                            or message.get("refusal") is not None
                             or not isinstance(text, str)
                             or not text.strip()
                             or len(text.encode("utf-8")) > PLAN_BYTES

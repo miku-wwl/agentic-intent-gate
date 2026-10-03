@@ -11,6 +11,20 @@ from agentic_intent_gate.domain.contracts import ErrorCode, PlanningResult, Vali
 from agentic_intent_gate.domain.validation import REQUEST_BYTES, ValidationFailure
 
 
+def _json_utf8(content_type: str) -> bool:
+    parts = content_type.lower().split(";")
+    if parts[0].strip() != "application/json":
+        return False
+    charset_seen = False
+    for part in parts[1:]:
+        name, separator, value = part.strip().partition("=")
+        if name.strip() == "charset":
+            if charset_seen or not separator or value.strip().strip('"') not in {"utf-8", "utf8"}:
+                return False
+            charset_seen = True
+    return True
+
+
 def create_app(service: PlanningService) -> FastAPI:
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, debug=False)
     page = files("agentic_intent_gate.adapters").joinpath("static", "index.html").read_text("utf-8")
@@ -24,12 +38,7 @@ def create_app(service: PlanningService) -> FastAPI:
         deadline = asyncio.get_running_loop().time() + REQUEST_TIMEOUT_SECONDS
         accepted = False
         try:
-            parts = request.headers.get("content-type", "").lower().split(";")
-            if parts[0].strip() != "application/json" or any(
-                part.strip().startswith("charset=")
-                and part.strip().split("=", 1)[1].strip(' "') not in {"utf-8", "utf8"}
-                for part in parts[1:]
-            ):
+            if not _json_utf8(request.headers.get("content-type", "")):
                 result = PlanningResult.reject(ErrorCode.UNSUPPORTED_MEDIA_TYPE, accepted=False)
             else:
                 body = bytearray()

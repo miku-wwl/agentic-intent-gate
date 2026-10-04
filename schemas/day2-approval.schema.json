@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Day 2 local ApprovalDecisionRequest",
+  "description": "Contract freeze only. Strict UTF-8 JSON decoding, lexical integers, byte limits and current Run state/version are enforced separately. No authentication or execution is implied.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["decision", "expected_version"],
+  "properties": {
+    "decision": {"enum": ["APPROVE", "REJECT"]},
+    "expected_version": {"type": "integer", "minimum": 1, "maximum": 9007199254740991},
+    "reason": {
+      "type": "string",
+      "maxLength": 1024,
+      "not": {"pattern": "[\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]"}
+    }
+  }
+}

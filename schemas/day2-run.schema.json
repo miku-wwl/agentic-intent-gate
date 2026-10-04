@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Day 2 public Run representation",
+  "description": "Contract freeze only. Resolve references locally. Intent UTF-8 bounds, deterministic Plan semantics, calendar timestamps/order, fixed error messages and persisted audit/decision consistency require independent checks. Approved never means executed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["run_id", "intent", "state", "plan", "risk_class", "version", "approval_required", "created_at", "updated_at", "error"],
+  "properties": {
+    "run_id": {"$ref": "#/$defs/run_id"},
+    "intent": {"$ref": "day1-intent.schema.json"},
+    "state": {"enum": ["IntentReceived", "PlanGenerating", "PlanValidated", "Ready", "AwaitingApproval", "Approved", "Rejected", "PlanRejected"]},
+    "plan": {"anyOf": [{"type": "null"}, {"$ref": "day1-plan.schema.json"}]},
+    "risk_class": {"enum": [null, "READ_ONLY", "SIDE_EFFECT", "APPROVAL_REQUIRED"]},
+    "version": {"type": "integer", "minimum": 1, "maximum": 9007199254740991},
+    "approval_required": {"type": ["boolean", "null"]},
+    "created_at": {"$ref": "#/$defs/timestamp"},
+    "updated_at": {"$ref": "#/$defs/timestamp"},
+    "error": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/error"}]}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"state": {"enum": ["IntentReceived", "PlanGenerating"]}}},
+      "then": {"properties": {"plan": {"type": "null"}, "risk_class": {"type": "null"}, "approval_required": {"type": "null"}, "error": {"type": "null"}}}
+    },
+    {
+      "if": {"properties": {"state": {"const": "PlanRejected"}}},
+      "then": {"properties": {"plan": {"type": "null"}, "risk_class": {"type": "null"}, "approval_required": {"type": "null"}, "error": {"$ref": "#/$defs/error"}, "version": {"enum": [2, 3]}}}
+    },
+    {
+      "if": {"properties": {"state": {"enum": ["PlanValidated", "Ready", "AwaitingApproval", "Approved", "Rejected"]}}},
+      "then": {"properties": {"plan": {"$ref": "day1-plan.schema.json"}, "risk_class": {"enum": ["READ_ONLY", "SIDE_EFFECT", "APPROVAL_REQUIRED"]}, "approval_required": {"type": "boolean"}, "error": {"type": "null"}}}
+    },
+    {
+      "if": {"properties": {"risk_class": {"const": "READ_ONLY"}}},
+      "then": {"properties": {"approval_required": {"const": false}, "plan": {"properties": {"risk_class": {"const": "READ_ONLY"}}}}}
+    },
+    {
+      "if": {"properties": {"risk_class": {"const": "SIDE_EFFECT"}}},
+      "then": {"properties": {"approval_required": {"const": true}, "plan": {"properties": {"risk_class": {"const": "SIDE_EFFECT"}}}}}
+    },
+    {
+      "if": {"properties": {"risk_class": {"const": "APPROVAL_REQUIRED"}}},
+      "then": {"properties": {"approval_required": {"const": true}, "plan": {"properties": {"risk_class": {"const": "APPROVAL_REQUIRED"}}}}}
+    },
+    {"if": {"properties": {"state": {"const": "IntentReceived"}}}, "then": {"properties": {"version": {"const": 1}}}},
+    {"if": {"properties": {"state": {"const": "PlanGenerating"}}}, "then": {"properties": {"version": {"const": 2}}}},
+    {"if": {"properties": {"state": {"const": "PlanValidated"}}}, "then": {"properties": {"version": {"const": 3}}}},
+    {
+      "if": {"properties": {"state": {"const": "Ready"}}},
+      "then": {"properties": {"version": {"const": 4}, "risk_class": {"const": "READ_ONLY"}, "approval_required": {"const": false}}}
+    },
+    {
+      "if": {"properties": {"state": {"const": "AwaitingApproval"}}},
+      "then": {"properties": {"version": {"const": 4}, "risk_class": {"enum": ["SIDE_EFFECT", "APPROVAL_REQUIRED"]}, "approval_required": {"const": true}}}
+    },
+    {
+      "if": {"properties": {"state": {"enum": ["Approved", "Rejected"]}}},
+      "then": {"properties": {"version": {"const": 5}, "risk_class": {"enum": ["SIDE_EFFECT", "APPROVAL_REQUIRED"]}, "approval_required": {"const": true}}}
+    }
+  ],
+  "$defs": {
+    "run_id": {
+      "type": "string",
+      "minLength": 36,
+      "maxLength": 36,
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}(?![\\s\\S])"
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 27,
+      "maxLength": 27,
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{6}Z(?![\\s\\S])"
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": {"enum": ["PLAN_VALIDATION_ERROR", "MODEL_UNAVAILABLE", "MODEL_TIMEOUT", "MODEL_RESPONSE_ERROR", "INTERNAL_ERROR", "RECOVERY_INTERRUPTED"]},
+        "message": {"type": "string", "minLength": 1, "maxLength": 256}
+      }
+    }
+  }
+}

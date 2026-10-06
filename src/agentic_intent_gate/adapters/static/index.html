@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Planning preview · AgenticIntentGate</title>
+  <title>Runs &amp; local approval · AgenticIntentGate</title>
   <style>
     :root { color-scheme: light; font-family: system-ui, sans-serif; color: #1d2939; background: #f4f6f8; }
     * { box-sizing: border-box; }
@@ -27,6 +27,15 @@
     #loading { margin-bottom: 0; color: #475467; }
     #error { border-color: #ecc4c0; background: #fff9f8; }
     #error h2 { color: #912f27; }
+    #run-error, #run-plan-error { border-color: #ecc4c0; background: #fff9f8; }
+    #run-error h2, #run-plan-error h2 { color: #912f27; }
+    .secondary { background: #475467; }
+    .section-label { color: #475467; font-size: .8rem; letter-spacing: .07em; text-transform: uppercase; }
+    #run-console dl { grid-template-columns: 140px minmax(0, 1fr); }
+    #run-original-intent { white-space: pre-wrap; overflow-wrap: anywhere; }
+    #approval-reason { min-height: 80px; }
+    #run-status { color: #475467; }
+    #run-state { font-weight: 700; }
     dl { display: grid; grid-template-columns: 88px 1fr; gap: 12px; margin-bottom: 24px; }
     dt { color: #475467; }
     dd { margin: 0; overflow-wrap: anywhere; }
@@ -40,9 +49,79 @@
 </head>
 <body>
   <main id="planner" data-state="IDLE">
+    <section id="run-console" aria-labelledby="run-console-title" data-operation="IDLE">
+      <header>
+        <div class="brand">AgenticIntentGate · local control surface</div>
+        <h1 id="run-console-title">Runs &amp; local approval</h1>
+        <p class="muted">Intent → durable Run → validated Plan → local decision.</p>
+        <p class="notice">No tools execute. Approved means approval only, for possible later execution.</p>
+      </header>
+      <section class="card" aria-labelledby="builder-title">
+        <h2 id="builder-title">Intent Builder</h2>
+        <form id="run-form" novalidate>
+          <label for="run-intent">Run intent</label>
+          <textarea id="run-intent" name="text" maxlength="8192" aria-describedby="run-intent-help" placeholder="Plan to read the service-demo record."></textarea>
+          <p id="run-intent-help" class="muted">Synthetic service-demo / revision 1 only. Ctrl+Enter creates a new Run. Creating again is a new planning attempt, not a retry of an existing Run.</p>
+          <div class="actions">
+            <button id="create-run" type="submit">Create Run</button>
+            <button id="refresh-run" class="secondary" type="button" disabled>Refresh Run</button>
+          </div>
+        </form>
+        <p id="run-status" role="status" aria-live="polite" aria-atomic="true">Idle</p>
+        <p id="run-loading" hidden>Request in progress…</p>
+        <p id="run-lookup" hidden>Known Run ID: <code id="run-lookup-id"></code>. Acceptance is not confirmed; Refresh Run reads the backend.</p>
+      </section>
+      <section id="run-error" class="card" role="alert" tabindex="-1" aria-labelledby="run-error-title" hidden>
+        <h2 id="run-error-title">Request failed</h2>
+        <p><code id="run-error-code"></code>: <span id="run-error-message"></span></p>
+        <p id="run-error-help"></p>
+      </section>
+      <section id="run-details" class="card" tabindex="-1" aria-labelledby="run-details-title" hidden>
+        <h2 id="run-details-title">Run State</h2>
+        <dl>
+          <dt>Run ID</dt><dd id="run-id"></dd>
+          <dt>State</dt><dd><span id="run-state"></span> — <span id="run-state-label"></span></dd>
+          <dt>Version</dt><dd id="run-version"></dd>
+          <dt>Created (UTC)</dt><dd id="run-created"></dd>
+          <dt>Updated (UTC)</dt><dd id="run-updated"></dd>
+        </dl>
+        <h2>Original Intent</h2>
+        <p id="run-original-intent"></p>
+      </section>
+      <section id="run-plan" class="card" aria-labelledby="run-plan-title" hidden>
+        <h2 id="run-plan-title">Validated Plan</h2>
+        <dl><dt>Goal</dt><dd id="run-goal"></dd><dt>Target</dt><dd id="run-target"></dd></dl>
+        <h3>Proposed steps — not executed</h3>
+        <ol id="run-steps"></ol>
+      </section>
+      <section id="run-policy" class="card" aria-labelledby="run-policy-title" hidden>
+        <h2 id="run-policy-title">Risk / Policy</h2>
+        <dl><dt>Trusted risk</dt><dd id="run-risk"></dd><dt>Approval required</dt><dd id="run-approval-required"></dd></dl>
+        <p class="muted">Policy comes from the backend. Approval required describes the policy, including after a decision.</p>
+      </section>
+      <section id="run-approval" class="card" aria-labelledby="run-approval-title" hidden>
+        <h2 id="run-approval-title">Local Approval</h2>
+        <p id="approval-summary"></p>
+        <p class="muted">Review the immutable Plan and trusted risk above. Local approval establishes no authentication or tool permission.</p>
+        <form id="approval-form" novalidate>
+          <label for="approval-reason">Reason (optional)</label>
+          <textarea id="approval-reason" maxlength="2048" aria-describedby="approval-reason-help"></textarea>
+          <p id="approval-reason-help" class="muted">Up to 1024 Unicode characters / 4096 UTF-8 bytes. A blank reason is omitted; non-empty text is sent unchanged.</p>
+          <div class="actions">
+            <button id="approve-run" type="button">Approve</button>
+            <button id="reject-run" class="secondary" type="button">Reject</button>
+          </div>
+        </form>
+      </section>
+      <section id="run-plan-error" class="card" aria-labelledby="run-plan-error-title" hidden>
+        <h2 id="run-plan-error-title">Plan rejected</h2>
+        <p><code id="run-plan-error-code"></code>: <span id="run-plan-error-message"></span></p>
+        <p class="muted">This failed Run is persisted. Refresh only reads it; no generation is retried.</p>
+      </section>
+    </section>
     <header>
-      <div class="brand">AgenticIntentGate</div>
-      <h1>Preview a plan</h1>
+      <div class="section-label">Legacy · stateless preview</div>
+      <h2>Preview a plan</h2>
       <p class="muted">Describe your intent to see a proposed goal, steps and risk.</p>
       <p class="notice">Planning preview — no tools executed</p>
     </header>
@@ -72,7 +151,7 @@
       <h2>Steps</h2>
       <ol id="steps"></ol>
     </section>
-    <noscript><p>Enable JavaScript to generate a planning preview.</p></noscript>
+    <noscript><p>Enable JavaScript to create or inspect Runs and generate a planning preview.</p></noscript>
   </main>
   <script>
     "use strict";
@@ -218,6 +297,265 @@
         if (!busy) form.requestSubmit();
       }
     });
+  </script>
+  <script>
+    (() => {
+      "use strict";
+      const el = id => document.getElementById(id);
+      const labels = {
+        IntentReceived: "Intent received", PlanGenerating: "Generating plan",
+        PlanValidated: "Plan validated", Ready: "Ready — no approval required",
+        AwaitingApproval: "Waiting for approval", Approved: "Approved",
+        Rejected: "Rejected", PlanRejected: "Plan rejected"
+      };
+      const messages = {
+        INVALID_INTENT: "The request does not match the Intent contract.",
+        INVALID_APPROVAL: "The request does not match the approval contract.",
+        REQUEST_TOO_LARGE: "The request exceeds the allowed size.",
+        UNSUPPORTED_MEDIA_TYPE: "Use application/json with UTF-8 encoding.",
+        RUN_NOT_FOUND: "The Run was not found.",
+        STALE_RUN_VERSION: "The Run version does not match expected_version.",
+        INVALID_RUN_TRANSITION: "The Run state does not allow this operation.",
+        DATABASE_UNAVAILABLE: "The Run store is unavailable.",
+        PLAN_VALIDATION_ERROR: "The generated proposal failed validation.",
+        MODEL_UNAVAILABLE: "The configured local model is unavailable.",
+        MODEL_TIMEOUT: "The planning deadline was exceeded.",
+        MODEL_RESPONSE_ERROR: "The local model returned an invalid response envelope.",
+        INTERNAL_ERROR: "An internal planning error occurred.",
+        RECOVERY_INTERRUPTED: "Planning was interrupted before a validated Plan was stored.",
+        NETWORK_ERROR: "Could not reach the application. No outcome is confirmed.",
+        UNEXPECTED_RESPONSE: "The application returned an unexpected response. No outcome is confirmed."
+      };
+      const validId = id => typeof id === "string"
+        && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(id);
+      let currentRun = null;
+      let lookupId = null;
+      let operation = null;
+      let decisionLocked = false;
+
+      function setBusyState(next) {
+        operation = next;
+        el("run-console").dataset.operation = next || "IDLE";
+        el("run-console").setAttribute("aria-busy", String(next !== null));
+        el("create-run").disabled = next !== null;
+        el("run-intent").disabled = next !== null;
+        el("create-run").textContent = next === "CREATING" ? "Creating Run…" : "Create Run";
+        el("refresh-run").disabled = next !== null || !lookupId;
+        const canDecide = currentRun?.state === "AwaitingApproval" && !decisionLocked;
+        for (const id of ["approve-run", "reject-run", "approval-reason"]) {
+          el(id).disabled = next !== null || !canDecide;
+        }
+        el("run-loading").hidden = next === null;
+        if (next) el("run-status").textContent = {
+          CREATING: "Creating Run…", DECIDING: "Submitting local decision…",
+          REFRESHING: "Refreshing Run…"
+        }[next];
+      }
+
+      function clearError() {
+        el("run-error").hidden = true;
+        for (const id of ["run-error-code", "run-error-message", "run-error-help"]) {
+          el(id).textContent = "";
+        }
+      }
+
+      function renderError(code, help = "") {
+        const safeCode = typeof code === "string" && Object.hasOwn(messages, code)
+          ? code : "UNEXPECTED_RESPONSE";
+        el("run-error-code").textContent = safeCode;
+        el("run-error-message").textContent = messages[safeCode];
+        el("run-error-help").textContent = help;
+        el("run-error").hidden = false;
+        el("run-status").textContent = "Request failed";
+        el("run-error").focus();
+      }
+
+      function rememberId(id) {
+        lookupId = id;
+        const url = new URL(window.location.href);
+        if (id) url.searchParams.set("run_id", id);
+        else url.searchParams.delete("run_id");
+        window.history.replaceState(null, "", url);
+        el("run-lookup-id").textContent = id || "";
+        el("run-lookup").hidden = !id || currentRun !== null;
+      }
+
+      function clearRun() {
+        currentRun = null;
+        decisionLocked = false;
+        for (const id of ["run-details", "run-plan", "run-policy", "run-approval", "run-plan-error"]) {
+          el(id).hidden = true;
+        }
+        for (const id of ["run-id", "run-state", "run-state-label", "run-version", "run-created",
+          "run-updated", "run-original-intent", "run-goal", "run-target", "run-risk",
+          "run-approval-required", "approval-summary", "run-plan-error-code", "run-plan-error-message"]) {
+          el(id).textContent = "";
+        }
+        el("run-steps").replaceChildren();
+        el("approval-reason").value = "";
+        rememberId(null);
+      }
+
+      function isDisplayableRun(run) {
+        // Presentation shape checks only: never compute risk or advance backend state.
+        return run && validId(run.run_id) && typeof run.state === "string" && Object.hasOwn(labels, run.state)
+          && typeof run.intent?.text === "string" && Number.isSafeInteger(run.version)
+          && run.version > 0 && typeof run.created_at === "string" && typeof run.updated_at === "string"
+          && [null, "READ_ONLY", "SIDE_EFFECT", "APPROVAL_REQUIRED"].includes(run.risk_class)
+          && [null, true, false].includes(run.approval_required)
+          && (run.plan === null || (typeof run.plan?.goal === "string"
+            && typeof run.plan.target === "string" && Array.isArray(run.plan.steps)
+            && run.plan.steps.length > 0 && run.plan.steps.length <= 5
+            && run.plan.steps.every(step => typeof step?.tool_name === "string"
+              && typeof step.tool_version === "string" && step.arguments
+              && typeof step.arguments === "object" && !Array.isArray(step.arguments))))
+          && (run.error === null || (typeof run.error?.code === "string"
+            && Object.hasOwn(messages, run.error.code)));
+      }
+
+      function renderPlan(plan) {
+        el("run-steps").replaceChildren();
+        el("run-goal").textContent = plan?.goal || "";
+        el("run-target").textContent = plan?.target || "";
+        el("run-plan").hidden = plan === null;
+        if (!plan) return;
+        for (const step of plan.steps) {
+          const item = document.createElement("li");
+          const title = document.createElement("h3");
+          const args = document.createElement("pre");
+          title.textContent = `${step.tool_name} · v${step.tool_version}`;
+          args.textContent = JSON.stringify(step.arguments, null, 2);
+          item.append(title, args);
+          el("run-steps").append(item);
+        }
+      }
+
+      function renderApproval(run) {
+        const waiting = run.state === "AwaitingApproval";
+        const decided = ["Approved", "Rejected"].includes(run.state);
+        el("run-approval").hidden = !waiting && !decided;
+        el("approval-form").hidden = !waiting;
+        el("approval-summary").textContent = waiting
+          ? `Decision applies to Run version ${run.version}. Trusted risk: ${run.risk_class}.`
+          : `${run.state} at Run version ${run.version}. No tools executed. Decision reason and actor records are not exposed by this API.`;
+        el("approval-reason").value = "";
+      }
+
+      function renderRun(run) {
+        currentRun = run;
+        decisionLocked = false;
+        clearError();
+        rememberId(run.run_id);
+        for (const [id, value] of [
+          ["run-id", run.run_id], ["run-state", run.state], ["run-state-label", labels[run.state]],
+          ["run-version", run.version], ["run-created", run.created_at], ["run-updated", run.updated_at],
+          ["run-original-intent", run.intent.text], ["run-risk", run.risk_class ?? "Not yet available"],
+          ["run-approval-required", run.approval_required === null ? "Not yet known" : String(run.approval_required)]
+        ]) el(id).textContent = String(value);
+        el("run-details").hidden = false;
+        el("run-policy").hidden = false;
+        renderPlan(run.plan);
+        renderApproval(run);
+        el("run-plan-error").hidden = run.state !== "PlanRejected";
+        el("run-plan-error-code").textContent = run.error?.code || "";
+        el("run-plan-error-message").textContent = run.error ? messages[run.error.code] : "";
+        el("run-status").textContent = `Run loaded: ${labels[run.state]}. No tools executed.`;
+        el("run-details").focus();
+      }
+
+      async function requestRun(path, options, expectedId = null) {
+        let response, body;
+        try { response = await fetch(path, options); }
+        catch { renderError("NETWORK_ERROR", "No request is automatically replayed. Refresh a known Run to inspect its state."); return; }
+        try { body = await response.json(); }
+        catch { renderError("UNEXPECTED_RESPONSE"); return; }
+        if (!response.ok) {
+          if (!lookupId && validId(body?.run_id)) rememberId(body.run_id);
+          renderError(body?.error?.code, operation === "DECIDING"
+            ? "Decision not confirmed. Refresh Run explicitly before any further decision. No approval will be replayed."
+            : "No request is automatically replayed. Refresh a known Run to inspect its state.");
+          return;
+        }
+        if (!isDisplayableRun(body) || (expectedId && body.run_id !== expectedId)) {
+          renderError("UNEXPECTED_RESPONSE");
+          return;
+        }
+        renderRun(body);
+      }
+
+      async function createRun(event) {
+        event.preventDefault();
+        if (operation) return;
+        clearError();
+        const text = el("run-intent").value;
+        if (!text.trim() || !text.isWellFormed() || new TextEncoder().encode(text).length > 8192) {
+          renderError("INVALID_INTENT", "Enter a non-empty intent of at most 8192 UTF-8 bytes.");
+          el("run-intent").setAttribute("aria-invalid", "true");
+          el("run-intent").focus();
+          return;
+        }
+        el("run-intent").removeAttribute("aria-invalid");
+        clearRun();
+        setBusyState("CREATING");
+        try {
+          await requestRun("/api/runs", {
+            method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({text})
+          });
+        } finally { setBusyState(null); }
+      }
+
+      async function getRun() {
+        if (operation || !lookupId) return;
+        clearError();
+        // A failed read leaves the last confirmed snapshot visible, but blocks decisions.
+        decisionLocked = true;
+        setBusyState("REFRESHING");
+        try { await requestRun(`/api/runs/${lookupId}`, {method: "GET"}, lookupId); }
+        finally { setBusyState(null); }
+      }
+
+      async function submitApproval(decision) {
+        if (operation || decisionLocked || currentRun?.state !== "AwaitingApproval") return;
+        clearError();
+        const reason = el("approval-reason").value;
+        if (!reason.isWellFormed() || [...reason].length > 1024
+          || new TextEncoder().encode(reason).length > 4096 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(reason)) {
+          renderError("INVALID_APPROVAL", "Reason must follow the character, byte and control-character limits.");
+          el("approval-reason").setAttribute("aria-invalid", "true");
+          el("approval-reason").focus();
+          return;
+        }
+        el("approval-reason").removeAttribute("aria-invalid");
+        const body = {decision, expected_version: currentRun.version};
+        if (reason !== "") body.reason = reason;
+        const id = currentRun.run_id;
+        decisionLocked = true;
+        setBusyState("DECIDING");
+        try {
+          await requestRun(`/api/runs/${id}/approval`, {
+            method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)
+          }, id);
+        } finally { setBusyState(null); }
+      }
+
+      el("run-form").addEventListener("submit", createRun);
+      el("approval-form").addEventListener("submit", event => event.preventDefault());
+      el("refresh-run").addEventListener("click", getRun);
+      el("approve-run").addEventListener("click", () => submitApproval("APPROVE"));
+      el("reject-run").addEventListener("click", () => submitApproval("REJECT"));
+      el("run-intent").addEventListener("keydown", event => {
+        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+          event.preventDefault();
+          if (!operation) el("run-form").requestSubmit();
+        }
+      });
+      setBusyState(null);
+      const restored = new URL(window.location.href).searchParams.get("run_id");
+      if (restored !== null) {
+        if (validId(restored)) { rememberId(restored); getRun(); }
+        else renderError("RUN_NOT_FOUND", "The URL must contain a canonical Run UUID.");
+      }
+    })();
   </script>
 </body>
 </html>

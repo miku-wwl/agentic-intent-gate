@@ -1,24 +1,31 @@
 """Small browser fixtures: installed Edge, actual HTTP servers, explicit live lane."""
 
+import asyncio
 import json
 import os
 import socket
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from contextlib import ExitStack, contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
 import uvicorn
 from playwright.sync_api import sync_playwright
+from run_helpers import plan_for
 
 from agentic_intent_gate.adapters.configuration import Settings
 from agentic_intent_gate.adapters.local_http import create_app
+from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
 from agentic_intent_gate.application.generate_plan import PlanningService
+from agentic_intent_gate.application.runs import RunService
+from agentic_intent_gate.domain.contracts import Risk
 
 ROOT = Path(__file__).resolve().parents[2]
 RUN = ROOT / ".runtime/browser-evidence" / datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
@@ -104,6 +111,72 @@ def deterministic_app(validator, provider_factory):
 def ui_url(deterministic_app):
     url, _provider = deterministic_app()
     return url
+
+
+@pytest.fixture
+def run_app(validator, tmp_path):
+    """Real HTTP/RunService/file DB; observe requests without changing responses."""
+    stack = ExitStack()
+    records = []
+
+    def start(*, risk=Risk.READ_ONLY, raw=None, error=None, provider_gate=None, approval_gate=None):
+        temporary = stack.enter_context(tempfile.TemporaryDirectory(prefix="run-ui-", dir=tmp_path))
+        database = Path(temporary) / "runs.sqlite3"
+        repository = SQLiteRunRepository(database, validator)
+
+        class ControlledProvider:
+            calls = 0
+
+            async def generate_plan(self, intent, **kwargs):
+                self.calls += 1
+                if provider_gate is not None:
+                    opened = await asyncio.to_thread(provider_gate.wait, 10)
+                    assert opened, "Provider gate timed out"
+                if error is not None:
+                    raise error
+                return raw if raw is not None else json.dumps(plan_for(validator, risk).to_dict())
+
+        provider = ControlledProvider()
+        planning = PlanningService(provider, validator)
+        app = create_app(planning, run_service=RunService(repository, planning))
+        requests = []
+
+        @app.middleware("http")
+        async def observe(request, call_next):
+            entry = {"method": request.method, "path": request.url.path}
+            requests.append(entry)
+            if request.url.path.endswith("/approval") and approval_gate is not None:
+                assert await asyncio.to_thread(approval_gate.wait, 10), "Approval gate timed out"
+            response = await call_next(request)
+            entry["status"] = response.status_code
+            return response
+
+        url = stack.enter_context(serve(app))
+        record = {
+            "url": url,
+            "database": str(database),
+            "real_http_run_service_sqlite": True,
+            "browser_interception": False,
+        }
+        records.append((record, provider, database, provider_gate, approval_gate))
+        EVIDENCE.setdefault("run_servers", []).append(record)
+        return SimpleNamespace(
+            url=url, repository=repository, database=database, provider=provider, requests=requests
+        )
+
+    try:
+        yield start
+    finally:
+        for _record, _provider, _database, provider_gate, approval_gate in records:
+            for gate in (provider_gate, approval_gate):
+                if gate is not None:
+                    gate.set()
+        stack.close()  # Stop HTTP before deleting SQLite/WAL/SHM and its private directory.
+        for record, provider, database, _provider_gate, _approval_gate in records:
+            record.update(
+                provider_calls=provider.calls, database_removed=not database.parent.exists()
+            )
+            assert record["database_removed"]
 
 
 @pytest.fixture

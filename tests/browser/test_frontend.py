@@ -23,7 +23,7 @@ def open_page(page, url):
 
 def test_page_controls_labels_and_idle_state(page, ui_url):
     open_page(page, ui_url)
-    expect(page).to_have_title("Planning preview · AgenticIntentGate")
+    expect(page).to_have_title("Runs & local approval · AgenticIntentGate")
     expect(page.get_by_label("Intent", exact=True)).to_be_visible()
     expect(page.get_by_role("button", name="Generate Plan", exact=True)).to_be_enabled()
     expect(page.locator("#planner")).to_have_attribute("data-state", "IDLE")

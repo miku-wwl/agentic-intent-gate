@@ -37,7 +37,7 @@ def test_five_independent_real_browser_attempts(page, live_product, browser_evid
             "timestamp_utc": datetime.now(UTC).isoformat(),
             "intent": "Plan to read the service-demo record.",
             "page_load_status": navigation.status,
-            "page_still_loaded": page.title() == "Planning preview · AgenticIntentGate",
+            "page_still_loaded": page.title() == "Runs & local approval · AgenticIntentGate",
             "previous_result_visible": page.locator("#result").is_visible(),
         }
         count_before = len(posts)

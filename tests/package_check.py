@@ -31,6 +31,12 @@ def verify(source, output):
         packaged = files("agentic_intent_gate").joinpath("schemas", path.name).read_bytes()
         assert packaged == path.read_bytes()
         schema_hashes[path.name] = hashlib.sha256(packaged).hexdigest()
+    static_page = (
+        files("agentic_intent_gate.adapters").joinpath("static", "index.html").read_bytes()
+    )
+    assert (
+        static_page == (source / "src/agentic_intent_gate/adapters/static/index.html").read_bytes()
+    )
     plan = {
         "goal": "Read service-demo from the installed wheel",
         "target": "service-demo",
@@ -67,6 +73,11 @@ def verify(source, output):
             page = await client.get("/")
             assert page.status_code == 200 and "Planning preview — no tools executed" in page.text
             assert "textContent" in page.text
+            for control in ("run-form", "run-details", "approve-run", "reject-run", "refresh-run"):
+                assert f'id="{control}"' in page.text
+            assert 'requestRun("/api/runs"' in page.text
+            assert 'searchParams.get("run_id")' in page.text
+            assert "Approved means approval only" in page.text
             assert provider.calls == 0
             response = await client.post("/api/plans", json={"text": "Read service-demo"})
             assert response.status_code == 200 and response.json() == {
@@ -126,6 +137,8 @@ def verify(source, output):
         "isolated_environment": str(Path(sys.prefix)),
         "schema_sha256": schema_hashes,
         "static_page_http_status": page_status,
+        "static_page_sha256": hashlib.sha256(static_page).hexdigest(),
+        "run_ui_resource_byte_identical": True,
         "plan_http_status": plan_status,
         "provider_calls": provider.calls,
         "day2": run_results,

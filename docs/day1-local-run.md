@@ -2,7 +2,9 @@
 
 Prompt 2 implements the stateless planning backend; Prompt 3 adds the same-origin static page. The frozen [Intent](../schemas/day1-intent.schema.json), [Plan](../schemas/day1-plan.schema.json), [state/error contract](day1-architecture-freeze.md), and [ADR-011](adr/ADR-011-day1-planning-preview.md) remain unchanged. Proposals never execute tools.
 
-## Install and discover the existing model
+## Current local runtime: Ollama (Day 2 Prompt 2.5)
+
+The current workflow below supersedes Day 1's Foundry setup. Historical Day 1 observations at the end remain accurate and are not Ollama evidence. See the [migration record](day2-ollama-runtime-migration.md). The application never starts a runtime, pulls models, changes device selection or falls back to a different provider.
 
 Use Python 3.13 and `uv`; the checked-in `uv.lock` pins product and test dependencies. In PowerShell, from the repository:
 
@@ -13,39 +15,38 @@ $env:TEMP = Join-Path $PWD '.cache\tmp'
 $env:TMP = $env:TEMP
 New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
 uv sync --frozen --python 3.13
-foundry server status --output json
-foundry model list --loaded --search phi-4-mini --output json
+ollama --version
+ollama list
 ```
 
-These Foundry commands inspect the existing daemon. If it is stopped, explicitly run `foundry server start --output json`; to load your already downloaded phi-4-mini, run `foundry model load phi-4-mini --output json`. The application does not manage the daemon/models. An unavailable service fails visibly. Python 3.13 must already be installed and discoverable by `uv`; all paths above are local workspace caches.
+Install/start Ollama separately using its supported local installer/application. If it is not running, starting `ollama serve` is an explicit operator action, not something this application does. Python 3.13 must already be installed and discoverable by `uv`; all paths above are local workspace caches.
 
-At Prompt 3 verification time the existing endpoint was `http://127.0.0.1:59656`, with phi-4-mini's CPU variant loaded. Prompt 2's earlier GPU/port observations remain historical. Confirm the **current** endpoint and actual wire ID; the port/variant can change, and the catalog ID with `:5` is not the wire ID:
+Migration inspection found `phi4-mini:latest` installed. Use the exact suitable tag from your own `ollama list`; never substitute another model. If absent, explicitly pull the chosen phi-4-mini tag, for example `ollama pull phi4-mini:latest`; report any incomplete/failed pull. A manual `ollama run <actual-tag>` check is optional and is a real inference, not part of the default tests. This migration did not pull or manually retry any model.
 
 ```powershell
-$status = foundry server status --output json | ConvertFrom-Json
-if (-not $status.running -or -not $status.webUrls) { throw 'Foundry is unavailable' }
-$env:FOUNDRY_LOCAL_ENDPOINT = @($status.webUrls)[0]
-$models = Invoke-RestMethod "$env:FOUNDRY_LOCAL_ENDPOINT/v1/models"
-$loaded = @($models.data | Where-Object { $_.parent -eq 'phi-4-mini' })
-if ($loaded.Count -ne 1) { throw 'Select the loaded phi-4-mini wire ID explicitly' }
-$env:FOUNDRY_LOCAL_MODEL = $loaded[0].id
+$env:LOCAL_LLM_BASE_URL = 'http://127.0.0.1:11434/v1'
+$env:LOCAL_LLM_MODEL = 'phi4-mini:latest' # Replace only with the exact installed phi-4-mini tag.
+pwsh -NoProfile -File scripts/Verify-LocalLLM.ps1 -Model $env:LOCAL_LLM_MODEL
+if ($LASTEXITCODE -ne 0) { throw 'Local LLM setup verification failed' }
 $env:MODEL_TIMEOUT_SECONDS = '28'
 $env:API_HOST = '127.0.0.1'
 $env:API_PORT = '8000'
 .venv\Scripts\aig-plans.exe
 ```
 
-The equivalent entrypoint is `.venv\Scripts\python.exe -m agentic_intent_gate.main`. Export variables explicitly; `.env.example` is documentation, not an automatically loaded file. Missing or invalid configuration exits with a fixed configuration error before serving. Endpoint and bind address must be loopback; no credentials, redirect/proxy traversal, cloud fallback, or request-level configuration overrides are accepted.
+The equivalent entrypoint is `.venv\Scripts\python.exe -m agentic_intent_gate.main`. Export variables explicitly; `.env.example` is documentation, not an automatically loaded file. Both generic local LLM variables are required; retired variables are not aliases. Missing or invalid configuration exits with a fixed configuration error before serving. Endpoint and bind address must be loopback; no credentials, redirect/proxy traversal, cloud fallback, or request-level configuration overrides are accepted. Use a `/v1` API base URL; a bare loopback origin is normalized to `/v1`, never `/v1/v1`. Ollama's [local OpenAI-compatible API](https://docs.ollama.com/api/openai-compatibility) supports the existing chat-completions protocol; plain HTTPX here needs no API key.
 
 ## Send a real request
 
-Open **http://127.0.0.1:8000/** in your browser. Enter `Plan to read the service-demo record.` and click **Generate Plan**, or press Ctrl+Enter in the textarea. The page shows loading, then the validated goal, target, ordered tools/arguments and risk, or a safe error. Each click makes at most one same-origin request. An empty intent stays in the browser; the backend remains authoritative. A new request clears old results/errors and disables duplicate submission until it completes.
+Open **http://127.0.0.1:8000/** in your browser. The preserved Prompt 3 working-tree UI offers **Create Run** and a secondary **Generate Plan** preview. Both use the configured local model; the backend remains authoritative and no tool executes. Prompt 3 is not declared complete by this runtime migration.
 
 From a second terminal:
 
 ```powershell
 $body = @{ text = 'Plan to read the service-demo record to investigate its health. Propose only the read step.' } | ConvertTo-Json
 Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8000/api/plans' -ContentType 'application/json; charset=utf-8' -Body $body
+# Only after a successful provider and /api/plans smoke, make one durable Run attempt:
+Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8000/api/runs' -ContentType 'application/json; charset=utf-8' -Body $body
 ```
 
 `GET /` serves the static UI and `POST /api/plans` retains its existing contract. A success is HTTP 200 with exactly `{ "state": "PlanValidated", "plan": { ... }, "error": null }`. Every rejection has `plan: null`; input rejected before acceptance has `state: null`, and generated/provider failures have `state: "PlanRejected"`.
@@ -63,7 +64,7 @@ Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8000/api/plans' -ContentTy
 
 Errors use a fixed message and at most ten `{path, code}` issues, with no values, prompts, upstream bodies or stack traces. `PARSE_*`, `SCHEMA_*`, and `SEMANTIC_*` issue codes distinguish invalid candidate phases. Risk is computed from trusted tool definitions and must exactly match the claim. Tools and versions, target equality, proposal caps/order, duplicate mutations, byte bounds and synthetic revision are checked before constructing an immutable Plan.
 
-Provider I/O has a total budget of at most 28 seconds; the application budget is 30 seconds including validation, with two seconds reserved before returning from the model. HTTPX's per-operation timeouts are supplemented by monotonic asyncio deadlines because they do not provide a total-call budget ([HTTPX timeout documentation](https://www.python-httpx.org/advanced/timeouts/)). There is one nonstreaming inference attempt, no repair or retry. Timeout does not prove Foundry stopped inference; it creates no external tool effect.
+Provider I/O has a total budget of at most 28 seconds; connect timeout is at most two seconds, and the application budget is 30 seconds with the existing reserve. Monotonic asyncio deadlines supplement HTTPX inactivity limits. Envelope bytes are capped at 64 KiB and extracted candidate bytes at 16 KiB. There is one nonstreaming inference attempt, no repair or retry. Cancellation closes the request; a timeout does not prove the Ollama inference engine stopped. Device selection belongs to Ollama, not application code.
 
 ## Test lanes
 
@@ -84,7 +85,7 @@ $env:LIVE_MODEL_EVIDENCE_DIR = '.runtime\live-model'
 .venv\Scripts\python.exe -m pytest -q tests/test_local_model.py -m live
 ```
 
-This sends a real provider request, saves bounded raw output and independent validation results in a uniquely named evidence file, and fails on timeout, unavailability or invalid output. It never skips or substitutes a mock. Running it again is a manual operator decision; the backend never retries automatically.
+This makes one real provider request and stores only model/base URL, elapsed time, safe summary/error codes and validation result, not full prompts or raw model output. It fails on timeout, unavailability or invalid output, never skips or substitutes a mock. **Stop on failure.** Only if it passes, run `.venv/Scripts/python.exe -m pytest tests/test_ollama_api_smoke.py -q -m live`; that test makes exactly one real HTTP `/api/plans` attempt and, only if successful, one `/api/runs` attempt using isolated SQLite. Running a failed live stage again requires a new manual decision; do not stress-test the runtime.
 
 For the separate real browser lane:
 
@@ -92,9 +93,11 @@ For the separate real browser lane:
 .venv\Scripts\python.exe -m pytest -q tests/browser/test_live_browser.py -m live_browser
 ```
 
-This launches the actual application entrypoint on an available loopback port, opens Edge, enters the intent, clicks the button, observes the real HTTP response and checks every rendered Plan field. It performs no browser interception or provider substitution. Screenshots, timings, requests/responses and cleanup records go to a uniquely named `.runtime/browser-evidence/` directory. Failure remains visible; any repeat is manual. The test stops its own app and browser and verifies port release, while preserving Foundry.
+This optional separate browser lane launches the actual application entrypoint on an available loopback port, opens Edge and observes real model traffic. It is not required for the migration smoke and was not run here. The test stops its own app/browser and preserves the external local runtime. Default browser tests remain controlled and do not require Ollama.
 
-## Verification evidence and limits
+## Historical Day 1 Foundry verification evidence and limits
+
+Everything in this section describes the prior Foundry runtime and frozen Day 1 verification. It is not a current setup requirement or an Ollama reliability claim. The runtime was migrated to Ollama on Day 2 Prompt 2.5; original evidence files are preserved byte-for-byte.
 
 Prompt 4's [hardening evidence](evidence/day1-hardening-verification.json) records the frozen 12-attempt sequential model matrix, three live injection attempts, two five-attempt real browser cohorts and one diagnostic request, deterministic regressions and package verification. The earlier browser cohort's five compatibility failures remain recorded separately from the final cohort. Reproduce the fixed study only with explicit live configuration:
 
@@ -120,4 +123,4 @@ Prompt 4 measured 10/12 aligned normal successes (two maintenance timeouts), thr
 
 The [Prompt 5 final freeze record](evidence/day1-final-freeze.json) records the repository review, complete deterministic/browser gate and repeated automated package check. Its one real-browser request used `Plan to read the service-demo record.` and returned HTTP 504 / PlanRejected in 28.212 seconds, with `plan: null` and a visible timeout by 28.308 seconds. All Plan fields were empty; a subsequent GET / returned 200. This is a verified safe timeout, not a successful generated Plan or a new reliability estimate. No retry, model/prompt/timeout change or product feature was introduced. Test app/browser cleanup released the port and preserved Foundry.
 
-Stop the app with Ctrl+C and verify its port is released; preserve the pre-existing Foundry daemon. Temporary test evidence/logs, caches, `.venv`, and `dist` are ignored. No commit or push is part of the Prompt 5 freeze review.
+The historical Prompt 5 review stopped only its own app and preserved the then-existing Foundry daemon. Current operator cleanup should stop only the app it started and leave the external Ollama service alone. Temporary test evidence/logs, caches, `.venv`, and `dist` are ignored. No commit or push is part of this migration.

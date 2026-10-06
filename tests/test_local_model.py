@@ -5,14 +5,14 @@ import json
 import os
 import time
 from datetime import UTC, datetime
-from importlib.metadata import version
 from pathlib import Path
 
 import pytest
+from live_helpers import ObservedTransport, validate_and_record
 
 from agentic_intent_gate.adapters.configuration import Settings
 from agentic_intent_gate.adapters.models.local_openai import PROMPT_VERSION, LocalOpenAIProvider
-from agentic_intent_gate.domain.contracts import Intent, thaw_json
+from agentic_intent_gate.domain.contracts import Intent
 from agentic_intent_gate.domain.validation import ValidationFailure
 from agentic_intent_gate.ports.model_provider import ModelProviderError
 
@@ -28,21 +28,29 @@ def write_evidence(evidence):
 
 async def test_real_phi4_mini_raw_output_and_validation(validator):
     settings = Settings.from_environment()
-    provider = LocalOpenAIProvider(settings.endpoint, settings.model)
+    observed = ObservedTransport()
+    provider = LocalOpenAIProvider(settings.endpoint, settings.model, transport=observed)
     intent = Intent("Plan to read the service-demo record.")
     evidence = {
         "recorded_at_utc": datetime.now(UTC).isoformat(),
-        "lane": "real-local-provider-no-mock",
+        "lane": "LIVE_OLLAMA_ONE_PROVIDER_CALL_NO_MOCK",
         "prompt_version": PROMPT_VERSION,
-        "endpoint": settings.endpoint,
-        "wire_model": settings.model,
+        "base_url": settings.endpoint,
+        "model": settings.model,
         "wire_method": "POST",
         "wire_path": "/v1/chat/completions",
-        "request_parameters": {"n": 1, "stream": False, "temperature": 0, "max_tokens": 1024},
-        "intent": intent.text,
-        "schema": thaw_json(validator.plan_schema),
-        "versions": {name: version(name) for name in ("httpx", "jsonschema", "fastapi", "uvicorn")},
-        "raw_output": None,
+        "request_parameters": {
+            "n": 1,
+            "stream": False,
+            "temperature": 0,
+            "max_tokens": 1024,
+            "response_format": {"type": "json_object"},
+        },
+        "model_calls": 0,
+        "json_parse": "NOT_RUN",
+        "schema_validation": "NOT_RUN",
+        "semantic_validation": "NOT_RUN",
+        "trusted_risk_recomputation": "NOT_RUN",
         "validation": "FAIL",
         "tool_invocations": 0,
         "automatic_retries_or_repair_calls": 0,
@@ -55,9 +63,17 @@ async def test_real_phi4_mini_raw_output_and_validation(validator):
             plan_schema=validator.plan_schema,
             timeout_seconds=settings.model_timeout_seconds,
         )
-        evidence["raw_output"] = raw
-        plan = validator.parse_plan(raw)
-        evidence.update(validation="PASS", plan=plan.to_dict())
+        plan = validate_and_record(validator, raw, evidence)
+        assert len(observed.requests) == 1
+        assert observed.requests[0]["response_format"] == {"type": "json_object"}
+        evidence.update(
+            validation="PASS",
+            safe_summary={
+                "risk_class": plan.risk_class.value,
+                "steps": len(plan.steps),
+                "response_bytes": len(raw.encode("utf-8")),
+            },
+        )
     except ValidationFailure as exc:
         evidence["issues"] = [{"path": issue.path, "code": issue.code} for issue in exc.issues]
         raise
@@ -66,4 +82,6 @@ async def test_real_phi4_mini_raw_output_and_validation(validator):
         raise
     finally:
         evidence["elapsed_seconds"] = round(time.monotonic() - started, 3)
+        evidence["model_calls"] = len(observed.requests)
+        evidence["upstream_requests"] = observed.requests
         await asyncio.to_thread(write_evidence, evidence)

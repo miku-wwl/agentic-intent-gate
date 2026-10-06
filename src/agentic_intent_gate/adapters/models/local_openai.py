@@ -1,4 +1,4 @@
-"""One bounded Foundry Local Chat Completions call; never repairs or retries."""
+"""One bounded local OpenAI-compatible call; never repairs, retries or starts a runtime."""
 
 import asyncio
 import json
@@ -83,6 +83,7 @@ class LocalOpenAIProvider:
             "stream": False,
             "temperature": 0,
             "max_tokens": 1024,
+            "response_format": {"type": "json_object"},
         }
         try:
             # HTTPX inactivity timeouts alone are not a total request deadline.
@@ -90,14 +91,14 @@ class LocalOpenAIProvider:
                 transport = self._transport or httpx.AsyncHTTPTransport(retries=0, trust_env=False)
                 async with httpx.AsyncClient(
                     transport=transport,
-                    timeout=timeout_seconds,
+                    timeout=httpx.Timeout(timeout_seconds, connect=min(2.0, timeout_seconds)),
                     follow_redirects=False,
                     trust_env=False,
                     headers={"Accept-Encoding": "identity"},
                 ) as client:
                     async with client.stream(
                         "POST",
-                        self.endpoint + "/v1/chat/completions",
+                        self.endpoint + "/chat/completions",
                         json=payload,
                     ) as response:
                         if (

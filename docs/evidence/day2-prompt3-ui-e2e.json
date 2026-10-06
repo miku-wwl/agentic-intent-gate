@@ -1,0 +1,935 @@
+{
+  "task": "DAY2_PROMPT3_RESUME_AND_FINALIZE_UI_BROWSER_E2E",
+  "recorded_at_utc": "2026-10-06T10:24:41Z",
+  "baseline_head": "ccc950ed47b508d16e72762e12b6d173f5312890",
+  "branch": "main",
+  "lane": "DETERMINISTIC_UI_REAL_HTTP_CONTROLLED_PROVIDER_NO_LIVE_MODEL",
+  "acceptance_audit": {
+    "performed_before_product_changes": true,
+    "product_gaps": 0,
+    "product_regressions": 0,
+    "product_code_changed": false,
+    "found_test_gaps": [
+      "Rapid Reject locking not separately exercised in real E2E",
+      "Duplicate Run creation test did not use the actual keyboard path"
+    ],
+    "repaired_test_gaps": [
+      "E2E-8 now parametrizes APPROVE and REJECT and verifies pre-response state/version and exact request",
+      "Duplicate creation now starts with actual Ctrl+Enter before repeated form submission"
+    ],
+    "evidence_and_readme_updated": true,
+    "unresolved_gate": null,
+    "closeout_resolution": "External pytest temporary retention satisfies the explicit ENVIRONMENTAL_NON_BLOCKING closeout criteria; no functional/security requirement was waived"
+  },
+  "files_changed": [
+    {
+      "path": "tests/browser/test_run_ui_e2e.py",
+      "purpose": "Close two acceptance-coverage gaps; additionally assert displayed Plan arguments/revision, inert DOM and no execution claims"
+    },
+    {
+      "path": "README.md",
+      "purpose": "Record completed Prompt 3 status and honestly document external pytest temp retention as environmental and non-blocking"
+    },
+    {
+      "path": "docs/evidence/day2-prompt3-ui-e2e.json",
+      "purpose": "Factual Prompt 3 test/quality evidence and final closeout verification without rerunning unchanged executable logic"
+    }
+  ],
+  "ui": {
+    "run_creation": "PASS: exact Intent POST /api/runs; one accepted Run/provider call; duplicate and obvious-invalid input protection",
+    "server_authoritative_details": "PASS: run_id/state/version/created_at/updated_at and original accepted Intent",
+    "persistent_states": [
+      "IntentReceived",
+      "PlanGenerating",
+      "PlanValidated",
+      "Ready",
+      "AwaitingApproval",
+      "Approved",
+      "Rejected",
+      "PlanRejected"
+    ],
+    "all_state_rendering": "PASS",
+    "validated_plan_rendering": "PASS: goal/target/tool/version/arguments, including maintenance expected_revision",
+    "trusted_risk_and_approval_required": "PASS: server values; null remains unknown, no client recomputation",
+    "plan_rejected": "PASS: persisted failed Run; fixed safe code/message, no raw diagnostics",
+    "approval_ui": "PASS: immutable summary, optional reason and two local decision buttons only",
+    "refresh_and_deep_link": "PASS: explicit GET and safe canonical UUID URL restoration",
+    "no_execution_or_authenticated_authorization_claim": true
+  },
+  "approval": {
+    "result": "PASS",
+    "request_fields": [
+      "decision",
+      "expected_version",
+      "optional reason"
+    ],
+    "expected_version": 4,
+    "result_version": 5,
+    "empty_reason": "omitted",
+    "nonempty_reason": "preserved exactly; no trim",
+    "both_decisions_lock_both_buttons": "PASS",
+    "pre_response_success_not_assumed": "PASS",
+    "stale_conflict": "409 STALE_RUN_VERSION; no auto-replay; explicit Refresh required",
+    "terminal_controls": "hidden/disabled; read-only approval summary",
+    "authenticated_authorization": false,
+    "tool_execution": false
+  },
+  "frontend_test_result": {
+    "result": "PASS",
+    "prompt3_cases": 39,
+    "legacy_frontend_cases": 19,
+    "phase_a_total": 58,
+    "failed": 0,
+    "errors": 0,
+    "phase_a_elapsed_seconds": 71.22,
+    "evidence": ".runtime/day2-prompt3/phase-a.xml"
+  },
+  "real_backend_e2e": {
+    "result": "PASS",
+    "engine": "Playwright Chromium via installed headless Microsoft Edge",
+    "version": "154.0.4258.53",
+    "named_scenarios": 11,
+    "executed_cases": 13,
+    "phase_b_elapsed_seconds": 19.11,
+    "temporary_local_sqlite_file": true,
+    "developer_persistent_database_used": false,
+    "real_http": true,
+    "real_run_service": true,
+    "controlled_deterministic_provider": true,
+    "http_response_interception": false,
+    "live_model_dependency": false,
+    "internet_dependency": false,
+    "runtime_environment_variables_unset_for_execution": true,
+    "private_sqlite_directories_removed": 13,
+    "per_scenario": [
+      {
+        "id": "E2E-1",
+        "name": "READ_ONLY",
+        "result": "PASS",
+        "executed_cases": 1,
+        "assertion_evidence": "Ready v4; false approval requirement; visible Plan; no decision controls; one provider call and zero decisions",
+        "test_results": [
+          {
+            "id": "tests/browser/test_run_ui_e2e.py::test_e2e_1_read_only",
+            "outcome": "passed",
+            "duration_seconds": 1.164,
+            "lane": "DETERMINISTIC TEST"
+          }
+        ]
+      },
+      {
+        "id": "E2E-2",
+        "name": "AwaitingApproval",
+        "result": "PASS",
+        "executed_cases": 2,
+        "assertion_evidence": "Both SIDE_EFFECT and APPROVAL_REQUIRED: AwaitingApproval v4, true approval requirement, exact Plan arguments/revision and enabled controls",
+        "test_results": [
+          {
+            "id": "tests/browser/test_run_ui_e2e.py::test_e2e_2_write_waits_for_approval[SIDE_EFFECT]",
+            "outcome": "passed",
+            "duration_seconds": 0.479,
+            "lane": "DETERMINISTIC TEST"
+          },
+          {
+            "id": "tests/browser/test_run_ui_e2e.py::test_e2e_2_write_waits_for_approval[APPROVAL_REQUIRED]",
+            "outcome": "passed",
+            "duration_seconds": 0.572,
+            "lane": "DETERMINISTIC TEST"
+          }
+        ]
+      },
+      {
+        "id": "E2E-3",
+        "name": "Approve",
+        "result": "PASS",
+        "executed_cases": 1,
+        "assertion_evidence": "HTTP 200; exact APPROVE/expected_version=4; Approved v5; one decision/five audits; no execution or success claim",
+        "test_results": [
+          {
+            "id": "tests/browser/test_run_ui_e2e.py::test_e2e_3_approve",
+            "outcome": "passed",
+            "duration_seconds": 0.763,
+            "lane": "DETERMINISTIC TEST"
+          }
+        ]
+      },
+      {
+        "id": "E2E-4",
+        "name": "Reject",
+        "result": "PASS",
+        "executed_cases": 1,
+        "assertion_evidence": "HTTP 200; exact REJECT/expected_version=4 and original Unicode/whitespace reason; Rejected v5; one decision",
+        "test_results": [
+          {
+            "id": "tests/browser/test_run_ui_e2e.py::test_e2e_4_reject_with_original_reason",
+            "outcome": "passed",
+            "duration_seconds": 0.576,
+            "lane": "DETERMINISTIC TEST"
+          }
+        ]
+      },
+      {
+        "id": "E2E-5",
+        "name": "PlanRejected",
+        "result": "PASS",
+        "executed_cases": 1,
+        "assertion_evidence": "Durable PlanRejected v3; safe PLAN_VALIDATION_ERROR; GET returns same Run; no raw diagnostic reflection",
+        "test_results": [
+          {
+            "id": "tests/browser/test_run_ui_e2e.py::test_e2e_5_failed_plan_is_persisted_and_safe",
+            "outcome": "passed",
+            "duration_seconds": 0.489,
+            "lane": "DETERMINISTIC TEST"
+          }
+        ]
+      },
+      {
+        "id": "E2E-6",
+        "name": "Refresh/reload",
+        "result": "PASS",
+        "executed_cases": 1,
+        "assertion_evidence": "Two GETs; same Run/version; all three SQLite tables' business rows unchanged; provider count remains one; zero decisions",
+        "test_results": [
+          {
+            "id": "tests/browser/test_run_ui_e2e.py::test_e2e_6_refresh_and_reload_are_pure_reads",
+            "outcome": "passed",
+            "duration_seconds": 0.614,
+            "lane": "DETERMINISTIC TEST"
+          }
+        ]
+      },
+      {
+        "id": "E2E-7",
+        "name": "Stale decision",
+        "result": "PASS",
+        "executed_cases": 1,
+        "assertion_evidence": "Independent winner Rejected v5; stale displayed v4 APPROVE returns 409 STALE_RUN_VERSION; explicit GET restores winner; no extra mutation/replay",
+        "test_results": [
+          {
+            "id": "tests/browser/test_run_ui_e2e.py::test_e2e_7_stale_decision_requires_explicit_refresh",
+            "outcome": "passed",
+            "duration_seconds": 0.657,
+            "lane": "DETERMINISTIC TEST"
+          }
+        ]
+      },
+      {
+        "id": "E2E-8",
+        "name": "Duplicate decision",
+        "result": "PASS",
+        "executed_cases": 2,
+        "assertion_evidence": "APPROVE and REJECT each immediately lock both controls; before response remains AwaitingApproval v4; one request/one decision/five audits; final v5",
+        "test_results": [
+          {
+            "id": "tests/browser/test_run_ui_e2e.py::test_e2e_8_duplicate_decision_buttons_lock_immediately[APPROVE-Approved]",
+            "outcome": "passed",
+            "duration_seconds": 0.579,
+            "lane": "DETERMINISTIC TEST"
+          },
+          {
+            "id": "tests/browser/test_run_ui_e2e.py::test_e2e_8_duplicate_decision_buttons_lock_immediately[REJECT-Rejected]",
+            "outcome": "passed",
+            "duration_seconds": 0.561,
+            "lane": "DETERMINISTIC TEST"
+          }
+        ]
+      },
+      {
+        "id": "E2E-9",
+        "name": "Hostile rendering",
+        "result": "PASS",
+        "executed_cases": 1,
+        "assertion_evidence": "All four hostile vectors in accepted Intent/validated goal/arguments remain inert text; no dialog/script/img/anchor; window.attack absent",
+        "test_results": [
+          {
+            "id": "tests/browser/test_run_ui_e2e.py::test_e2e_9_hostile_intent_goal_and_arguments_stay_text",
+            "outcome": "passed",
+            "duration_seconds": 0.472,
+            "lane": "DETERMINISTIC TEST"
+          }
+        ]
+      },
+      {
+        "id": "E2E-10",
+        "name": "Legacy preview",
+        "result": "PASS",
+        "executed_cases": 1,
+        "assertion_evidence": "POST /api/plans 200 PlanValidated; one provider call; all Run/decision/audit tables empty",
+        "test_results": [
+          {
+            "id": "tests/browser/test_run_ui_e2e.py::test_e2e_10_legacy_preview_remains_stateless",
+            "outcome": "passed",
+            "duration_seconds": 0.299,
+            "lane": "DETERMINISTIC TEST"
+          }
+        ]
+      },
+      {
+        "id": "DUPLICATE_CREATION",
+        "name": "Duplicate Run creation",
+        "result": "PASS",
+        "executed_cases": 1,
+        "assertion_evidence": "Actual Ctrl+Enter followed by repeated form submission; one provider call/one Run; exact original Intent request; busy UI locked",
+        "test_results": [
+          {
+            "id": "tests/browser/test_run_ui_e2e.py::test_duplicate_creation_keyboard_and_form_events_are_blocked",
+            "outcome": "passed",
+            "duration_seconds": 0.439,
+            "lane": "DETERMINISTIC TEST"
+          }
+        ]
+      }
+    ],
+    "phase_b_evidence": ".runtime/day2-prompt3/phase-b.xml"
+  },
+  "refresh_reload": {
+    "result": "PASS",
+    "methods": [
+      "GET",
+      "GET"
+    ],
+    "provider_calls_after_create": 1,
+    "provider_calls_after_reads": 1,
+    "version_before": 4,
+    "version_after": 4,
+    "all_three_sqlite_table_rows_unchanged": true,
+    "approval_decisions_added": 0,
+    "audit_events_added": 0,
+    "invalid_deep_link_api_requests": 0,
+    "browser_local_state_authoritative": false
+  },
+  "security": {
+    "inert_text": "PASS",
+    "attack_vectors": [
+      "script tag",
+      "image with onerror",
+      "javascript URL-like text",
+      "closing textarea plus script tag"
+    ],
+    "executed_scripts": 0,
+    "dialogs": 0,
+    "injected_images": 0,
+    "injected_anchors": 0,
+    "raw_provider_sql_traceback_path_prompt_diagnostics_rendered": false,
+    "oversize_reason": {
+      "result": "PASS",
+      "unicode_characters": 1025,
+      "utf16_units": 2050,
+      "code": "INVALID_APPROVAL",
+      "approval_requests": 0,
+      "version_after": 4,
+      "fixture_repair_preserved": true,
+      "production_limits_unchanged": true
+    }
+  },
+  "accessibility": {
+    "result": "PASS_BASIC_ONLY",
+    "labels": true,
+    "keyboard_tab_enter_ctrl_enter": true,
+    "visible_focus_outline_pixels": 3,
+    "details_focus_on_success": true,
+    "status_aria_live": "polite",
+    "error_role": "alert",
+    "one_h1_and_section_headings": true,
+    "explicit_state_text_not_color_only": true,
+    "viewport_widths": [
+      375,
+      1000
+    ],
+    "horizontal_overflow": false,
+    "comprehensive_wcag_or_cross_browser_certification": false
+  },
+  "execution_order": [
+    {
+      "phase": "A",
+      "result": "PASS",
+      "passed": 58,
+      "failed": 0,
+      "errors": 0,
+      "evidence": ".runtime/day2-prompt3/phase-a.xml"
+    },
+    {
+      "phase": "B",
+      "result": "PASS",
+      "passed": 13,
+      "failed": 0,
+      "errors": 0,
+      "evidence": ".runtime/day2-prompt3/phase-b.xml"
+    },
+    {
+      "phase": "C",
+      "result": "PASS",
+      "passed": 545,
+      "failed": 0,
+      "errors": 0,
+      "elapsed_seconds": 228.89,
+      "evidence": ".runtime/day2-prompt3/phase-c.xml"
+    },
+    {
+      "phase": "D",
+      "result": "PASS",
+      "passed": 622,
+      "failed": 0,
+      "errors": 0,
+      "live_deselected": 5,
+      "elapsed_seconds": 321.32,
+      "evidence": ".runtime/day2-prompt3/final-tests.xml"
+    }
+  ],
+  "regression": {
+    "result": "PASS",
+    "day1": 191,
+    "day2_prompt2": 340,
+    "prompt2_5_migration_repair": 39,
+    "prompt3_frontend": 39,
+    "prompt3_real_backend_browser_e2e": 13,
+    "total_unique_passed": 622,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "live_deselected": 5,
+    "categories_are_disjoint": true,
+    "overlapping_execution_note": "Phases A/B/C repeat selections contained in Phase D. Counts are the unique final-suite cases, not the sum of phase executions.",
+    "modules": [
+      {
+        "module": "tests.browser.test_browser_e2e",
+        "total": 6,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "tests.browser.test_frontend",
+        "total": 19,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "tests.browser.test_run_frontend",
+        "total": 39,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "tests.browser.test_run_ui_e2e",
+        "total": 13,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "tests.test_configuration",
+        "total": 19,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "tests.test_hardening",
+        "total": 20,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "tests.test_local_runtime_configuration",
+        "total": 19,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "tests.test_model_provider",
+        "total": 33,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "tests.test_ollama_json_mode",
+        "total": 20,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "tests.test_plan_validation",
+        "total": 68,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "tests.test_plans_api",
+        "total": 25,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "tests.test_preview_page",
+        "total": 1,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "tests.test_run_contracts",
+        "total": 169,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "tests.test_run_recovery",
+        "total": 16,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "tests.test_run_service",
+        "total": 26,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "tests.test_runs_api",
+        "total": 61,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "module": "tests.test_sqlite_run_repository",
+        "total": 68,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "quality": {
+    "pytest": "PASS",
+    "frontend": "PASS",
+    "browser_e2e": "PASS",
+    "ruff_check": "PASS",
+    "ruff_format_check": "PASS; 91 files",
+    "git_diff_check": "PASS",
+    "uv_lock_check": "PASS; 34 packages; definitions unchanged",
+    "wheel_sdist_build": "PASS",
+    "package_verification": "PASS; new isolated environment outside repository, offline pinned dependencies, PYTHONPATH unset",
+    "package_environment": "D:\\Ollama\\Temp\\aig-prompt3-package-31a39da950a54983bc9291b33f440269",
+    "package_evidence": ".runtime/day2-prompt3/package-check.json",
+    "controlled_package_provider_calls": 3,
+    "package_live_model_calls": 0,
+    "runtime_resources_byte_identical": 24,
+    "schemas_byte_identical": 4,
+    "static_page_byte_identical": true
+  },
+  "cleanup": {
+    "result": "ENVIRONMENTAL_NON_BLOCKING",
+    "temporary_sqlite_cleanup": "ENVIRONMENTAL_NON_BLOCKING",
+    "remaining_targeted_temp_files": 478,
+    "remaining_targeted_sqlite_sidecars": 476,
+    "files_physically_deleted": false,
+    "environment_note": "Bounded removal was again rejected before execution. Retained files are external pytest-owned fixtures only; no relevant process/listener, repository artifact, tracked database or production/user data impact. All 476 SQLite/sidecars allowed exclusive read open.",
+    "full_suite_browser_cases": 77,
+    "browser_instances_closed": 4,
+    "driver_contexts_exited": 4,
+    "servers_stopped_and_ports_released": 77,
+    "private_run_sqlite_directories_removed": 13,
+    "test_processes_remaining": 0,
+    "test_port_listeners_remaining": 0,
+    "pytest_managed_fixture_files_retained": 476,
+    "retained_test_roots": [
+      "D:/Ollama/Temp/pytest-of-weila/pytest-10",
+      "D:/Ollama/Temp/pytest-of-weila/pytest-11"
+    ],
+    "retained_counts": [
+      {
+        "root": "pytest-10",
+        "files": 227
+      },
+      {
+        "root": "pytest-11",
+        "files": 249
+      }
+    ],
+    "deletion_command_result": "Rejected before execution by environment policy; no files removed by that command",
+    "all_cleanup_targets_verified_inside_exact_current_test_roots": true,
+    "source_logs_and_evidence_retained": true,
+    "browser_evidence": ".runtime/browser-evidence/20261006T101302937694Z/results.json"
+  },
+  "preservation": {
+    "existing_dirty_work_preserved": true,
+    "protected_product_schema_dependency_migration_files": 32,
+    "protected_hash_mismatches": 0,
+    "production_static_ui_unchanged": true,
+    "oversize_fixture_unchanged": true,
+    "backend_and_model_integration_unchanged": true,
+    "historical_evidence_and_line_endings_not_rewritten": true,
+    "no_reset_checkout_revert": true,
+    "index_empty_before_closeout": true,
+    "commit_push_tag_release_during_functional_verification": false
+  },
+  "ollama_migration_regression": {
+    "final_gate": "DAY2_PROMPT2_5_OLLAMA_MIGRATION=PASS",
+    "source_evidence": "docs/evidence/day2-ollama-migration.json",
+    "source_evidence_unchanged": true,
+    "deterministic_migration_repair_passed": 39,
+    "prior_live_provider_plans_runs_result": "PASS, verified separately by Prompt 2.5",
+    "new_live_model_calls": 0,
+    "model_runtime_behavior_changed": false
+  },
+  "scope": {
+    "tool_execution_added": false,
+    "approved_means_approval_only": true,
+    "authentication_added": false,
+    "model_retry_added": false,
+    "fallback_added": false,
+    "agent_framework_added": false,
+    "frontend_framework_migration": false,
+    "run_state_machine_redesigned": false,
+    "sqlite_schema_redesigned": false,
+    "approval_semantics_redesigned": false,
+    "cloud_external_api_mcp_rag_added": false,
+    "prompt4_or_prompt5_work_added": false
+  },
+  "p0": [],
+  "p1": [],
+  "p2_deferred": [
+    "Cross-browser and comprehensive accessibility review exceed this lightweight acceptance lane.",
+    "Production reliability, authenticated authorization and execution remain outside this local UI slice."
+  ],
+  "closeout": {
+    "task": "DAY2_PROMPT3_FINAL_CLOSEOUT_AND_CHECKPOINT",
+    "recorded_at_utc": "2026-10-06T11:07:55.3195919Z",
+    "client_date": "2026-10-07",
+    "client_timezone": "Pacific/Auckland",
+    "prior_prompt3_gate": "DAY2_PROMPT3=FAIL",
+    "change_scope": "README and Prompt 3 evidence/status documentation only; no executable product/test/config/schema/dependency changes",
+    "acceptance_adjustment": "Explicit user closeout contract permits external pytest-owned retention to be ENVIRONMENTAL_NON_BLOCKING only when the documented strict criteria all pass",
+    "temporary_sqlite_cleanup": "ENVIRONMENTAL_NON_BLOCKING",
+    "bounded_targeted_deletion": "Rejected before execution by environment policy; files were not deleted; no alternate deletion attempted",
+    "remaining_targeted_temp_files": 478,
+    "remaining_targeted_sqlite_sidecars": 476,
+    "remaining_auxiliary_files": [
+      "D:/Ollama/Temp/pytest-of-weila/pytest-10/test_api_smoke_harness_with_co0/api-smoke.json",
+      "D:/Ollama/Temp/pytest-of-weila/pytest-11/test_api_smoke_harness_with_co0/api-smoke.json"
+    ],
+    "target_directories": [
+      {
+        "path": "D:/Ollama/Temp/pytest-of-weila/pytest-10",
+        "test_path": true,
+        "files": 228,
+        "sqlite_sidecar_files": 227,
+        "reparse_points": 0,
+        "exclusive_read_failures": 0
+      },
+      {
+        "path": "D:/Ollama/Temp/pytest-of-weila/pytest-11",
+        "test_path": true,
+        "files": 250,
+        "sqlite_sidecar_files": 249,
+        "reparse_points": 0,
+        "exclusive_read_failures": 0
+      }
+    ],
+    "nonblocking_criteria": {
+      "no_relevant_pytest_application_browser_process": true,
+      "relevant_process_count": 0,
+      "known_test_ports_checked": 77,
+      "test_listener_count": 0,
+      "tracked_database_file_count": 0,
+      "repository_database_artifact_count": 0,
+      "private_e2e_directories_checked": 13,
+      "private_e2e_directories_remaining": 0,
+      "retained_files_only_under_exact_external_pytest_roots": true,
+      "all_sqlite_sidecars_allow_exclusive_read_open": true,
+      "production_or_user_database_touched": false,
+      "files_physically_deleted": false
+    },
+    "regression_evidence": {
+      "result": "PASS_REUSED_NOT_RERUN",
+      "authoritative_xml": ".runtime/day2-prompt3/final-tests.xml",
+      "total_deterministic_passed": 622,
+      "failed": 0,
+      "errors": 0,
+      "live_deselected": 5,
+      "groups": 11,
+      "real_backend_e2e_cases": 13,
+      "no_executable_logic_changes_since_verified_prompt3_package": true,
+      "files_compared": 61,
+      "reference_sdist_sha256": "34c032d73d94ec6cb4203c70b34d90d2587452e08c8a6935776c6ec11b8c04fd",
+      "verified_file_hashes": [
+        {
+          "path": "scripts/Verify-LocalLLM.ps1",
+          "sha256": "45d672b4ee46171acc9700613f691423dafca9439a3a579f843c7a28449dd7a1"
+        },
+        {
+          "path": "tests/browser/test_run_frontend.py",
+          "sha256": "799a3e3b8f1b90545d89b31071e1a99042c9ff08f90927e4c3375a69bbb7be66"
+        },
+        {
+          "path": "tests/browser/test_run_ui_e2e.py",
+          "sha256": "f0227d8263af2bfcbeb417845017d7a9121ea76c13b8f86bbb4a3a9939caaf51"
+        },
+        {
+          "path": "tests/live_helpers.py",
+          "sha256": "79312cc607c5431960a71f5e3c903b4851fbc534956c544ff90878b5bcd8faa7"
+        },
+        {
+          "path": "tests/test_local_runtime_configuration.py",
+          "sha256": "d9bee956d26a89dc335a4ec53de0dbea3124cdb45ab8d2836b71add12cb2eb79"
+        },
+        {
+          "path": "tests/test_ollama_api_smoke.py",
+          "sha256": "29c66d5164f32b79b8a18b6779410a538908c3ee11456b5444b2c78a1b53145a"
+        },
+        {
+          "path": "tests/test_ollama_json_mode.py",
+          "sha256": "2f471fecea43e5ba24a13c32b012aa060307db0ef0647fd121a625b7caa58e91"
+        },
+        {
+          "path": ".env.example",
+          "sha256": "10ceb0aa73deaacf4609781e0b275b248575073504886c4d1bd5281fa4334465"
+        },
+        {
+          "path": ".python-version",
+          "sha256": "02e735b3dfe1c32833eb550b7ff8ffa17f5f2bc3fa1e7bae61a8f5a3883ce398"
+        },
+        {
+          "path": "pyproject.toml",
+          "sha256": "f4a8eac680ca5da5c487d198c2955d73a93fcb255f527392a5509dd5c5da5f07"
+        },
+        {
+          "path": "schemas/day1-intent.schema.json",
+          "sha256": "670250dec6877ea99f64f1cd071fdfa9681b1a7cfd97e319dfbe61c961b8efe3"
+        },
+        {
+          "path": "schemas/day1-plan.schema.json",
+          "sha256": "5730316d6075769771c7d3e4f1aead46cb023e198c562ca1ea61d7ac8cf3a5bd"
+        },
+        {
+          "path": "schemas/day2-approval.schema.json",
+          "sha256": "a26e354aabd9090b8e0bffae7cb4ce16a5bf93c0fda4ff0d0391025a44f6f83c"
+        },
+        {
+          "path": "schemas/day2-run.schema.json",
+          "sha256": "f3af6076a814a5f33981820399aaf1dd3a62439fe5612fb19eb6d4049a41010d"
+        },
+        {
+          "path": "src/agentic_intent_gate/__init__.py",
+          "sha256": "b6e98500462e7e85f06b80115b4f2d66e5c4359c35b54fabd1f5d3e92bfaea6d"
+        },
+        {
+          "path": "src/agentic_intent_gate/adapters/__init__.py",
+          "sha256": "59de11fa4ac2c68db1f4f1f6c0144f0d77bcb70444a08b3e36122897b3972d0e"
+        },
+        {
+          "path": "src/agentic_intent_gate/adapters/configuration.py",
+          "sha256": "09b33ab3130385c6a11af353ebee89c2f4aafc77be336f4361c47a3459385f1c"
+        },
+        {
+          "path": "src/agentic_intent_gate/adapters/local_http.py",
+          "sha256": "d841234ec707d2d534643fd00bcc79aea1ee5b2a7673304edada3f7e49be8454"
+        },
+        {
+          "path": "src/agentic_intent_gate/adapters/models/__init__.py",
+          "sha256": "bd0a4aa32e25312aa56229ffc6b0d22ba42f4b882946f08ca7a6fda4f955fef0"
+        },
+        {
+          "path": "src/agentic_intent_gate/adapters/models/local_openai.py",
+          "sha256": "d259c39b026218abe73de678070106faf186d38e1d82a26248e5af5c3c1e922c"
+        },
+        {
+          "path": "src/agentic_intent_gate/adapters/sqlite_run_repository.py",
+          "sha256": "755999b0c7a84340611258b9791d954570b1597515935b12e85d71ba71e5fa22"
+        },
+        {
+          "path": "src/agentic_intent_gate/adapters/sqlite_schema.py",
+          "sha256": "542f9f4fbb5f8397d0104a8b1adc5e5b26e5bd5ef5224ec467eeb09072dc82d4"
+        },
+        {
+          "path": "src/agentic_intent_gate/adapters/static/index.html",
+          "sha256": "d54c9f36be3bda23cf9b66b10d3ccafd6ad33f86ee6bb3d543b997c336702cd6"
+        },
+        {
+          "path": "src/agentic_intent_gate/adapters/tool_catalog.py",
+          "sha256": "a4b965dffb11cb9ecb95dd016adfe9d19461c0164fcfd55c9838fc5eb719f92e"
+        },
+        {
+          "path": "src/agentic_intent_gate/application/__init__.py",
+          "sha256": "e0c70c0f5fd68e696828b6bfe6a4c53ee077f5dea660f84d7e08b3cd3ca76f6b"
+        },
+        {
+          "path": "src/agentic_intent_gate/application/generate_plan.py",
+          "sha256": "103b6977fb14a5dec107e5c9158168c034b229dbc1a177be49b42cbec606abe3"
+        },
+        {
+          "path": "src/agentic_intent_gate/application/recover_runs.py",
+          "sha256": "bde532db4d96ab129a4542cf16172479f4326aba6f077877e841dfcf9f663c09"
+        },
+        {
+          "path": "src/agentic_intent_gate/application/runs.py",
+          "sha256": "fd5decf996a2adefa139fe1acc3698ea0982327889b9fceff9654580dafbf349"
+        },
+        {
+          "path": "src/agentic_intent_gate/domain/__init__.py",
+          "sha256": "07a5e0c9fe2565bccc087af0cf7e98e319186bd210cda110cece9f6df7229d31"
+        },
+        {
+          "path": "src/agentic_intent_gate/domain/approval.py",
+          "sha256": "71f77df446c9e7188a84429db92b5522908030501de835dcb8ac50788e7db4fd"
+        },
+        {
+          "path": "src/agentic_intent_gate/domain/contracts.py",
+          "sha256": "5b56d047ab518f6c2179f94697d22021a13c174aacebe4774a64c7879a73cc3e"
+        },
+        {
+          "path": "src/agentic_intent_gate/domain/run.py",
+          "sha256": "241956360781a27692efba53034e91f981587c01ed403990e6a890e8b791c590"
+        },
+        {
+          "path": "src/agentic_intent_gate/domain/run_validation.py",
+          "sha256": "2cc6feb7c8da110a5556708778a194a5c705dca381543dfa54479fdf1a888af6"
+        },
+        {
+          "path": "src/agentic_intent_gate/domain/validation.py",
+          "sha256": "c353afaf1bea01a82d3554ca4ced0d7142ad78de622f5d0dacbfb620f4d0c6a5"
+        },
+        {
+          "path": "src/agentic_intent_gate/main.py",
+          "sha256": "e7102ded791751c9887facb9cdc0b0639054370b15123558c5ba6bbc2274775a"
+        },
+        {
+          "path": "src/agentic_intent_gate/ports/__init__.py",
+          "sha256": "c0c7bf0ac5ee532c39a8b1c9f0a9f1359c4aa4febb57986edcd1d2d33860bba9"
+        },
+        {
+          "path": "src/agentic_intent_gate/ports/model_provider.py",
+          "sha256": "8552be7bc39bd843a610868e6cf8691e88aebca67940b76730fbe20f150ede31"
+        },
+        {
+          "path": "src/agentic_intent_gate/ports/run_repository.py",
+          "sha256": "7a17521d0646e9d2b06ad7531cab38fcf21d2584cf0fe61126590dfe2b5efcdf"
+        },
+        {
+          "path": "tests/browser/conftest.py",
+          "sha256": "b931f2416e61e1c17649a0414ae9fd81e70280d15ced5d2b530b3300b5feeea8"
+        },
+        {
+          "path": "tests/browser/test_browser_e2e.py",
+          "sha256": "2d17976d9f5c1ba372d5f3f6389caefa536ebdbaf0c7d142b4a851288d64ebb5"
+        },
+        {
+          "path": "tests/browser/test_frontend.py",
+          "sha256": "e83ca38b890c92d81f66b1717d314f6b54e894a1f20d72756e984cb7a8f848b9"
+        },
+        {
+          "path": "tests/browser/test_live_browser.py",
+          "sha256": "d856865250eaea43e3d5e31ba98c58c1db35681a9ab0b8c1aaa9b164aafdee12"
+        },
+        {
+          "path": "tests/browser/test_live_browser_repeatability.py",
+          "sha256": "9fd3cbfe1c13e3c67f5f9927329ae4da39a3a2c5b692ec8eff8a707604629823"
+        },
+        {
+          "path": "tests/conftest.py",
+          "sha256": "e0561457dd1c2b983398c152fc7f9e661f0cb7327e5ed0fd20376564d4e4d8c4"
+        },
+        {
+          "path": "tests/package_check.py",
+          "sha256": "0cdbdbc34f7f96929947fa412ccbae73a64fe525fe0170dc38f575ff270d5338"
+        },
+        {
+          "path": "tests/restart_worker.py",
+          "sha256": "3240ee40ff7cae7d00b7dbd1b372dbd4e443700b53d5fc34e2764a82496da9b3"
+        },
+        {
+          "path": "tests/run_helpers.py",
+          "sha256": "77d30060dc4dca0c1959da57ccc440cc4126290f4810729de26069e953765d78"
+        },
+        {
+          "path": "tests/test_configuration.py",
+          "sha256": "7cfb1dc9e3a90ca4b1893f1ed7f267191dc8bcb70d24b27249915296687d244d"
+        },
+        {
+          "path": "tests/test_hardening.py",
+          "sha256": "11d8ccad0d6492056c968436c0882c28d356a68e8060ba0d406f325e608292c7"
+        },
+        {
+          "path": "tests/test_live_repeatability.py",
+          "sha256": "3517f302fdf5ee4c9bc07f40ff692e01f8f6298003b5388f64d0821f14fbc205"
+        },
+        {
+          "path": "tests/test_local_model.py",
+          "sha256": "e731d9a4152a92a88a25a1da794e0d118a50eaeb669a6285561ac56daafe0dd7"
+        },
+        {
+          "path": "tests/test_model_provider.py",
+          "sha256": "53526ab48da44803c6f1f42277bd0cb03d9ec8a75ce574f5b380d838d4e45cc2"
+        },
+        {
+          "path": "tests/test_plan_validation.py",
+          "sha256": "0a7b44c845b21cba804d61891c8e0b52b55c3dea6179ca2a3eda4646265abd43"
+        },
+        {
+          "path": "tests/test_plans_api.py",
+          "sha256": "fa87bcb9d292772400868724449e4efe14efc5e05133c2366faea0b149ac64bc"
+        },
+        {
+          "path": "tests/test_preview_page.py",
+          "sha256": "80620e3ee88c11d45642527f2228a759252bea3de816737c07de0f5ba4dc5e70"
+        },
+        {
+          "path": "tests/test_run_contracts.py",
+          "sha256": "dd27759326dcaa8022982c8e1414c245d95526982f30aa3884b86812d90a2980"
+        },
+        {
+          "path": "tests/test_run_recovery.py",
+          "sha256": "edd2e5b1c5f5c4026443e06491eacd793b8da186d0f98ea436d4ef2bbaa2480f"
+        },
+        {
+          "path": "tests/test_run_service.py",
+          "sha256": "fb8bda9c57fa3a2c9405e9226334c449d63aebfc4983080dc1361d1848697a90"
+        },
+        {
+          "path": "tests/test_runs_api.py",
+          "sha256": "2d071788851e06a106b2e9f97d0df11352a8f55ceac527775bcc36e9005a3fab"
+        },
+        {
+          "path": "tests/test_sqlite_run_repository.py",
+          "sha256": "7f74012e06d068720d7d8e1d6093c810071255b0f72ac4e6ba83de5b8bfdbdcf"
+        },
+        {
+          "path": "uv.lock",
+          "sha256": "7d14ff12c6204629e227aa6195a7e6b12d47bc85bc4814f367e8b9cc081c6032"
+        }
+      ],
+      "new_live_model_calls": 0
+    },
+    "lightweight_quality": {
+      "ruff_check": "PASS",
+      "ruff_format_check": "PASS; 91 files",
+      "git_diff_check": "PASS",
+      "uv_lock_check": "PASS; 34 packages; unchanged",
+      "isolated_package_check": "PASS; reused outside-repository isolated installation; no pytest; controlled provider only",
+      "package_evidence": ".runtime/day2-prompt3/closeout-package-check.json",
+      "package_provider_calls": 3,
+      "package_live_model_calls": 0
+    },
+    "ollama_migration_evidence_sha256": "6dfa3d96e259aeaddd6a34e04a2ad86a505fc3560f5c11ccfa6f507c98c18835",
+    "p0": [],
+    "p1": [],
+    "checkpoint_commit_and_existing_upstream_push_authorized": true,
+    "prompt4_started": false,
+    "prompt5_started": false
+  },
+  "final_gate": "DAY2_PROMPT3=PASS",
+  "blockers": []
+}

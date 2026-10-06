@@ -65,17 +65,18 @@ def validate_endpoint(endpoint: str) -> str:
             or not loopback_host(parsed.hostname)
             or parsed.username is not None
             or parsed.password is not None
-            or parsed.path not in ("", "/")
+            or parsed.path not in ("", "/", "/v1", "/v1/")
             or parsed.query
             or parsed.fragment
             or parsed.port is None
             or not 1 <= parsed.port <= 65535
         ):
             raise ValueError
-        return endpoint.rstrip("/")
+        base_url = endpoint.rstrip("/")
+        return base_url if parsed.path.startswith("/v1") else base_url + "/v1"
     except ValueError as exc:
         raise ConfigurationError(
-            "FOUNDRY_LOCAL_ENDPOINT must be a loopback HTTP base URL with a port."
+            "LOCAL_LLM_BASE_URL must be a loopback HTTP API base URL with a port."
         ) from exc
 
 
@@ -92,7 +93,7 @@ class Settings:
         object.__setattr__(self, "db_path", resolve_database_path(self.db_path))
         object.__setattr__(self, "endpoint", validate_endpoint(self.endpoint))
         if not re.fullmatch(r"[A-Za-z0-9._:-]{1,200}", self.model):
-            raise ConfigurationError("FOUNDRY_LOCAL_MODEL must be the configured model wire ID.")
+            raise ConfigurationError("LOCAL_LLM_MODEL must be the configured local model tag.")
         if (
             not math.isfinite(self.model_timeout_seconds)
             or not 0 < self.model_timeout_seconds <= 28
@@ -108,8 +109,8 @@ class Settings:
         values = os.environ if environment is None else environment
         try:
             return cls(
-                endpoint=values["FOUNDRY_LOCAL_ENDPOINT"],
-                model=values["FOUNDRY_LOCAL_MODEL"],
+                endpoint=values["LOCAL_LLM_BASE_URL"],
+                model=values["LOCAL_LLM_MODEL"],
                 model_timeout_seconds=float(values.get("MODEL_TIMEOUT_SECONDS", "28")),
                 host=values.get("API_HOST", "127.0.0.1"),
                 port=int(values.get("API_PORT", "8000")),
@@ -119,5 +120,5 @@ class Settings:
             if isinstance(exc, ConfigurationError):
                 raise
             raise ConfigurationError(
-                "Set valid local model and API environment variables."
+                "Set valid LOCAL_LLM_BASE_URL, LOCAL_LLM_MODEL and API environment variables."
             ) from exc

@@ -240,8 +240,8 @@ def test_production_startup_fails_before_any_route_is_served(
             raise RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE, run.run_id)
 
         monkeypatch.setattr(product, "recover_runs", fail_recovery)
-    monkeypatch.setenv("FOUNDRY_LOCAL_ENDPOINT", "http://127.0.0.1:1")
-    monkeypatch.setenv("FOUNDRY_LOCAL_MODEL", "controlled")
+    monkeypatch.setenv("LOCAL_LLM_BASE_URL", "http://127.0.0.1:1/v1")
+    monkeypatch.setenv("LOCAL_LLM_MODEL", "controlled")
     monkeypatch.setenv("AIG_DB_PATH", str(run_repository.path))
     served = []
     monkeypatch.setattr(product.uvicorn, "run", lambda *args, **kwargs: served.append(args))

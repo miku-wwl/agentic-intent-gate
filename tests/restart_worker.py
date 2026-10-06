@@ -126,8 +126,8 @@ def reopen_with_product_main(path):
 
     product.uvicorn.run = inspect_app
     os.environ.update(
-        FOUNDRY_LOCAL_ENDPOINT="http://127.0.0.1:1",
-        FOUNDRY_LOCAL_MODEL="controlled",
+        LOCAL_LLM_BASE_URL="http://127.0.0.1:1/v1",
+        LOCAL_LLM_MODEL="controlled",
         AIG_DB_PATH=str(path),
     )
     product.main()

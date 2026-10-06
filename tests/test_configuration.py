@@ -12,7 +12,7 @@ from agentic_intent_gate.adapters.tool_catalog import build_validator
         "https://127.0.0.1:1234",
         "http://example.com:1234",
         "http://0.0.0.0:1234",
-        "http://127.0.0.1:1234/v1",
+        "http://127.0.0.1:1234/v1/chat/completions",
         "http://127.0.0.1:1234?redirect=x",
         "http://user:password@127.0.0.1:1234",
         "http://127.0.0.1",
@@ -41,12 +41,12 @@ def test_required_environment_and_loopback_host():
         Settings("http://127.0.0.1:1234", "phi-4-mini", host="0.0.0.0")
     settings = Settings.from_environment(
         {
-            "FOUNDRY_LOCAL_ENDPOINT": "http://127.0.0.1:1234/",
-            "FOUNDRY_LOCAL_MODEL": "phi-4-mini",
+            "LOCAL_LLM_BASE_URL": "http://127.0.0.1:1234/v1/",
+            "LOCAL_LLM_MODEL": "phi4-mini:latest",
             "MODEL_TIMEOUT_SECONDS": "2",
         }
     )
-    assert settings.endpoint == "http://127.0.0.1:1234"
+    assert settings.endpoint == "http://127.0.0.1:1234/v1"
     assert settings.model_timeout_seconds == 2
 
 

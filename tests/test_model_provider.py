@@ -38,6 +38,7 @@ async def test_exact_wire_request_and_raw_return(validator, envelope, valid_plan
         assert body["model"] == "phi-test"
         assert body["stream"] is False and body["n"] == 1
         assert body["temperature"] == 0 and body["max_tokens"] == 1024
+        assert body["response_format"] == {"type": "json_object"}
         assert body["messages"][1] == {"role": "user", "content": "Read service-demo"}
         assert "SCHEMA=" in body["messages"][0]["content"]
         assert "Information disclosure risk" not in body["messages"][0]["content"]

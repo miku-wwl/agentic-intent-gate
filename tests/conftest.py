@@ -2,12 +2,18 @@ import json
 
 import pytest
 
+from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
 from agentic_intent_gate.adapters.tool_catalog import build_validator
 
 
 @pytest.fixture
 def validator():
     return build_validator()
+
+
+@pytest.fixture
+def run_repository(tmp_path, validator):
+    return SQLiteRunRepository(tmp_path / "runs.sqlite3", validator)
 
 
 @pytest.fixture

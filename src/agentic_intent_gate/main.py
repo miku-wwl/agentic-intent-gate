@@ -7,8 +7,12 @@ import uvicorn
 from agentic_intent_gate.adapters.configuration import ConfigurationError, Settings
 from agentic_intent_gate.adapters.local_http import create_app
 from agentic_intent_gate.adapters.models.local_openai import LocalOpenAIProvider
+from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
 from agentic_intent_gate.adapters.tool_catalog import build_validator
 from agentic_intent_gate.application.generate_plan import PlanningService
+from agentic_intent_gate.application.recover_runs import recover_runs
+from agentic_intent_gate.application.runs import RunService
+from agentic_intent_gate.domain.run import RunStoreError
 
 
 def main() -> None:
@@ -17,12 +21,24 @@ def main() -> None:
     except ConfigurationError as exc:
         logging.error("Configuration error: %s", exc)
         raise SystemExit(2) from None
+    validator = build_validator()
+    try:
+        repository = SQLiteRunRepository(settings.db_path, validator)
+        recover_runs(repository)
+    except RunStoreError as exc:
+        logging.error("%s", exc)
+        raise SystemExit(2) from None
     service = PlanningService(
         LocalOpenAIProvider(settings.endpoint, settings.model),
-        build_validator(),
+        validator,
         model_timeout_seconds=settings.model_timeout_seconds,
     )
-    uvicorn.run(create_app(service), host=settings.host, port=settings.port, log_level="info")
+    uvicorn.run(
+        create_app(service, run_service=RunService(repository, service)),
+        host=settings.host,
+        port=settings.port,
+        log_level="info",
+    )
 
 
 if __name__ == "__main__":

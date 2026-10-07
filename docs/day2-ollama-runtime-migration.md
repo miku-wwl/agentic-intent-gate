@@ -2,6 +2,8 @@
 
 Date: 2026-10-06, Pacific/Auckland. **Foundry Local → Ollama**, for local development stability. This record supersedes runtime setup in Day 1 without rewriting its historical observations. It does not certify host stability or finish the interrupted Prompt 3 UI task.
 
+**Chronology note:** “interrupted Prompt 3” describes the migration-time snapshot. Prompt 3 was subsequently finalized, then Prompt 4 hardening completed at `863a35cd9545371e2ebb006c19114611f63f500f`. The [final freeze](day2-final-freeze.md) records the completed Day 2 checkpoint. The original failed attempt, `PARSE_INVALID_JSON`, unrun downstream live stages and earlier test counts below remain truthful historical evidence; they are not current blockers and are not relabelled PASS.
+
 ## Inventory before modification
 
 The clean committed baseline was `ccc950ed47b508d16e72762e12b6d173f5312890`; eight Prompt 3 files were already changed/untracked. Status, full scoped diffs, source/tests/docs and repository-wide runtime searches were inspected before migration edits. There was no `scripts/` directory. The inventory excluded generated caches, `.git`, virtual environments and build artifacts, not repository source/history.

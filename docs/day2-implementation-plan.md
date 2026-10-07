@@ -2,6 +2,8 @@
 
 **PLAN ONLY**, 2026-10-04, Pacific/Auckland. Implement only after the next explicit backend prompt. [State architecture](day2-state-architecture-freeze.md), [ADR-012](adr/ADR-012-persistent-runs-local-approval.md), [Run schema](../schemas/day2-run.schema.json) and [decision schema](../schemas/day2-approval.schema.json) are normative. Paths below are prospective; no Day 2 backend/runtime exists now.
 
+**Historical planning snapshot:** those prospective statements describe 2026-10-04. The backend, local approval and recovery were subsequently implemented in Prompt 2, the runtime migrated in Prompt 2.5, the UI completed in Prompt 3, and hardening verified in Prompt 4. See the [final freeze](day2-final-freeze.md) for current status. Preserve the original implementation order below as history; it is not an outstanding work list.
+
 ## Small implementation boundary
 
 Reuse Python 3.13, FastAPI/httpx/jsonschema, Day 1 immutable Intent/Plan/Risk, strict parser, trusted catalog, PlanningService and LocalOpenAIProvider. sqlite3 is standard library; local schema references use the already installed jsonschema/referencing dependency chain, not remote retrieval. No ORM, separate service, new framework, asynchronous worker or frontend change is needed. Existing model prompt, 28/30-second budgets, strict validation and /api/plans behavior remain intact.

@@ -4,6 +4,8 @@
 
 Accepted for Day 2 Prompt 1 architecture/contract freeze, 2026-10-04, Pacific/Auckland. Implementation is not started. Normative details are in the [state architecture](../day2-state-architecture-freeze.md); [audit](../day2-repository-audit.md) and [Prompt 2 plan](../day2-implementation-plan.md) record evidence and implementation order.
 
+**Implementation status note:** “not started” and the future-evidence statements below are the accepted Prompt 1 snapshot. Prompt 2 implemented the backend/recovery, Prompt 3 completed the local Run/approval UI, and Prompt 4 verified hardening. See the [final freeze](../day2-final-freeze.md). The accepted decisions and deferred execution/authentication boundaries remain unchanged.
+
 ## Context
 
 Day 1 at `abd695a1085fe52d85ee66cfbaf68717a867eac1` generates and independently validates a stateless planning preview. It has no Run identity, store, approval route or recovery runtime. Stage 1's deferred Turn/Action execution design is broader than this local persistence slice. Its authenticated, distinct-approver, expiring Action consent cannot honestly be claimed by a local application with no authentication.

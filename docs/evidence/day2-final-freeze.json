@@ -1,0 +1,1381 @@
+{
+  "task": "DAY 2 PROMPT 5 — FINAL FREEZE",
+  "recorded_at_utc": "2026-10-07T06:03:05Z",
+  "base_commit": "863a35cd9545371e2ebb006c19114611f63f500f",
+  "branch": "main",
+  "starting_worktree_clean": true,
+  "lane": "FRESH_COMPLETE_DETERMINISTIC_REGRESSION_NO_LIVE_MODEL",
+  "architecture": {
+    "run_states": [
+      "IntentReceived",
+      "PlanGenerating",
+      "PlanValidated",
+      "Ready",
+      "AwaitingApproval",
+      "Approved",
+      "Rejected",
+      "PlanRejected"
+    ],
+    "allowed_edges": 8,
+    "sqlite_schema_version": 1,
+    "sqlite_tables": [
+      "runs",
+      "approval_decisions",
+      "audit_events"
+    ],
+    "sqlite_features": [
+      "STRICT",
+      "WAL",
+      "synchronous=FULL",
+      "foreign_keys=ON",
+      "busy_timeout=250 ms",
+      "short BEGIN IMMEDIATE writes"
+    ],
+    "read_only_versions": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "approval_versions": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "failed_planning_versions": [
+      2,
+      3
+    ],
+    "nonmutating_operations": [
+      "GET",
+      "failed CAS",
+      "duplicate or stale decision",
+      "converged recovery"
+    ],
+    "approval_inputs": [
+      "decision",
+      "expected_version",
+      "optional reason"
+    ],
+    "approval_boundary": "One version-matching local decision; LOCAL_USER is a server marker, not authentication or authorization",
+    "approval_atomic_write_order": [
+      "UPDATE Run with state/version CAS",
+      "INSERT unique decision",
+      "INSERT paired audit",
+      "COMMIT"
+    ],
+    "execution_enabled": false,
+    "approved_means_executed": false,
+    "single_app_owner_per_database": true,
+    "legacy_preview": "KEEP: intentionally preserved stateless /api/plans compatibility; no durable approval/execution authority",
+    "catalog": "Trusted synthetic service-demo / maintenance revision 1 metadata, no executable tools"
+  },
+  "runtime": {
+    "provider_abstraction": "ModelProvider Protocol",
+    "implementation": "LocalOpenAIProvider",
+    "local_runtime": "Ollama",
+    "model": "phi4-mini:latest",
+    "base_url": "http://127.0.0.1:11434/v1",
+    "runtime_observation_scope": "Frozen server configuration and existing Prompt 2.5 proof; no new daemon/model/device or stability observation",
+    "request": "POST /v1/chat/completions",
+    "json_mode": {
+      "type": "json_object"
+    },
+    "strict_parser": true,
+    "json_schema_validation": true,
+    "semantic_validation": true,
+    "trusted_risk_recomputation": true,
+    "model_calls_per_planning_operation_max": 1,
+    "retry": false,
+    "fallback": false,
+    "client_runtime_overrides": false,
+    "model_budget_max_seconds": 28,
+    "request_deadline_seconds": 30,
+    "envelope_max_bytes": 65536,
+    "candidate_max_bytes": 16384,
+    "live_calls_during_prompt5": 0,
+    "default_live_marker": "-m 'not live'",
+    "retired_active_dependency_count": 0
+  },
+  "recovery": {
+    "result": "PASS",
+    "deterministic": true,
+    "model_calls": 0,
+    "tool_calls": 0,
+    "eligible_states": [
+      "IntentReceived",
+      "PlanGenerating",
+      "PlanValidated"
+    ],
+    "interrupted_planning": "PlanRejected / RECOVERY_INTERRUPTED; one guarded transition",
+    "validated_plan": "Revalidate and route only by trusted risk policy",
+    "waiting_and_terminal_states": "Unchanged fields, versions and linked history",
+    "repeated_recovery": {
+      "passes_per_scenario": 3,
+      "converged_rows_unchanged": true,
+      "extra_events_after_convergence": 0
+    },
+    "subprocess_scenarios": 13,
+    "recovery_fresh_processes": 39,
+    "killed_original_workers": 13,
+    "recorded_pid_slots": 52,
+    "all_recorded_processes_stopped": true,
+    "evidence": ".runtime/day2-prompt2/restarts/20261007T055344817641Z"
+  },
+  "hardening": {
+    "result": "PASS",
+    "approval_concurrency": "One winner for APPROVE/APPROVE, REJECT/REJECT and opposite decisions; loser has no mutation",
+    "cas_and_duplicates": "Guarded state/version, stale old version 409 and terminal-current version 409; no churn",
+    "sqlite_atomicity": "Rollback at write/decision/audit/commit boundaries; uncertain commit returns safe error without replay",
+    "corruption_handling": "Stored Plan/arguments/risk/history and corrupt file fail closed; forensic data not reset",
+    "future_schema": "Reject user_version=2 and incompatible/partial v1; no migration guessing or downgrade",
+    "provider_failure_handling": "Timeout/connection/envelope/oversize/strict JSON/schema/semantic faults yield one durable safe rejection; no raw output saved",
+    "read_purity": "All eight states and repeated failed-provider GETs; no model/state/version mutation",
+    "current_hardening_observation_records": 52,
+    "evidence": ".runtime/day2-prompt4/cases/20261007T055344802212Z",
+    "tests_preserved_byte_identical": true,
+    "product_failure_backdoors_added": false
+  },
+  "ui": {
+    "result": "PASS",
+    "run_console": "Server-authoritative Run ID/state/version/Plan/risk",
+    "approval": "Only awaiting state; frozen inputs; immediate decision lock; explicit refresh after conflict/unconfirmed outcome",
+    "refresh": "GET only; no generation, approval or replay",
+    "deep_link": "?run_id=<canonical UUID>; read on reload",
+    "xss": "Untrusted strings use textContent/createElement/text nodes; no innerHTML/raw model output/debug controls",
+    "run_frontend_passed": 39,
+    "real_backend_browser_e2e_passed": 13,
+    "legacy_frontend_passed": 19,
+    "legacy_browser_e2e_passed": 6,
+    "total_browser_cases_passed": 77,
+    "controlled_provider": true,
+    "temporary_sqlite": true,
+    "real_http": true,
+    "backend_browser_responses_intercepted": false,
+    "browsers": [
+      {
+        "channel": "msedge",
+        "version": "154.0.4258.53",
+        "headless": true,
+        "closed": true,
+        "driver_context_exited": true
+      },
+      {
+        "channel": "msedge",
+        "version": "154.0.4258.53",
+        "headless": true,
+        "closed": true,
+        "driver_context_exited": true
+      },
+      {
+        "channel": "msedge",
+        "version": "154.0.4258.53",
+        "headless": true,
+        "closed": true,
+        "driver_context_exited": true
+      },
+      {
+        "channel": "msedge",
+        "version": "154.0.4258.53",
+        "headless": true,
+        "closed": true,
+        "driver_context_exited": true
+      }
+    ],
+    "evidence": ".runtime/browser-evidence/20261007T055344566381Z/results.json"
+  },
+  "audit": {
+    "runtime_retirement": {
+      "command": "rg -n \"Foundry|foundry|FOUNDRY_LOCAL\"",
+      "scope": "Repository source/docs/tests after status notes, excluding this newly authored consolidated report; generated ignored runtime/cache artifacts excluded",
+      "total_matching_lines": 40,
+      "categories": {
+        "A": "historical evidence",
+        "B": "historical architecture documentation",
+        "C": "migration and retirement documentation",
+        "D": "negative compatibility test",
+        "E": "unexpected active dependency"
+      },
+      "counts": {
+        "A": 11,
+        "B": 12,
+        "C": 16,
+        "D": 1,
+        "E": 0
+      },
+      "every_hit_classified": [
+        {
+          "file": "docs/day1-architecture-freeze.md",
+          "category": "B",
+          "lines": [
+            106,
+            112
+          ],
+          "occurrence_lines": 2
+        },
+        {
+          "file": "docs/day2-final-freeze.md",
+          "category": "C",
+          "lines": [
+            36
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/day1-local-run.md",
+          "category": "C",
+          "lines": [
+            7,
+            126
+          ],
+          "occurrence_lines": 2
+        },
+        {
+          "file": "docs/day1-local-run.md",
+          "category": "A",
+          "lines": [
+            98,
+            100,
+            114,
+            118,
+            124
+          ],
+          "occurrence_lines": 5
+        },
+        {
+          "file": "docs/day1-repository-audit.md",
+          "category": "B",
+          "lines": [
+            10,
+            21,
+            48,
+            54
+          ],
+          "occurrence_lines": 4
+        },
+        {
+          "file": "docs/day2-ollama-runtime-migration.md",
+          "category": "C",
+          "lines": [
+            3,
+            14,
+            15,
+            18,
+            69
+          ],
+          "occurrence_lines": 5
+        },
+        {
+          "file": "docs/day2-state-architecture-freeze.md",
+          "category": "C",
+          "lines": [
+            5
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/stage1-local-cloud-boundary.md",
+          "category": "B",
+          "lines": [
+            24
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/stage1-review.md",
+          "category": "B",
+          "lines": [
+            63
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "README.md",
+          "category": "C",
+          "lines": [
+            7
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "README.md",
+          "category": "A",
+          "lines": [
+            9
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/stage1-implementation-plan.md",
+          "category": "B",
+          "lines": [
+            96
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/stage1-project-charter.md",
+          "category": "B",
+          "lines": [
+            57
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/evidence/day1-browser-e2e.json",
+          "category": "A",
+          "lines": [
+            398
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/evidence/day1-backend-verification.json",
+          "category": "A",
+          "lines": [
+            143
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/evidence/day1-hardening-verification.json",
+          "category": "A",
+          "lines": [
+            1370
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/evidence/day1-final-freeze.json",
+          "category": "A",
+          "lines": [
+            254
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/evidence/day1-local-model-probe.json",
+          "category": "A",
+          "lines": [
+            6
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/evidence/day2-ollama-migration.json",
+          "category": "C",
+          "lines": [
+            4,
+            7,
+            137,
+            336,
+            527,
+            554
+          ],
+          "occurrence_lines": 6
+        },
+        {
+          "file": "docs/adr/ADR-009-model-strategy.md",
+          "category": "B",
+          "lines": [
+            13
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/adr/ADR-011-day1-planning-preview.md",
+          "category": "B",
+          "lines": [
+            9
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "tests/test_local_runtime_configuration.py",
+          "category": "D",
+          "lines": [
+            22
+          ],
+          "occurrence_lines": 1
+        }
+      ]
+    },
+    "completion_markers": {
+      "command": "rg -n 'FAIL|BLOCKED|IN_PROGRESS|TODO|FIXME|PENDING|NOT_RUN|NOT VERIFIED'",
+      "scope": "Source/docs/tests/research after final notes, excluding this new consolidated report and generated ignored artifacts",
+      "matching_lines": 159,
+      "disposition": "Freeze-time search snapshot: retain safe test defaults/negative assertions, historical failures, limits and deferred states. The then-current environmental blocker was reclassified at closeout, not erased as an unobserved success.",
+      "every_occurrence_classified": [
+        {
+          "file": "README.md",
+          "classification": "KEEP",
+          "lines": [
+            5
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "README.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            9
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/day1-local-run.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            122
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/day1-implementation-plan.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            51,
+            52
+          ],
+          "occurrence_lines": 2
+        },
+        {
+          "file": "docs/day1-architecture-freeze.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            5,
+            30,
+            112
+          ],
+          "occurrence_lines": 3
+        },
+        {
+          "file": "docs/day2-final-freeze.md",
+          "classification": "KEEP",
+          "lines": [
+            5,
+            32,
+            34,
+            46
+          ],
+          "occurrence_lines": 4
+        },
+        {
+          "file": "docs/day1-repository-audit.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            10,
+            52
+          ],
+          "occurrence_lines": 2
+        },
+        {
+          "file": "docs/adr/ADR-004-approval-model.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            13
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "research/stage0.5/review-package/docs/stage0.5-reproducibility-freeze.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            3,
+            78
+          ],
+          "occurrence_lines": 2
+        },
+        {
+          "file": "docs/day2-ollama-runtime-migration.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            37
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "research/stage0.5/review-package/docs/stage0.5-local-messaging-reproduction.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            38,
+            82,
+            83,
+            84,
+            85,
+            97,
+            142
+          ],
+          "occurrence_lines": 7
+        },
+        {
+          "file": "research/stage0/twilio-reference-study.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            39,
+            477
+          ],
+          "occurrence_lines": 2
+        },
+        {
+          "file": "research/stage0/twilio-gap-register.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            10
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "tests/browser/test_live_browser.py",
+          "classification": "KEEP",
+          "lines": [
+            22
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "tests/live_helpers.py",
+          "classification": "KEEP",
+          "lines": [
+            38,
+            45,
+            47,
+            49,
+            51
+          ],
+          "occurrence_lines": 5
+        },
+        {
+          "file": "tests/browser/test_live_browser_repeatability.py",
+          "classification": "KEEP",
+          "lines": [
+            95
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "STAGE1_HANDOFF.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            10,
+            11,
+            12
+          ],
+          "occurrence_lines": 3
+        },
+        {
+          "file": "tests/browser/conftest.py",
+          "classification": "KEEP",
+          "lines": [
+            80,
+            203
+          ],
+          "occurrence_lines": 2
+        },
+        {
+          "file": "tests/test_local_model.py",
+          "classification": "KEEP",
+          "lines": [
+            50,
+            51,
+            52,
+            53,
+            54
+          ],
+          "occurrence_lines": 5
+        },
+        {
+          "file": "tests/test_ollama_api_smoke.py",
+          "classification": "KEEP",
+          "lines": [
+            39,
+            40,
+            82
+          ],
+          "occurrence_lines": 3
+        },
+        {
+          "file": "tests/test_ollama_json_mode.py",
+          "classification": "KEEP",
+          "lines": [
+            138,
+            139,
+            140
+          ],
+          "occurrence_lines": 3
+        },
+        {
+          "file": "tests/test_run_hardening.py",
+          "classification": "KEEP",
+          "lines": [
+            493,
+            505
+          ],
+          "occurrence_lines": 2
+        },
+        {
+          "file": "docs/day2-repository-audit.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            49,
+            68
+          ],
+          "occurrence_lines": 2
+        },
+        {
+          "file": "docs/stage1-architecture.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            93,
+            110,
+            118
+          ],
+          "occurrence_lines": 3
+        },
+        {
+          "file": "docs/stage1-contracts.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            86,
+            161,
+            175,
+            192,
+            211,
+            214,
+            219,
+            231
+          ],
+          "occurrence_lines": 8
+        },
+        {
+          "file": "docs/stage1-implementation-plan.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            107
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/stage1-failure-model.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            11,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            36,
+            56,
+            74,
+            76
+          ],
+          "occurrence_lines": 13
+        },
+        {
+          "file": "docs/stage1-idempotency-and-concurrency.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            64,
+            65,
+            67,
+            69,
+            73,
+            74,
+            75,
+            77,
+            122
+          ],
+          "occurrence_lines": 9
+        },
+        {
+          "file": "docs/evidence/day1-backend-live-model.json",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            177,
+            363
+          ],
+          "occurrence_lines": 2
+        },
+        {
+          "file": "docs/stage1-local-cloud-boundary.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            58
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/evidence/day1-browser-e2e.json",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            226,
+            279
+          ],
+          "occurrence_lines": 2
+        },
+        {
+          "file": "docs/stage1-project-charter.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            63
+          ],
+          "occurrence_lines": 1
+        },
+        {
+          "file": "docs/stage1-review.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            49,
+            50,
+            51,
+            52,
+            93,
+            137
+          ],
+          "occurrence_lines": 6
+        },
+        {
+          "file": "docs/evidence/day1-final-freeze.json",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            39,
+            158,
+            269
+          ],
+          "occurrence_lines": 3
+        },
+        {
+          "file": "docs/stage1-state-machine.md",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            18,
+            19,
+            20,
+            22,
+            28,
+            29,
+            30,
+            32,
+            34,
+            36,
+            45,
+            52,
+            55,
+            59,
+            62,
+            74,
+            83,
+            89,
+            90,
+            91,
+            92,
+            93,
+            102,
+            110,
+            116,
+            117,
+            119,
+            120,
+            123,
+            124,
+            127,
+            132,
+            135,
+            138,
+            146
+          ],
+          "occurrence_lines": 35
+        },
+        {
+          "file": "docs/evidence/day1-hardening-verification.json",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            1028,
+            1167,
+            1225,
+            1253,
+            1281,
+            1309,
+            1337,
+            1544
+          ],
+          "occurrence_lines": 8
+        },
+        {
+          "file": "docs/evidence/day1-quality-check.json",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            43,
+            44
+          ],
+          "occurrence_lines": 2
+        },
+        {
+          "file": "docs/evidence/day1-local-model-probe.json",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            30,
+            32,
+            34
+          ],
+          "occurrence_lines": 3
+        },
+        {
+          "file": "docs/evidence/day2-ollama-migration.json",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            62,
+            68,
+            75,
+            81,
+            91,
+            143
+          ],
+          "occurrence_lines": 6
+        },
+        {
+          "file": "docs/evidence/day2-prompt3-ui-e2e.json",
+          "classification": "HISTORICAL_KEEP",
+          "lines": [
+            613
+          ],
+          "occurrence_lines": 1
+        }
+      ],
+      "current_product_p0_p1": 0
+    },
+    "dead_or_stale_candidates": [
+      {
+        "candidate": "Five current README/design/ADR status surfaces",
+        "classification": "UPDATE",
+        "action": "Factual status notes and chronology corrections only"
+      },
+      {
+        "candidate": "Provider/parser/repository helpers and fail-closed branches",
+        "classification": "KEEP",
+        "reason": "Active contract enforcement; no objectively unused helper/import/adapter identified"
+      },
+      {
+        "candidate": "Legacy stateless API/UI",
+        "classification": "KEEP",
+        "reason": "Intentional active compatibility path covered by regression; not another Run authority"
+      },
+      {
+        "candidate": "Overlapping boundary tests/shared controlled fixtures",
+        "classification": "KEEP",
+        "reason": "Distinct contract/transport/browser/restart assertions; no exact duplicate test file or removed-behavior fixture identified"
+      },
+      {
+        "candidate": "Negative old-runtime configuration test",
+        "classification": "KEEP",
+        "reason": "Proves retired environment names are not aliases"
+      },
+      {
+        "candidate": "Day 1/Stage 0/Stage 1 records, old Day 2 evidence and ignored verification archives",
+        "classification": "HISTORICAL_KEEP",
+        "reason": "Preserve dated observations and failed initial attempts"
+      },
+      {
+        "candidate": "Repository-local disposable caches/root dist/browser tmp/source-test bytecode",
+        "classification": "DELETE",
+        "action": "NOT EXECUTED: bounded native cleanup rejected by environment policy; no alternate mechanism attempted",
+        "closeout_disposition": "ENVIRONMENTAL_NON_BLOCKING; physical deletion is not required after all repository/process/package/security conditions passed"
+      }
+    ],
+    "dependency_audit": {
+      "result": "PASS",
+      "production_dependencies": [
+        "fastapi",
+        "httpx",
+        "jsonschema",
+        "uvicorn"
+      ],
+      "all_four_used": true,
+      "accidental_ollama_sdk_orm_agent_ai_frontend_frameworks": 0,
+      "removed": [],
+      "upgrades": 0,
+      "lock_changed": false
+    },
+    "active_source_todo_fixme_or_debug_prints": 0,
+    "expected_test_output": "KEEP package PASS print, subprocess JSON handshake and opt-in live study reporting",
+    "additional_persistent_execution_states": 0
+  },
+  "evidence_chronology": [
+    {
+      "file": "docs/evidence/day2-backend-verification.json",
+      "stage": "Prompt 2",
+      "deterministic_passed": 531,
+      "live_deselected": 4,
+      "gate": "DAY2_PROMPT2=PASS"
+    },
+    {
+      "file": "docs/evidence/day2-ollama-migration.json",
+      "stage": "Prompt 2.5 repair",
+      "deterministic_passed": 621,
+      "live_deselected": 5,
+      "separate_live_successes": 3,
+      "gate": "DAY2_PROMPT2_5_OLLAMA_MIGRATION=PASS"
+    },
+    {
+      "file": "docs/evidence/day2-prompt3-ui-e2e.json",
+      "stage": "Prompt 3",
+      "deterministic_passed": 622,
+      "live_deselected": 5,
+      "live_calls": 0,
+      "gate": "DAY2_PROMPT3=PASS"
+    },
+    {
+      "file": "docs/evidence/day2-prompt4-hardening.json",
+      "stage": "Prompt 4",
+      "deterministic_passed": 686,
+      "live_deselected": 5,
+      "live_calls": 0,
+      "gate": "DAY2_PROMPT4_HARDENING=PASS"
+    },
+    {
+      "stage": "Prompt 5",
+      "deterministic_passed": 686,
+      "live_deselected": 5,
+      "live_calls": 0,
+      "gate": "DAY2_FINAL_FREEZE=PASS",
+      "original_audit_gate": "DAY2_FINAL_FREEZE=BLOCKED"
+    }
+  ],
+  "historical_failures_preserved": [
+    "Initial direct migration smoke FAIL / PARSE_INVALID_JSON; downstream /api/plans and /api/runs NOT_RUN",
+    "Initial deterministic 600 passed / 1 pre-existing Prompt 3 fixture failure; later JSON-mode/fixture repair verified",
+    "Prompt 3 prior failed gate and Day 1 weak CPU/live-timeout observations",
+    "Prompt 4 no-delivery statements are validation-time history; subsequent authorized closeout is current base_commit"
+  ],
+  "tests": {
+    "result": "PASS",
+    "fresh_run": true,
+    "reused_previous_result": false,
+    "total_passed": 686,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "live_deselected": 5,
+    "junit_elapsed_seconds": 416.497,
+    "console_elapsed_seconds": 416.52,
+    "exit_code": 0,
+    "command": ".venv/Scripts/python.exe -m pytest -q --tb=short --junitxml=.runtime/day2-final-freeze/final-tests.xml",
+    "evidence": ".runtime/day2-final-freeze/final-tests.xml",
+    "by_module": {
+      "tests.browser.test_browser_e2e": 6,
+      "tests.browser.test_frontend": 19,
+      "tests.browser.test_run_frontend": 39,
+      "tests.browser.test_run_ui_e2e": 13,
+      "tests.test_configuration": 19,
+      "tests.test_hardening": 20,
+      "tests.test_local_runtime_configuration": 19,
+      "tests.test_model_provider": 33,
+      "tests.test_ollama_json_mode": 20,
+      "tests.test_plan_validation": 68,
+      "tests.test_plans_api": 25,
+      "tests.test_preview_page": 1,
+      "tests.test_run_contracts": 169,
+      "tests.test_run_hardening": 52,
+      "tests.test_run_recovery": 17,
+      "tests.test_run_service": 26,
+      "tests.test_runs_api": 61,
+      "tests.test_sqlite_run_repository": 79
+    },
+    "count_change": 0,
+    "tests_added": 0,
+    "tests_deleted": 0,
+    "phase_totals_summed": false,
+    "sequence_note": "Original fresh suite follows status audit; no executable changes. Documentation-only closeout reuses this 686-case regression. Physical cache deletion remained policy-denied and was subsequently verified environmental non-blocking."
+  },
+  "quality": {
+    "ruff": "PASS",
+    "format": "PASS",
+    "formatted_files": 94,
+    "diff": "PASS",
+    "lock": "PASS",
+    "resolved_locked_packages": 34,
+    "wheel": "PASS",
+    "sdist": "PASS",
+    "isolated_install": "PASS",
+    "resources": "PASS",
+    "secrets": "PASS",
+    "artifacts": "PASS_TRACKED_AND_PACKAGE_SCOPE",
+    "source_runtime_resources_byte_identical": 24,
+    "source_schema_resources_byte_identical": 4,
+    "package_check": {
+      "lane": "PACKAGE_CONTROLLED_PROVIDER_NOT_LIVE",
+      "result": "PASS",
+      "python": "3.13.9",
+      "working_directory": "D:\\Ollama\\Temp\\aig-final-freeze-package-4449b473290c488f999bea247ff71884",
+      "package_import_location": "D:\\Ollama\\Temp\\aig-final-freeze-package-4449b473290c488f999bea247ff71884\\Lib\\site-packages\\agentic_intent_gate\\__init__.py",
+      "isolated_environment": "D:\\Ollama\\Temp\\aig-final-freeze-package-4449b473290c488f999bea247ff71884",
+      "schema_sha256": {
+        "day1-intent.schema.json": "670250dec6877ea99f64f1cd071fdfa9681b1a7cfd97e319dfbe61c961b8efe3",
+        "day1-plan.schema.json": "5730316d6075769771c7d3e4f1aead46cb023e198c562ca1ea61d7ac8cf3a5bd",
+        "day2-approval.schema.json": "a26e354aabd9090b8e0bffae7cb4ce16a5bf93c0fda4ff0d0391025a44f6f83c",
+        "day2-run.schema.json": "f3af6076a814a5f33981820399aaf1dd3a62439fe5612fb19eb6d4049a41010d"
+      },
+      "static_page_http_status": 200,
+      "static_page_sha256": "d54c9f36be3bda23cf9b66b10d3ccafd6ad33f86ee6bb3d543b997c336702cd6",
+      "run_ui_resource_byte_identical": true,
+      "plan_http_status": 200,
+      "provider_calls": 3,
+      "day2": {
+        "create_read": 201,
+        "create_write": 201,
+        "approval": 200,
+        "file_reopen": "PASS",
+        "local_schema_resolution": "PASS"
+      },
+      "versions": {
+        "fastapi": "0.142.2",
+        "httpx": "0.28.1",
+        "jsonschema": "4.26.0",
+        "uvicorn": "0.54.0"
+      }
+    },
+    "build_directory": ".runtime/day2-final-freeze/dist",
+    "secret_checks": {
+      "high_signal_key_files": 0,
+      "credential_assignment_files": 0,
+      "secret_connection_string_files": 0,
+      "real_env_present": false,
+      "product_facing_private_path_matches": 0
+    },
+    "tracked_artifacts": {
+      "database_wal_shm": 0,
+      "cache_venv_runtime_build_browser_profiles_models_coverage": 0
+    },
+    "package_artifacts": {
+      "accidental_database_cache_venv_runtime_members": 0
+    },
+    "repository_local_no_temp_cache_gate": "PASS_NO_TRACKED_PACKAGED_OR_RUNTIME_TEMP_ARTIFACT",
+    "local_ignored_cache_cleanup": "ENVIRONMENTAL_NON_BLOCKING"
+  },
+  "preservation": {
+    "initial_tracked_files": 118,
+    "executable_contract_configuration_files": 63,
+    "all_63_byte_identical": true,
+    "preexisting_evidence_files": 14,
+    "all_14_byte_identical": true,
+    "unchanged": [
+      "src",
+      "tests",
+      "schemas",
+      "scripts",
+      "pyproject.toml",
+      "uv.lock",
+      ".env.example",
+      ".gitignore",
+      ".python-version"
+    ],
+    "normative_design_and_adr_changes": "Status notes only; accepted decisions and normative body retained",
+    "line_ending_only_files": 0,
+    "repository_wide_normalization": false,
+    "git_platform_notice": "Existing Windows autocrlf may warn LF will be replaced by CRLF for touched documents; normalized diffs remain small factual edits"
+  },
+  "cleanup": {
+    "processes_and_listeners": {
+      "restart_records": 13,
+      "restart_nonpass": 0,
+      "restart_pid_slots": 52,
+      "known_pids_alive": 0,
+      "test_process_count": 0,
+      "test_process_ids": [
+        null
+      ],
+      "known_ports": 77,
+      "known_test_listeners": 0,
+      "all_restart_stopped": true,
+      "recovery_model_calls": 0,
+      "recovery_tool_calls": 0,
+      "all_three_passes": true,
+      "all_repeat_unchanged": true,
+      "hardening_records": 52,
+      "all_servers_closed": true,
+      "all_run_db_dirs_removed": true
+    },
+    "browser_instances_closed": 4,
+    "playwright_driver_contexts_exited": 4,
+    "test_servers_closed": 77,
+    "known_ports_released": 77,
+    "private_run_e2e_db_directories_removed": 13,
+    "repository_local_artifacts": {
+      "targets": [
+        {
+          "path": ".cache",
+          "files": 1992,
+          "bytes": 180413977,
+          "reparse_points": 0
+        },
+        {
+          "path": ".pytest_cache",
+          "files": 5,
+          "bytes": 400147,
+          "reparse_points": 0
+        },
+        {
+          "path": ".ruff_cache",
+          "files": 10,
+          "bytes": 6630,
+          "reparse_points": 0
+        },
+        {
+          "path": "dist",
+          "files": 3,
+          "bytes": 392277,
+          "reparse_points": 0
+        },
+        {
+          "path": ".runtime/browser-tests/tmp",
+          "files": 10,
+          "bytes": 194043,
+          "reparse_points": 0
+        }
+      ],
+      "bytecode_dirs": [
+        "src/agentic_intent_gate/__pycache__",
+        "src/agentic_intent_gate/adapters/__pycache__",
+        "src/agentic_intent_gate/adapters/models/__pycache__",
+        "src/agentic_intent_gate/application/__pycache__",
+        "src/agentic_intent_gate/domain/__pycache__",
+        "src/agentic_intent_gate/ports/__pycache__",
+        "tests/__pycache__",
+        "tests/browser/__pycache__",
+        "tests/browser/.runtime/__pycache__"
+      ],
+      "bytecode_files": 51,
+      "repository_db_files": 0,
+      "real_env_present": false,
+      "cleanup_result": "ENVIRONMENTAL_NON_BLOCKING",
+      "deleted_files": 0,
+      "cleanup_command_executed": false,
+      "cache_physically_deleted": false,
+      "blocking_repository_impact": false,
+      "paths_ignored_and_untracked": true,
+      "outside_product_runtime_contract": true,
+      "tracked_cache_temp": 0,
+      "tracked_db_wal_shm": 0,
+      "active_test_processes": 0,
+      "active_test_listeners": 0,
+      "real_credential_findings": 0
+    },
+    "external_pytest_temp": {
+      "root": "D:\\Ollama\\Temp\\pytest-of-weila",
+      "directories": [
+        "pytest-14",
+        "pytest-15",
+        "pytest-16"
+      ],
+      "total_files": 868,
+      "sqlite_and_sidecar_files": 861,
+      "exclusive_read_open_failures": 0,
+      "reparse_points": 0,
+      "user_or_production_db_touched": false,
+      "disposition": "ENVIRONMENTAL_NON_BLOCKING",
+      "manual_delete_attempted": false
+    },
+    "intentional_ignored_keep": [
+      ".venv",
+      "Retained .runtime verification evidence and final wheel/sdist"
+    ],
+    "no_user_production_db_touched": true,
+    "no_ollama_daemon_touched": true,
+    "no_global_cache_cleanup": true,
+    "policy_denial": "Original bounded native cleanup was rejected before execution; no local files were removed or alternate mechanism attempted. Closeout explicitly accepts physical ignored/regenerable cache deletion as environmental non-blocking after repository/package/process/security checks.",
+    "repository_artifacts": "PASS",
+    "local_ignored_cache_cleanup": "ENVIRONMENTAL_NON_BLOCKING"
+  },
+  "files_changed": [
+    {
+      "path": "README.md",
+      "purpose": "Correct current Day 2 PASS status, evidence chronology, limits, deferred execution label and environmental cleanup classification"
+    },
+    {
+      "path": "docs/day2-state-architecture-freeze.md",
+      "purpose": "Add historical baseline and superseded runtime status note; retain normative contract"
+    },
+    {
+      "path": "docs/day2-implementation-plan.md",
+      "purpose": "Label completed prospective plan as historical"
+    },
+    {
+      "path": "docs/day2-ollama-runtime-migration.md",
+      "purpose": "Clarify subsequent Prompt 3/4 completion without rewriting failed migration history"
+    },
+    {
+      "path": "docs/adr/ADR-012-persistent-runs-local-approval.md",
+      "purpose": "Clarify implemented status without changing accepted decisions"
+    },
+    {
+      "path": "docs/day2-final-freeze.md",
+      "purpose": "Consolidate frozen architecture, verified regression and environmental non-blocking closeout"
+    },
+    {
+      "path": "docs/evidence/day2-final-freeze.json",
+      "purpose": "Record actual final audit, regression, quality and resource facts"
+    }
+  ],
+  "deleted_tracked_files": [],
+  "unused_dependencies_removed": [],
+  "p0": [],
+  "p1": [],
+  "p2": [
+    "Installed headless Edge only; no cross-browser matrix",
+    "Focused accessibility checks, no complete WCAG certification",
+    "No production HA or physical-power-loss/cloud durability proof",
+    "No long-duration Ollama stability/reliability proof"
+  ],
+  "blockers": [],
+  "scope": {
+    "tool_execution_added": false,
+    "action_ledger_added": false,
+    "approved_means_executed": false,
+    "new_run_states": false,
+    "sqlite_schema_v2": false,
+    "auth_added": false,
+    "model_retry": false,
+    "fallback": false,
+    "new_ai_framework": false,
+    "cloud_llm": false,
+    "mcp_or_rag": false,
+    "frontend_framework_migration": false,
+    "broad_architecture_refactor": false,
+    "run_cancellation_deletion_retry_api": false,
+    "websocket_sse_notifications_expiry": false,
+    "public_audit_ui": false,
+    "unnecessary_live_ollama_calls": 0,
+    "commit": false,
+    "push": false,
+    "tag": false,
+    "release": false,
+    "changes_left_uncommitted_for_review": true
+  },
+  "freeze_marker": "DAY2_FINAL_FREEZE=PASS",
+  "resolved_environmental_blocker": {
+    "id": "REPOSITORY_LOCAL_DISPOSABLE_ARTIFACT_CLEANUP",
+    "original_gate": "DAY2_FINAL_FREEZE=BLOCKED",
+    "resolution": "ENVIRONMENTAL_NON_BLOCKING",
+    "resolution_authority": "Explicit DAY2_PROMPT5_FINAL_FREEZE_CLOSEOUT_AND_PUSH request",
+    "physical_deletion_required_for_freeze": false,
+    "cache_physically_deleted": false,
+    "blocking_repository_impact": false,
+    "no_test_secret_database_or_package_requirements_weakened": true
+  },
+  "scope_snapshot": "Original Prompt 5 audit scope; no commit/push occurred during that audit. Subsequent closeout delivery is separately authorized below.",
+  "closeout": {
+    "task": "DAY2_PROMPT5_FINAL_FREEZE_CLOSEOUT_AND_PUSH",
+    "recorded_at_utc": "2026-10-07T06:44:17Z",
+    "starting_commit": "863a35cd9545371e2ebb006c19114611f63f500f",
+    "branch": "main",
+    "upstream": "origin/main",
+    "remote": "https://github.com/miku-wwl/agentic-intent-gate.git",
+    "preflight_expected_seven_documentation_paths": true,
+    "executable_files_changed": 0,
+    "full_regression_rerun": false,
+    "live_ollama_calls": 0,
+    "regression_reuse_reason": "All 63 executable/test/schema/script/configuration/dependency files remain byte-identical; only current status documentation/evidence changed",
+    "preexisting_evidence_files_changed": 0,
+    "cache_classification": "ENVIRONMENTAL_NON_BLOCKING",
+    "cache_physically_deleted": false,
+    "repository_artifacts": "PASS",
+    "tracked_cache_temp": 0,
+    "tracked_db_wal_shm": 0,
+    "repository_test_db_wal_shm": 0,
+    "resources": {
+      "test_processes": 0,
+      "test_listeners": 0,
+      "ports_checked": 77,
+      "browser_cases": 77,
+      "browser_exit": 0,
+      "all_browsers_closed": true,
+      "all_servers_closed": true,
+      "all_private_e2e_db_dirs_absent": true,
+      "junit_total": 686,
+      "junit_failures": 0,
+      "junit_errors": 0,
+      "junit_skipped": 0,
+      "local_ignored_files_checked": 2071,
+      "exclusive_open_failures": 0
+    },
+    "known_restart_pid_slots": 52,
+    "known_restart_pids_alive": 0,
+    "quality_rechecks": {
+      "ruff": "PASS",
+      "format": "PASS",
+      "diff": "PASS",
+      "package_resources": "PASS_READ_ONLY_28_RESOURCES",
+      "package_rebuilt": false,
+      "installation_or_fixture_recreated": false,
+      "existing_isolated_install": "PASS_RETAINED",
+      "wheel_sdist_artifacts": 0,
+      "secrets": "PASS",
+      "staged_artifact_scan": "PASS"
+    },
+    "staged_patch_audit": {
+      "files_staged": 7,
+      "line_ending_only_files": 0,
+      "unrelated_files": 0,
+      "cache_temp_artifacts": 0,
+      "database_artifacts": 0,
+      "secrets": 0
+    },
+    "secret_review": {
+      "enumerated_ignored_files": 2071,
+      "binary_aware_scan": true,
+      "cached_archives_checked": 3,
+      "cached_archive_secret_findings": 0,
+      "root_and_final_wheel_sdist_secret_findings": 0,
+      "real_secret_findings": 0,
+      "reviewed_false_positives": [
+        {
+          "files": [
+            "Cached Ruff executable",
+            "Cached Playwright Node executable"
+          ],
+          "classification": "Third-party concatenated rule/Unicode strings and encoded binary data; byte-identical to installed distributions, no PEM key blocks"
+        },
+        {
+          "files": [
+            "pydantic/types.py",
+            "httpx/_urls.py",
+            "pydantic/networks.py"
+          ],
+          "classification": "Dependency docstring examples, not actual user credentials"
+        },
+        {
+          "files": [
+            "starlette/datastructures.py"
+          ],
+          "classification": "Password representation mask made only of asterisks"
+        }
+      ]
+    },
+    "acceptance_interpretation": "Physical deletion of ignored untracked regenerable caches is not a repository freeze condition when all DB/artifact/package/secret/process/regression gates pass",
+    "delivery": {
+      "authorized": true,
+      "commit_count_authorized": 1,
+      "commit_message": "docs: freeze Day 2 agentic intent gate",
+      "exact_paths": [
+        "README.md",
+        "docs/day2-state-architecture-freeze.md",
+        "docs/day2-implementation-plan.md",
+        "docs/day2-ollama-runtime-migration.md",
+        "docs/adr/ADR-012-persistent-runs-local-approval.md",
+        "docs/day2-final-freeze.md",
+        "docs/evidence/day2-final-freeze.json"
+      ],
+      "force_push": false,
+      "new_branch": false,
+      "tag": false,
+      "release": false,
+      "verification_boundary": "This committed report records pre-delivery verified freeze facts and authorization. The resulting commit SHA and successful push are reported by post-commit Git/remote checks, not self-referentially embedded here."
+    }
+  }
+}

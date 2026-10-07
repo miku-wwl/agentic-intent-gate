@@ -2,6 +2,8 @@
 
 **ARCHITECTURE / CONTRACTS ONLY**, 2026-10-04, Pacific/Auckland. The application still implements Day 1. No SQLite repository, Run endpoint, recovery runtime or approval UI exists yet. [ADR-012](adr/ADR-012-persistent-runs-local-approval.md) defines precedence; the [audit](day2-repository-audit.md) records the baseline and the [implementation plan](day2-implementation-plan.md) defines Prompt 2.
 
+**Historical snapshot / final implementation status:** the paragraph above describes Prompt 1's original baseline, not today's application. Prompt 2 implemented these unchanged contracts; Prompt 3 implemented the Run/approval UI; Prompt 4 verified recovery/idempotency hardening. The [final freeze](day2-final-freeze.md) records current verification. **Superseded runtime:** historical Day 1 Foundry Local setup is retired; the current server-side runtime is Ollama with the exact `phi4-mini:latest` tag. This note does not change any state, DDL, version, approval or validation contract below.
+
 ## Boundary and ownership
 
 ```text

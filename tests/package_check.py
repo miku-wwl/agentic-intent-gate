@@ -9,16 +9,23 @@ import tempfile
 from importlib.metadata import version
 from importlib.resources import files
 from pathlib import Path
+from uuid import uuid4
 
 import httpx
 
 import agentic_intent_gate
 from agentic_intent_gate.adapters.local_http import create_app
+from agentic_intent_gate.adapters.sqlite_actions import SQLiteActionRepository
 from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
+from agentic_intent_gate.adapters.sqlite_v2_migration import migrate_v1_to_v2
+from agentic_intent_gate.adapters.sqlite_v2_runs import SQLiteV2RunRepository
 from agentic_intent_gate.adapters.tool_catalog import build_validator
+from agentic_intent_gate.application.action_compiler import ActionCompiler, ToolBinding
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.runs import RunService
+from agentic_intent_gate.domain.approval_binding import BindingCode, BindingError
 from agentic_intent_gate.domain.run_validation import contract_validator
+from agentic_intent_gate.ports.action_repository import AdmissionCommand
 
 
 def verify(source, output):
@@ -31,6 +38,14 @@ def verify(source, output):
         packaged = files("agentic_intent_gate").joinpath("schemas", path.name).read_bytes()
         assert packaged == path.read_bytes()
         schema_hashes[path.name] = hashlib.sha256(packaged).hexdigest()
+    runtime_hashes = {}
+    runtime_source = source / "src/agentic_intent_gate"
+    for path in sorted(runtime_source.rglob("*")):
+        if path.is_file() and path.suffix in {".py", ".html"}:
+            relative = path.relative_to(runtime_source).as_posix()
+            packaged = files("agentic_intent_gate").joinpath(relative).read_bytes()
+            assert packaged == path.read_bytes()
+            runtime_hashes[relative] = hashlib.sha256(packaged).hexdigest()
     static_page = (
         files("agentic_intent_gate.adapters").joinpath("static", "index.html").read_bytes()
     )
@@ -65,6 +80,7 @@ def verify(source, output):
     repository = SQLiteRunRepository(database, validator)
     app = create_app(planning, run_service=RunService(repository, planning))
     run_results = {}
+    action_results = {}
 
     async def probe():
         async with httpx.AsyncClient(
@@ -122,6 +138,69 @@ def verify(source, output):
                 file_reopen="PASS",
                 local_schema_resolution="PASS",
             )
+            migrate_v1_to_v2(
+                database,
+                Path(temporary.name) / "private-v1-backup.sqlite3",
+                validator,
+                owners_stopped=True,
+            )
+            v2 = SQLiteV2RunRepository(database, validator)
+            compiler = ActionCompiler(
+                validator,
+                (
+                    ToolBinding(
+                        "append_service_note",
+                        "1",
+                        "demo-note-adapter",
+                        "demo-binding-v1",
+                        "service-demo",
+                        str(uuid4()),
+                    ),
+                ),
+            )
+            actions = SQLiteActionRepository(v2, compiler)
+            try:
+                actions.admit(
+                    AdmissionCommand(write.json()["run_id"], 5, "package-subject", str(uuid4()))
+                )
+            except BindingError as exc:
+                assert exc.code is BindingCode.LEGACY
+            else:
+                raise AssertionError("Legacy approval must never admit an Action")
+            v2_app = create_app(planning, run_service=RunService(v2, planning))
+            async with httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=v2_app), base_url="http://127.0.0.1"
+            ) as v2_client:
+                new = await v2_client.post(
+                    "/api/runs", json={"text": "New separately approved proposal"}
+                )
+                bound = await v2_client.post(
+                    new.headers["location"] + "/approval",
+                    json={"decision": "APPROVE", "expected_version": 4},
+                )
+                assert bound.status_code == 200 and provider.calls == 4
+                request = AdmissionCommand(new.json()["run_id"], 5, "package-subject", str(uuid4()))
+                admitted = actions.admit(request)
+                assert admitted.created and admitted.action.version == 1
+                assert actions.admit(request).action == admitted.action
+                reopened = SQLiteActionRepository(
+                    SQLiteV2RunRepository(database, validator), compiler
+                )
+                assert reopened.get(admitted.action.action_id) == admitted.action
+                assert reopened.admit(request).action.effect_key == admitted.action.effect_key
+                assert (
+                    await v2_client.get(new.headers["location"] + "/actions")
+                ).status_code == 404
+                assert provider.calls == 4
+            action_results.update(
+                migration="PASS",
+                legacy_denial="PASS",
+                bound_approval="PASS",
+                admission_replay_reopen="PASS",
+                pending_version=1,
+                action_http_routes="NOT_IMPLEMENTED",
+                tool_calls=0,
+            )
             return page.status_code, response.status_code
 
     try:
@@ -136,12 +215,14 @@ def verify(source, output):
         "package_import_location": str(package),
         "isolated_environment": str(Path(sys.prefix)),
         "schema_sha256": schema_hashes,
+        "runtime_sha256": runtime_hashes,
         "static_page_http_status": page_status,
         "static_page_sha256": hashlib.sha256(static_page).hexdigest(),
         "run_ui_resource_byte_identical": True,
         "plan_http_status": plan_status,
         "provider_calls": provider.calls,
         "day2": run_results,
+        "day3_prompt2": action_results,
         "versions": {name: version(name) for name in ("fastapi", "httpx", "jsonschema", "uvicorn")},
     }
     output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")

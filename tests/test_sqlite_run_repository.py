@@ -251,11 +251,13 @@ def test_unsupported_schema_is_not_changed(tmp_path, validator, change):
     assert path.read_bytes() == before
 
 
-def fault_connections(monkeypatch, *, statement=None, commit_mode=None):
+def fault_connections(monkeypatch, *, statement=None, commit_mode=None, before_statement=False):
     original = sqlite_schema.open_existing
 
     class FaultConnection(sqlite3.Connection):
         def execute(self, sql, parameters=()):
+            if before_statement and statement and sql.startswith(statement):
+                raise sqlite3.OperationalError("private injected SQL failure")
             result = super().execute(sql, parameters)
             if statement and sql.startswith(statement):
                 raise sqlite3.OperationalError("private injected SQL failure")
@@ -281,24 +283,25 @@ def fault_connections(monkeypatch, *, statement=None, commit_mode=None):
     return original
 
 
-@pytest.mark.parametrize("stage", ["update", "decision", "event", "commit"])
-def test_approval_rolls_back_at_each_write_boundary(run_repository, monkeypatch, stage):
+@pytest.mark.parametrize("choice", list(ApprovalChoice))
+@pytest.mark.parametrize("stage", ["before-update", "update", "decision", "event", "commit"])
+def test_approval_rolls_back_at_each_write_boundary(run_repository, monkeypatch, stage, choice):
     run = advance(run_repository, RunState.AwaitingApproval, Risk.SIDE_EFFECT)
     before = database_rows(run_repository.path)
     with monkeypatch.context() as patch:
         fault_connections(
             patch,
             statement={
+                "before-update": "UPDATE runs",
                 "update": "UPDATE runs",
                 "decision": "INSERT INTO approval_decisions",
                 "event": "INSERT INTO audit_events",
             }.get(stage),
             commit_mode="before" if stage == "commit" else None,
+            before_statement=stage == "before-update",
         )
         with pytest.raises(RunStoreError) as caught:
-            run_repository.decide_approval(
-                run.run_id, ApprovalDecisionRequest(ApprovalChoice.APPROVE, 4)
-            )
+            run_repository.decide_approval(run.run_id, ApprovalDecisionRequest(choice, 4))
         assert caught.value.code == RunErrorCode.DATABASE_UNAVAILABLE
         assert "private" not in str(caught.value) and caught.value.run_id == run.run_id
     assert database_rows(run_repository.path) == before
@@ -391,17 +394,36 @@ def test_real_two_connection_approval_race(run_repository, monkeypatch):
     assert database_rows(run_repository.path) == rows
 
 
-def test_bounded_held_database_lock_changes_nothing(run_repository):
-    run = advance(run_repository, RunState.AwaitingApproval, Risk.SIDE_EFFECT)
+@pytest.mark.parametrize("operation", ["create", "start", "save", "route", "approve", "reject"])
+def test_bounded_held_database_lock_changes_nothing(run_repository, operation):
+    state = {
+        "create": RunState.IntentReceived,
+        "start": RunState.IntentReceived,
+        "save": RunState.PlanGenerating,
+        "route": RunState.PlanValidated,
+    }.get(operation, RunState.AwaitingApproval)
+    run = advance(run_repository, state, Risk.SIDE_EFFECT)
+    operations = {
+        "create": lambda: run_repository.create(str(uuid4()), Intent("Read"), utc_now()),
+        "start": lambda: run_repository.start_generation(run.run_id, 1),
+        "save": lambda: run_repository.save_validated_plan(
+            run.run_id, 2, plan_for(run_repository.validator, Risk.SIDE_EFFECT)
+        ),
+        "route": lambda: run_repository.route_validated_plan(run.run_id, 3),
+        "approve": lambda: run_repository.decide_approval(
+            run.run_id, ApprovalDecisionRequest(ApprovalChoice.APPROVE, 4)
+        ),
+        "reject": lambda: run_repository.decide_approval(
+            run.run_id, ApprovalDecisionRequest(ApprovalChoice.REJECT, 4)
+        ),
+    }
     rows = database_rows(run_repository.path)
     blocker = independent_connection(run_repository)
     blocker.execute("BEGIN IMMEDIATE")
     started = time.monotonic()
     try:
         with pytest.raises(RunStoreError) as caught:
-            run_repository.decide_approval(
-                run.run_id, ApprovalDecisionRequest(ApprovalChoice.APPROVE, 4)
-            )
+            operations[operation]()
         assert caught.value.code == RunErrorCode.DATABASE_UNAVAILABLE
         assert time.monotonic() - started < 1.5
         assert (

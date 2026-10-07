@@ -36,6 +36,7 @@ SCENARIOS = [
     ("approval-before", "SIDE_EFFECT", "REJECT"),
     ("approval-after", "SIDE_EFFECT", "APPROVE"),
     ("approval-after", "SIDE_EFFECT", "REJECT"),
+    ("plan-rejected", "SIDE_EFFECT", "APPROVE"),
 ]
 
 
@@ -122,6 +123,7 @@ def test_real_kill_and_fresh_process_recovery(tmp_path, stage, risk, choice):
         "routed": "Ready" if risk == "READ_ONLY" else "AwaitingApproval",
         "approval-before": "AwaitingApproval",
         "approval-after": "Approved" if choice == "APPROVE" else "Rejected",
+        "plan-rejected": "PlanRejected",
     }[stage]
     assert before["runs"][0][2] == expected_pre
     first = fresh_reopen(path, tmp_path)
@@ -148,6 +150,8 @@ def test_real_kill_and_fresh_process_recovery(tmp_path, stage, risk, choice):
     assert len(first["rows"]["audit_events"]) == run["version"]
     second = fresh_reopen(path, tmp_path)
     assert second["rows"] == first["rows"] and second["runs"] == first["runs"]
+    third = fresh_reopen(path, tmp_path)
+    assert third["rows"] == first["rows"] and third["runs"] == first["runs"]
     EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
     (EVIDENCE_DIR / f"{stage}-{risk}-{choice}.json").write_text(
         json.dumps(
@@ -156,12 +160,14 @@ def test_real_kill_and_fresh_process_recovery(tmp_path, stage, risk, choice):
                 "terminated_pid": process.pid,
                 "exit_code": process.returncode,
                 "initial_provider_calls": handshake["provider_calls"],
-                "reopen_pids": [first["pid"], second["pid"]],
+                "reopen_pids": [first["pid"], second["pid"], third["pid"]],
                 "pre_restart_state": expected_pre,
                 "recovered_run": run,
                 "recovery_calls": first["calls"],
                 "repeated_recovery_calls": second["calls"],
-                "recovery_tool_calls": first["tool_calls"] + second["tool_calls"],
+                "third_recovery_calls": third["calls"],
+                "recovery_passes": 3,
+                "recovery_tool_calls": sum(r["tool_calls"] for r in (first, second, third)),
                 "audit_count": len(first["rows"]["audit_events"]),
                 "decision_count": len(decisions),
                 "repeat_unchanged": True,

@@ -45,6 +45,8 @@ def populate(path, stage, risk, choice):
 
         async def generate_plan(self, intent, **kwargs):
             self.calls += 1
+            if stage == "plan-rejected":
+                return "private controlled invalid JSON"
             return json.dumps(plan_for(validator, risk).to_dict())
 
     provider = ControlledProvider()
@@ -78,6 +80,8 @@ def populate(path, stage, risk, choice):
     run = asyncio.run(
         RunService(repository, PlanningService(provider, validator)).create(Intent("Plan"))
     )
+    if stage == "plan-rejected":
+        pause(run.run_id, provider, stage)
     if stage == "approval-before":
 
         class BeforeCommitConnection(sqlite3.Connection):

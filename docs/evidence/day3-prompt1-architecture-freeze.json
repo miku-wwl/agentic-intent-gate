@@ -1,0 +1,680 @@
+{
+  "task": "DAY3_PROMPT1_ACTION_EXECUTION_BOUNDARY_ARCHITECTURE_FREEZE",
+  "recorded_at_utc": "2026-10-07T10:41:34Z",
+  "lane": "DOC_ONLY_ARCHITECTURE_REVIEW",
+  "base_commit": "622edb4bf030fc0a0f8cd9b43336ad8e8153894b",
+  "base_tag": "day2-final-freeze",
+  "frozen_day2_commit": "c7d3e1ee051af40c69ec33d888ecf16475a2d789",
+  "preflight": {
+    "branch": "main",
+    "working_tree_clean": true,
+    "head": "622edb4bf030fc0a0f8cd9b43336ad8e8153894b",
+    "tag_on_head": false,
+    "freeze_tag_is_ancestor": true,
+    "commits_after_freeze": 1,
+    "post_freeze_change": "docs/day2-inventory.md only",
+    "tag_type": "annotated"
+  },
+  "reviewed_assets": {
+    "handoff": [
+      "README.md",
+      "docs/day2-inventory.md",
+      "docs/day2-final-freeze.md",
+      "docs/day2-state-architecture-freeze.md",
+      "docs/day2-prompt4-hardening.md"
+    ],
+    "adrs": [
+      "ADR-002",
+      "ADR-003",
+      "ADR-004",
+      "ADR-005",
+      "ADR-006",
+      "ADR-007",
+      "ADR-011",
+      "ADR-012"
+    ],
+    "implementation": [
+      "domain/contracts.py",
+      "domain/validation.py",
+      "domain/run.py",
+      "domain/approval.py",
+      "application/runs.py",
+      "application/recover_runs.py",
+      "ports/run_repository.py",
+      "adapters/tool_catalog.py",
+      "adapters/sqlite_schema.py",
+      "adapters/sqlite_run_repository.py",
+      "adapters/local_http.py",
+      "main.py"
+    ],
+    "schemas": [
+      "day1-intent.schema.json",
+      "day1-plan.schema.json",
+      "day2-run.schema.json",
+      "day2-approval.schema.json"
+    ],
+    "tests": "Run contracts/repository/service/API, hardening, killed-process recovery and browser infrastructure inspected; no test execution"
+  },
+  "day2_baseline": {
+    "run_states": [
+      "IntentReceived",
+      "PlanGenerating",
+      "PlanValidated",
+      "Ready",
+      "AwaitingApproval",
+      "Approved",
+      "Rejected",
+      "PlanRejected"
+    ],
+    "sqlite_schema": 1,
+    "approved_is_execution": false,
+    "approval_body": [
+      "decision",
+      "expected_version",
+      "optional reason"
+    ],
+    "trusted_server_state_version_risk": true,
+    "planning_attempt_max": 1,
+    "model_retry": false,
+    "model_fallback": false,
+    "recovery": "deterministic/model-free/tool-free/idempotent",
+    "archived_regression": {
+      "passed": 686,
+      "failed": 0,
+      "errors": 0,
+      "live_deselected": 5,
+      "rerun_in_this_prompt": false
+    }
+  },
+  "turn": {
+    "required": false,
+    "chosen": "Run + Action",
+    "rationale": "Run already owns one immutable Intent/Plan; no conversation or repeated planning invariant requires Turn",
+    "rejected": [
+      "Run + Turn + Action",
+      "execution fields on frozen Run"
+    ]
+  },
+  "action": {
+    "definition": "Durable logical operation record compiled from one Plan step, distinct from an execution attempt and from authorization",
+    "creation_boundary": "Explicit POST /api/runs/{run_id}/actions after revalidated Approved/v5; no automatic creation on planning/routing/approval",
+    "cardinality": {
+      "model": "0..N, one per admitted Plan step",
+      "mvp": "0 before admission; exactly 1 for the complete single append_service_note/1 Plan; reject unsupported whole Plans"
+    },
+    "immutable_fields": [
+      "action_id",
+      "run_id",
+      "approved_run_version",
+      "approval_decision_id",
+      "plan_digest",
+      "step_index",
+      "tool_name",
+      "tool_version",
+      "target",
+      "normalized_arguments",
+      "risk_class",
+      "compiler_revision",
+      "adapter_id",
+      "binding_revision",
+      "execution_scope",
+      "spec_digest",
+      "effect_key",
+      "created_at"
+    ],
+    "states": [
+      "Pending",
+      "Authorized",
+      "Executing",
+      "Succeeded",
+      "Failed",
+      "Unknown"
+    ],
+    "mvp_edges": [
+      [
+        "Pending",
+        "Authorized"
+      ],
+      [
+        "Authorized",
+        "Executing"
+      ],
+      [
+        "Executing",
+        "Succeeded"
+      ],
+      [
+        "Executing",
+        "Failed"
+      ],
+      [
+        "Executing",
+        "Unknown"
+      ]
+    ],
+    "future_reconciliation_only_edges": [
+      [
+        "Unknown",
+        "Succeeded"
+      ],
+      [
+        "Unknown",
+        "Failed"
+      ]
+    ],
+    "versioning": "Independent CAS: creation v1, authorization v2, claim v3, outcome/recovery v4; future evidence-only resolution v5; no Run.version mutation",
+    "attempts": "One durable attempt per Action in MVP; no retry edge"
+  },
+  "compilation": {
+    "server_controlled": true,
+    "input": "Reloaded immutable approved Run/Plan + valid decision + trusted catalog/registry",
+    "rules": [
+      "Reuse strict parsing/schema/semantic/risk recomputation",
+      "Whole Plan must contain only append_service_note/1 SIDE_EFFECT for service-demo",
+      "Resolve exact server binding/compiler/execution_scope",
+      "Canonical serialization preserves note/business content",
+      "SHA-256 binds Plan/step/arguments/target/risk/decision/compiler/binding/scope",
+      "Reject stored mismatch or stronger/changed policy; never repair silently"
+    ]
+  },
+  "authorization": {
+    "boundary": "Verified PrincipalContext -> deny-by-default AuthorizationPort -> exact-spec permission record; fresh execute permission check",
+    "mvp_principal": "One privately provisioned local bearer capability mapped to stable server-owned local-demo subject and fixed scope; no human/distinct-approver claim",
+    "capability_min_entropy_bits": 256,
+    "record_fields": [
+      "authorization_id",
+      "subject_id",
+      "spec_digest",
+      "policy_revision",
+      "authorized_at"
+    ],
+    "local_user_is_authority": false,
+    "approval_required_tool_execution": false,
+    "missing_verifier_or_grant": "DENY; no permissive fixture in product",
+    "current_policy": "No hot policy update or renewal in MVP; stale/revoked authority cannot claim; prior owner must drain/stop before reconfiguration"
+  },
+  "execution": {
+    "explicit_command": "Separate authorize and POST /api/actions/{action_id}/execute, expected_action_version + Idempotency-Key + verified Authorization header",
+    "retry_default": "NO_AUTOMATIC_RETRY",
+    "unknown_outcome": "Unknown when dispatch/result/local commit cannot establish the effect",
+    "claim_model": "Action state/version CAS + unique durable attempt_id, no automatic expiry/lease takeover",
+    "dispatch_permission": "Only confirmed winning claim commit; unconfirmed claim commit yields no adapter invocation",
+    "transaction_model": "short gate claim transaction -> one external call -> short gate result transaction",
+    "adapter_deadline_seconds": 5,
+    "command_budget_seconds": 10,
+    "timing_limit": "No hard disk/OS fault or physical cancellation guarantee",
+    "delivery_semantics": "At most one gateway dispatch opportunity per Action in supported single-owner scope; local once-only state edge != exactly-once external effect; no at-least-once liveness guarantee",
+    "exactly_once_external_claimed": false
+  },
+  "idempotency": {
+    "control_plane": {
+      "generated_by": "Caller UUIDv4 persisted before each logical command",
+      "scope": [
+        "subject_id",
+        "operation",
+        "resource_id",
+        "Idempotency-Key"
+      ],
+      "persisted_in": "action_command_receipts",
+      "fingerprint": "Canonical body including expected version",
+      "exact_replay": "Fresh authentication/visibility then receipt lookup before CAS; return current snapshot/replayed=true; no grant/attempt/event/dispatch",
+      "changed_body": "409 IDEMPOTENCY_CONFLICT",
+      "different_key": "Cannot bypass Action state/Run-step/attempt uniqueness",
+      "ttl": false
+    },
+    "external_side_effect": {
+      "generated_by": "Server once at Action creation",
+      "identity": "Persisted effect_key",
+      "scope": [
+        "execution_scope",
+        "tool_name",
+        "tool_version",
+        "target"
+      ],
+      "passed_to_adapter": true,
+      "payload_binding": "Exact normalized payload digest",
+      "stable_namespace": "Persist in Action and external store metadata; never a per-startup/deployment suffix",
+      "no_key_provider": "Preserve Unknown; no blind resend"
+    },
+    "safe_retry_future_requirements": [
+      "Declared downstream key scope/payload/retention guarantee",
+      "Same stable key and payload",
+      "Prior executor quiescence",
+      "Fresh authority and applicable consent",
+      "Separately accepted versioned attempt transition"
+    ],
+    "cross_run_semantic_dedup": false
+  },
+  "tool_boundary": {
+    "metadata_catalog": "Existing non-callable trusted proposal definitions unchanged",
+    "executable_registry": "Separate explicit versioned server-owned binding",
+    "executor_port": "Immutable ExecutionSpec + effect key + attempt_id + bounded context; no raw Run/HTTP/gate DB/credential or state mutation",
+    "outcomes": [
+      "SUCCESS",
+      "CONFIRMED_FAILURE",
+      "UNKNOWN_OUTCOME"
+    ],
+    "mvp_tool": "append_service_note/1",
+    "mvp_risk": "SIDE_EFFECT",
+    "mvp_target": "service-demo",
+    "demo_resource": "Explicitly provisioned isolated separate SQLite note/receipt store; effect+receipt atomic inside external store only; no gate ATTACH/cross-store atomicity claim",
+    "unbound_tools": [
+      "get_service_record/1",
+      "set_maintenance_mode/1"
+    ],
+    "sandbox_claimed": false
+  },
+  "crash_windows": [
+    {
+      "case": "A",
+      "observation": "Authorized before claim or Executing after committed claim but before call",
+      "recovery": "Leave Authorized; claimed branch -> Unknown",
+      "automatic_retry": false,
+      "reconciliation": "Required for claimed branch; unclaimed fresh explicit execute may pass"
+    },
+    {
+      "case": "B",
+      "observation": "Executing; remote outcome unknown",
+      "recovery": "Unknown once, no resend",
+      "automatic_retry": false,
+      "reconciliation": "Future authoritative evidence/operator investigation"
+    },
+    {
+      "case": "C",
+      "observation": "External success may exist, local result absent/uncertain",
+      "recovery": "Validate what committed; still-Executing -> Unknown",
+      "automatic_retry": false,
+      "reconciliation": "Receipt proof may support future Succeeded"
+    },
+    {
+      "case": "D",
+      "observation": "External confirmed-failure response lost before local commit",
+      "recovery": "Unknown, never infer Failed",
+      "automatic_retry": false,
+      "reconciliation": "Reliable no-effect evidence required"
+    },
+    {
+      "case": "E",
+      "observation": "Local Succeeded/result/event/command receipt committed; HTTP response lost",
+      "recovery": "Unchanged; same-key replay/GET reads current result",
+      "automatic_retry": false,
+      "reconciliation": "Not needed if ledger valid"
+    }
+  ],
+  "persistence": {
+    "current_schema": 1,
+    "future_schema": 2,
+    "migration_required": true,
+    "new_concepts": [
+      "actions",
+      "action_authorizations",
+      "action_attempts",
+      "action_command_receipts",
+      "action_events"
+    ],
+    "old_tables_unchanged": true,
+    "migration": "Explicit offline upgrade after quiescence and consistent v1 backup; atomic new schema/indexes/user_version=2; no destructive reset/automatic startup repair",
+    "v1_validator": "Default strict v1 still rejects 2; future v2 composition explicitly selects validated v2 contract",
+    "future_version": "v2 rejects >2 and incompatible/corrupt/partial schemas",
+    "rollback": "Frozen code + consistent pre-migration v1 backup; no blind version decrement/drop"
+  },
+  "recovery": {
+    "rules": {
+      "Pending": "unchanged; no authorize/execute",
+      "Authorized": "unchanged; fresh permission required on execute",
+      "Executing": "guarded Unknown once",
+      "Succeeded": "unchanged",
+      "Failed": "unchanged",
+      "Unknown": "unchanged; future evidence-only resolution"
+    },
+    "model_calls": 0,
+    "tool_calls": 0,
+    "scope": "Proposed contract, not an executed observation in this prompt",
+    "prior_owner_stopped_required": true,
+    "automatic_replay": false,
+    "public_reconciliation_in_mvp": false
+  },
+  "audit": {
+    "model": "Separate action_events plus immutable authorization/attempt/accepted-command facts",
+    "required_facts": [
+      "created",
+      "authorized",
+      "execution requested",
+      "claimed/start opportunity",
+      "succeeded",
+      "confirmed failure",
+      "unknown",
+      "future evidence-bound reconciliation"
+    ],
+    "atomic_with_mutation": true,
+    "logs_are_execution_truth": false,
+    "secrets_or_full_payloads_in_events": false
+  },
+  "http": {
+    "new_surface": [
+      {
+        "method": "POST",
+        "path": "/api/runs/{run_id}/actions",
+        "body": [
+          "expected_run_version"
+        ],
+        "success": "201 new / 200 identical existing or receipt replay"
+      },
+      {
+        "method": "GET",
+        "path": "/api/runs/{run_id}/actions",
+        "body": [],
+        "success": "200 pure list, possibly empty"
+      },
+      {
+        "method": "GET",
+        "path": "/api/actions/{action_id}",
+        "body": [],
+        "success": "200 pure ActionSnapshot"
+      },
+      {
+        "method": "POST",
+        "path": "/api/actions/{action_id}/authorize",
+        "body": [
+          "expected_action_version"
+        ],
+        "success": "200 permission record only"
+      },
+      {
+        "method": "POST",
+        "path": "/api/actions/{action_id}/execute",
+        "body": [
+          "expected_action_version"
+        ],
+        "success": "200 durable outcome; 202 accepted replay while Executing"
+      }
+    ],
+    "mutation_headers": [
+      "Authorization",
+      "Idempotency-Key"
+    ],
+    "read_permission_required": true,
+    "new_error_envelope": [
+      "run_id",
+      "action_id",
+      "error.code",
+      "error.message"
+    ],
+    "retry_or_reconcile_api": false,
+    "existing_run_api_changed": false
+  },
+  "security": {
+    "invariants": [
+      "No model endpoint/credential/executor selection",
+      "No user binding/actor/argument override",
+      "No dynamic import/arbitrary shell/direct model-to-tool path",
+      "Arguments/risk/catalog/binding/spec validated before claim",
+      "Server allowlist and verified authorization required",
+      "Explicit execute only",
+      "Managed credentials never enter Plan/model/logs/ledger",
+      "Safe fixed outcome/errors",
+      "Capability not in browser persistent storage/URL",
+      "In-process port is not a malicious-adapter sandbox"
+    ],
+    "threat_review": {
+      "prompt_injection": "PREVENTED_BY_ARCHITECTURE",
+      "argument_injection": "REQUIRES_IMPLEMENTATION_CONTROL",
+      "ssrf": "REQUIRES_IMPLEMENTATION_CONTROL",
+      "command_injection": "PREVENTED_BY_ARCHITECTURE",
+      "path_traversal": "REQUIRES_IMPLEMENTATION_CONTROL",
+      "credential_exfiltration": "REQUIRES_IMPLEMENTATION_CONTROL",
+      "tool_substitution": "REQUIRES_IMPLEMENTATION_CONTROL",
+      "approval_bypass": "REQUIRES_IMPLEMENTATION_CONTROL",
+      "authorization_bypass": "REQUIRES_IMPLEMENTATION_CONTROL",
+      "duplicate_side_effects": "REQUIRES_IMPLEMENTATION_CONTROL",
+      "replay": "REQUIRES_IMPLEMENTATION_CONTROL",
+      "stale_action": "REQUIRES_IMPLEMENTATION_CONTROL",
+      "persisted_argument_tampering": "REQUIRES_IMPLEMENTATION_CONTROL",
+      "privileged_host_or_malicious_plugin": "DEFERRED"
+    },
+    "runtime_controls_verified": false
+  },
+  "mvp": {
+    "scope": [
+      "Run + Action, no Turn",
+      "One local capability principal and fixed demo scope",
+      "One approved single-step append_service_note/1 SIDE_EFFECT",
+      "Durable compiler/Action/grant/claim/result-or-Unknown",
+      "One isolated provider-like note/receipt adapter",
+      "CAS/command idempotency/tool-free recovery",
+      "Browser and actual killed-process/effect evidence in later prompts"
+    ],
+    "next_prompts": [
+      {
+        "prompt": 2,
+        "scope": "persistence/compiler/explicit migration"
+      },
+      {
+        "prompt": 3,
+        "scope": "verified local capability/authorization/gateway/demo adapter"
+      },
+      {
+        "prompt": 4,
+        "scope": "separate Action UI/real backend browser E2E"
+      },
+      {
+        "prompt": 5,
+        "scope": "crash/idempotency/unknown-outcome hardening"
+      },
+      {
+        "prompt": 6,
+        "scope": "final freeze"
+      }
+    ]
+  },
+  "decisions": [
+    {
+      "id": "TURN_REQUIRED",
+      "decision": "NO; Run + Action",
+      "rationale": "A Run already identifies one immutable Intent/Plan; no conversation or repeated planning invariant needs Turn.",
+      "rejected_alternatives": "Run + Turn + Action; execution fields on Run",
+      "consequences": "Turn is deferred; Action cannot mutate the frozen Run lifecycle."
+    },
+    {
+      "id": "ACTION_DEFINITION",
+      "decision": "Durable identity for one compiled Plan-step operation; attempts are separate facts.",
+      "rationale": "A logical effect must outlive requests and process attempts.",
+      "rejected_alternatives": "Action-as-HTTP-request; Action-as-attempt",
+      "consequences": "One Action keeps one stable effect identity and independently records execution truth."
+    },
+    {
+      "id": "ACTION_CREATION_TIME",
+      "decision": "Explicit POST /api/runs/{run_id}/actions after Approved; no execution.",
+      "rationale": "Admission is separate from planning, approval, authorization and dispatch.",
+      "rejected_alternatives": "During planning; at validation/routing/approval automatically",
+      "consequences": "Only a reloaded, validated, approved Plan can supply an Action; admission is idempotent."
+    },
+    {
+      "id": "ACTION_CARDINALITY",
+      "decision": "Model 0..N, one per admitted step; MVP accepts exactly one append_service_note step.",
+      "rationale": "The frozen Plan supports multiple steps, but sequencing is not needed for this MVP.",
+      "rejected_alternatives": "One Action per Run regardless of steps; partial admission of unsupported Plans",
+      "consequences": "No Actions before admission; multi-step/read/APPROVAL_REQUIRED execution is rejected as a whole."
+    },
+    {
+      "id": "ACTION_STATE_MACHINE",
+      "decision": "Pending, Authorized, Executing, Succeeded, Failed, Unknown",
+      "rationale": "Separate recorded permission and dispatch; preserve uncertain effects.",
+      "rejected_alternatives": "Run states; treating timeout as Failed; extra scheduling states",
+      "consequences": "Unknown is non-executable and requires evidence for any future resolution."
+    },
+    {
+      "id": "ACTION_VERSIONING",
+      "decision": "Independent Action CAS, starting at 1; each state mutation +1.",
+      "rationale": "Execution concurrency must not change Run.version.",
+      "rejected_alternatives": "Reuse Run CAS; timestamp ordering; last-write-wins",
+      "consequences": "Admission, authorization, claim and completion have their own guards."
+    },
+    {
+      "id": "PLAN_TO_ACTION_COMPILATION",
+      "decision": "Trusted, versioned compiler over server-loaded Plan and decision.",
+      "rationale": "Proposal data needs execution-specific binding and canonical identity.",
+      "rejected_alternatives": "Copy client/model JSON directly into an executor",
+      "consequences": "Canonicalization preserves business content; stronger policy or binding mismatch rejects."
+    },
+    {
+      "id": "AUTHORIZATION_BOUNDARY",
+      "decision": "Verified PrincipalContext + deny-by-default AuthorizationPort; bound authorization record and fresh claim check.",
+      "rationale": "LOCAL_USER and Approved establish no authenticated permissions.",
+      "rejected_alternatives": "Approve means permission; body actor fields; permissive test authorizer in production",
+      "consequences": "MVP permits one private local execution capability and fixed demo scope; full user/RBAC consent is deferred."
+    },
+    {
+      "id": "EXECUTION_COMMAND_BOUNDARY",
+      "decision": "Separate authorize then explicit execute with expected_action_version and Idempotency-Key.",
+      "rationale": "An operator must request dispatch independently of approval.",
+      "rejected_alternatives": "Approval webhook auto-dispatch; execute embedded in Run creation",
+      "consequences": "No model call or implicit tool call occurs in admission or authorization."
+    },
+    {
+      "id": "IDEMPOTENCY_MODEL",
+      "decision": "Durable scoped command receipts; stable server effect_key and persisted execution_scope per Action.",
+      "rationale": "A repeated request and a repeated external effect have different identities.",
+      "rejected_alternatives": "Process cache; model IDs; regenerate effect key for each request",
+      "consequences": "Duplicates map to prior accepted work; different Runs remain distinct intentional operations."
+    },
+    {
+      "id": "RETRY_POLICY",
+      "decision": "No automatic execution retry; MVP one attempt per Action.",
+      "rationale": "Even a timeout or lost local result can hide a completed effect.",
+      "rejected_alternatives": "Generic exception retry; retry Unknown as Failed",
+      "consequences": "Future retry needs provider contract, unchanged key/payload, quiescence, fresh authority and reviewed new attempt semantics."
+    },
+    {
+      "id": "UNKNOWN_OUTCOME_MODEL",
+      "decision": "Unknown after uncertain dispatch/result/commit; no inferred success or failure.",
+      "rationale": "Gate DB and external effect do not share one transaction.",
+      "rejected_alternatives": "Assume rollback means no remote effect; timeout equals failure",
+      "consequences": "Future evidence-bound reconciliation may resolve Unknown, never blindly resend."
+    },
+    {
+      "id": "TOOL_ADAPTER_PORT",
+      "decision": "ToolExecutor receives immutable ExecutionSpec, effect identity and bounded attempt context.",
+      "rationale": "The adapter needs effect data, not control-plane mutation powers.",
+      "rejected_alternatives": "Raw Run, HTTP Request, gate DB connection, arbitrary callable",
+      "consequences": "Only the gateway invokes the selected adapter; outcomes are SUCCESS, CONFIRMED_FAILURE or UNKNOWN_OUTCOME."
+    },
+    {
+      "id": "TOOL_BINDING_MODEL",
+      "decision": "Separate metadata catalog and explicit server-owned executable registry.",
+      "rationale": "Metadata acceptance must not grant executable capability.",
+      "rejected_alternatives": "Catalog insertion automatically registers execution; dynamic imports",
+      "consequences": "Only append_service_note/1 has an MVP binding to the isolated demo adapter."
+    },
+    {
+      "id": "TRANSACTION_BOUNDARY",
+      "decision": "Short admission/grant/claim/result transactions with paired facts; external call between claim and result.",
+      "rationale": "A local DB cannot atomically commit an external side effect.",
+      "rejected_alternatives": "DB lock across tool I/O; cross-file atomic-effect claim",
+      "consequences": "Result-persistence failure leaves uncertainty and lookup handles, never automatic replay."
+    },
+    {
+      "id": "EXECUTION_CLAIM_MODEL",
+      "decision": "Action state/version CAS + one durable attempt_id; no expiring lease.",
+      "rationale": "One app owner needs one winning dispatch, not takeover machinery.",
+      "rejected_alternatives": "Lease expiry; background worker; process lock alone",
+      "consequences": "Only confirmed winning claim receives a dispatch permit; old completions are fenced."
+    },
+    {
+      "id": "ACTION_RECOVERY_MODEL",
+      "decision": "Validate ledger; Executing -> Unknown once; all other states unchanged.",
+      "rationale": "Startup cannot prove whether a committed claim sent an effect.",
+      "rejected_alternatives": "Replay pending/claimed work; query tools at startup",
+      "consequences": "Recovery remains deterministic/model-free/tool-free and requires stopped predecessor."
+    },
+    {
+      "id": "AUDIT_MODEL",
+      "decision": "Separate action_events and durable command/authorization/attempt facts.",
+      "rationale": "Day 2 audit schema and version chain are frozen.",
+      "rejected_alternatives": "Overload Run audit payloads; diagnostic logs as execution truth",
+      "consequences": "Each Action mutation pairs one event; accepted execution request is recorded atomically with claim."
+    },
+    {
+      "id": "SQLITE_V2_DIRECTION",
+      "decision": "Explicit offline atomic v1 -> v2 migration; preserve v1 rows/DDL; add five logical tables.",
+      "rationale": "Action facts cannot be hidden in frozen Run tables.",
+      "rejected_alternatives": "Reset DB; automatic startup migration; weaken v1 validation",
+      "consequences": "v1 remains current; future v2 mode is explicitly composed and rollback requires a consistent v1 backup."
+    },
+    {
+      "id": "HTTP_API_DIRECTION",
+      "decision": "Five APIs: Action admission/list/detail/authorize/execute; no public retry/reconcile API in MVP.",
+      "rationale": "Separate creation and permission make the boundary inspectable; reads support lost-response lookup.",
+      "rejected_alternatives": "GET that creates Actions; unnecessary generic update or scheduler APIs",
+      "consequences": "Strict bodies, safe envelopes, CAS and scoped idempotency apply only to new commands."
+    },
+    {
+      "id": "DAY3_MVP_SCOPE",
+      "decision": "One local operator capability, one approved single-step SIDE_EFFECT Plan, one demo note adapter and one attempt.",
+      "rationale": "This proves the gate/effect crash boundary without full platform machinery.",
+      "rejected_alternatives": "Multi-tool, APPROVAL_REQUIRED execution, Turn, cloud/MCP/HA",
+      "consequences": "Full authenticated distinct consent, multi-step execution and reconciliation remain future gates."
+    }
+  ],
+  "p0": [],
+  "p1": [],
+  "p2": [
+    "Turn/conversations and multiple-step/read-tool execution",
+    "Full user identity/RBAC and authenticated distinct consent/expiry; APPROVAL_REQUIRED execution stays disabled",
+    "Evidence-bound reconciliation/public resolver and grant renewal",
+    "Generic retry/compensation, workers/HA/distributed ownership",
+    "Cloud/MCP/broader adapter ecosystem and production durability/security certification",
+    "Cross-browser/WCAG and long-duration local model/production operations evidence"
+  ],
+  "verification": {
+    "architecture_review": "All mandatory design areas resolved at DOC_ONLY level; 21 decisions with rationale/rejected alternatives/consequences",
+    "architecture_sections": 23,
+    "decision_count": 21,
+    "future_prompts": 5,
+    "markdown_sections_links_whitespace": "PASS on three Markdown artifacts",
+    "tracked_files": 121,
+    "tracked_manifest_before": "40b20b280c9c00ab81736a863172c5d5fbc5117f4ca481c7f580c51f77aa4755",
+    "tracked_manifest_after": "40b20b280c9c00ab81736a863172c5d5fbc5117f4ca481c7f580c51f77aa4755",
+    "tracked_bytes_unchanged": true,
+    "inventory_sha256_before": "efcd3a85fc5b6a80aa24d44b20c76b632e1b741104bc06edd1e65a2889a736e2",
+    "inventory_sha256_after": "efcd3a85fc5b6a80aa24d44b20c76b632e1b741104bc06edd1e65a2889a736e2",
+    "product_tests_run": 0,
+    "live_ollama_calls": 0,
+    "external_business_tool_calls": 0,
+    "runtime_execution_verified": false,
+    "final_four_file_scope_check": "PASS",
+    "json_parse": "PASS",
+    "decision_text_consistency": "PASS",
+    "credential_scan": "PASS_NO_HIGH_SIGNAL_MATCHES",
+    "architecture_p0_p1_review": "PASS_DOC_ONLY",
+    "unexpected_changed_files": 0,
+    "head_after": "622edb4bf030fc0a0f8cd9b43336ad8e8153894b",
+    "tag_target_after": "c7d3e1ee051af40c69ec33d888ecf16475a2d789",
+    "review_completed_at_utc": "2026-10-07T10:43:58Z"
+  },
+  "scope": {
+    "documentation_only": true,
+    "production_code_changed": false,
+    "tests_changed": false,
+    "existing_schemas_changed": false,
+    "sqlite_v1_changed": false,
+    "run_states_changed": false,
+    "runtime_configuration_changed": false,
+    "dependencies_changed": false,
+    "frontend_changed": false,
+    "existing_evidence_changed": false,
+    "inventory_changed": false,
+    "commit": false,
+    "push": false,
+    "tag": false,
+    "release": false,
+    "execution_implemented": false
+  },
+  "files_created": [
+    "docs/day3-action-execution-architecture-freeze.md",
+    "docs/adr/ADR-013-action-ledger-execution-boundary.md",
+    "docs/day3-implementation-plan.md",
+    "docs/evidence/day3-prompt1-architecture-freeze.json"
+  ],
+  "freeze_marker": "DAY3_ACTION_EXECUTION_ARCHITECTURE_FREEZE=PASS"
+}

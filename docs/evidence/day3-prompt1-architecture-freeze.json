@@ -97,10 +97,10 @@
   },
   "action": {
     "definition": "Durable logical operation record compiled from one Plan step, distinct from an execution attempt and from authorization",
-    "creation_boundary": "Explicit POST /api/runs/{run_id}/actions after revalidated Approved/v5; no automatic creation on planning/routing/approval",
+    "creation_boundary": "Explicit admission after revalidated Approved/v5 and BOUND_V1 exact contextual Plan identity match; no automatic creation; LEGACY_UNBOUND denied",
     "cardinality": {
       "model": "0..N, one per admitted Plan step",
-      "mvp": "0 before admission; exactly 1 for the complete single append_service_note/1 Plan; reject unsupported whole Plans"
+      "mvp": "0 before admission or for legacy unbound approval; exactly 1 for the complete new exact-bound append_service_note/1 Plan; reject unsupported whole Plans"
     },
     "immutable_fields": [
       "action_id",
@@ -167,13 +167,14 @@
   },
   "compilation": {
     "server_controlled": true,
-    "input": "Reloaded immutable approved Run/Plan + valid decision + trusted catalog/registry",
+    "input": "Server-loaded Approved Run/Plan + valid decision/history + retained BOUND_V1 companion matching content/context + trusted catalog/registry",
     "rules": [
       "Reuse strict parsing/schema/semantic/risk recomputation",
+      "ADR-014 canonical-plan-v1 and approval-plan-v1 verify retained approval-time content/context before compiler or receipt replay; no legacy rebinding",
       "Whole Plan must contain only append_service_note/1 SIDE_EFFECT for service-demo",
       "Resolve exact server binding/compiler/execution_scope",
       "Canonical serialization preserves note/business content",
-      "SHA-256 binds Plan/step/arguments/target/risk/decision/compiler/binding/scope",
+      "SHA-256 spec binds Plan/step/arguments/target/risk/Run version/decision/derived approval binding/compiler/executable binding/scope",
       "Reject stored mismatch or stronger/changed policy; never repair silently"
     ]
   },
@@ -191,7 +192,9 @@
     "local_user_is_authority": false,
     "approval_required_tool_execution": false,
     "missing_verifier_or_grant": "DENY; no permissive fixture in product",
-    "current_policy": "No hot policy update or renewal in MVP; stale/revoked authority cannot claim; prior owner must drain/stop before reconfiguration"
+    "current_policy": "No hot policy update or renewal in MVP; stale/revoked authority cannot claim; prior owner must drain/stop before reconfiguration",
+    "exact_approval_required": true,
+    "legacy_permission_substitution": false
   },
   "execution": {
     "explicit_command": "Separate authorize and POST /api/actions/{action_id}/execute, expected_action_version + Idempotency-Key + verified Authorization header",
@@ -310,13 +313,19 @@
       "action_authorizations",
       "action_attempts",
       "action_command_receipts",
-      "action_events"
+      "action_events",
+      "approval_plan_bindings"
     ],
     "old_tables_unchanged": true,
     "migration": "Explicit offline upgrade after quiescence and consistent v1 backup; atomic new schema/indexes/user_version=2; no destructive reset/automatic startup repair",
     "v1_validator": "Default strict v1 still rejects 2; future v2 composition explicitly selects validated v2 contract",
     "future_version": "v2 rejects >2 and incompatible/corrupt/partial schemas",
-    "rollback": "Frozen code + consistent pre-migration v1 backup; no blind version decrement/drop"
+    "rollback": "Frozen code + consistent pre-migration v1 backup; no blind version decrement/drop",
+    "total_v2_tables": 9,
+    "approval_binding_authority": "ADR-014: one insert-only companion per decision, BOUND_V1 contextual digest or LEGACY_UNBOUND with null proof",
+    "legacy_admission": "DENY for MVP; no historical hash fabrication; distinct v2 Run/new approval",
+    "new_v2_decisions": "APPROVE and REJECT bind atomically with existing decision/Run/audit, preserving external API and v1 DDL",
+    "binding_validation": "Known revision/content/context checked on bound v2 reads/startup, admission/replay and later exact-spec gates"
   },
   "recovery": {
     "rules": {
@@ -438,7 +447,7 @@
     "scope": [
       "Run + Action, no Turn",
       "One local capability principal and fixed demo scope",
-      "One approved single-step append_service_note/1 SIDE_EFFECT",
+      "One exact-bound approved single-step append_service_note/1 SIDE_EFFECT; legacy unbound denied",
       "Durable compiler/Action/grant/claim/result-or-Unknown",
       "One isolated provider-like note/receipt adapter",
       "CAS/command idempotency/tool-free recovery",
@@ -447,7 +456,7 @@
     "next_prompts": [
       {
         "prompt": 2,
-        "scope": "persistence/compiler/explicit migration"
+        "scope": "exact approval binding/truthful legacy migration/persistence/compiler/explicit offline migration"
       },
       {
         "prompt": 3,
@@ -484,10 +493,10 @@
     },
     {
       "id": "ACTION_CREATION_TIME",
-      "decision": "Explicit POST /api/runs/{run_id}/actions after Approved; no execution.",
+      "decision": "Explicit POST /api/runs/{run_id}/actions after Approved and verified BOUND_V1 exact Plan identity; no execution.",
       "rationale": "Admission is separate from planning, approval, authorization and dispatch.",
       "rejected_alternatives": "During planning; at validation/routing/approval automatically",
-      "consequences": "Only a reloaded, validated, approved Plan can supply an Action; admission is idempotent."
+      "consequences": "Only an exact-bound reloaded approved Plan can supply an Action; legacy approval is denied and replay never bypasses proof."
     },
     {
       "id": "ACTION_CARDINALITY",
@@ -512,10 +521,10 @@
     },
     {
       "id": "PLAN_TO_ACTION_COMPILATION",
-      "decision": "Trusted, versioned compiler over server-loaded Plan and decision.",
-      "rationale": "Proposal data needs execution-specific binding and canonical identity.",
-      "rejected_alternatives": "Copy client/model JSON directly into an executor",
-      "consequences": "Canonicalization preserves business content; stronger policy or binding mismatch rejects."
+      "decision": "Trusted compiler after ADR-014 content/context approval digest verification; no rebinding.",
+      "rationale": "Current valid Plan and Approved state alone do not prove what was approved.",
+      "rejected_alternatives": "Copy client/model JSON directly into an executor; hash legacy current Plan as historical proof",
+      "consequences": "Canonicalization preserves all Plan content; missing/legacy/mismatched proof and stronger policy reject."
     },
     {
       "id": "AUTHORIZATION_BOUNDARY",
@@ -596,10 +605,10 @@
     },
     {
       "id": "SQLITE_V2_DIRECTION",
-      "decision": "Explicit offline atomic v1 -> v2 migration; preserve v1 rows/DDL; add five logical tables.",
-      "rationale": "Action facts cannot be hidden in frozen Run tables.",
-      "rejected_alternatives": "Reset DB; automatic startup migration; weaken v1 validation",
-      "consequences": "v1 remains current; future v2 mode is explicitly composed and rollback requires a consistent v1 backup."
+      "decision": "Explicit offline atomic v1 -> v2 migration; preserve v1 rows/DDL; add five Action tables and approval_plan_bindings.",
+      "rationale": "Action and exact approval evidence cannot be hidden in frozen Run tables.",
+      "rejected_alternatives": "Reset DB; automatic startup migration; fabricate legacy digests; weaken v1 validation",
+      "consequences": "Nine-table v2 mode is explicit; legacy decisions remain unbound; rollback requires a consistent v1 backup."
     },
     {
       "id": "HTTP_API_DIRECTION",
@@ -676,5 +685,18 @@
     "docs/day3-implementation-plan.md",
     "docs/evidence/day3-prompt1-architecture-freeze.json"
   ],
-  "freeze_marker": "DAY3_ACTION_EXECUTION_ARCHITECTURE_FREEZE=PASS"
+  "freeze_marker": "DAY3_ACTION_EXECUTION_ARCHITECTURE_FREEZE=PASS",
+  "approval_plan_binding_repair": {
+    "task": "DAY3_PROMPT1_5_APPROVAL_PLAN_BINDING_FREEZE",
+    "recorded_at_utc": "2026-10-07T21:31:09Z",
+    "base_commit": "5b4a75bb58e62e3671cac35926065b5f9d284275",
+    "lane": "DOC_ONLY_ARCHITECTURE_REPAIR",
+    "authoritative_adr": "docs/adr/ADR-014-approval-plan-binding.md",
+    "evidence": "docs/evidence/day3-prompt1_5-approval-plan-binding.json",
+    "prior_prompt2_result": "CORRECTLY_BLOCKED_BY_ARCHITECTURE_GAP",
+    "original_record_scope": "Original recorded_at_utc/base_commit/preflight/verification/scope/files_created remain historical Prompt 1 observations, not checks rerun by this repair. Descriptive future contracts and three decision rows above are amended by ADR-014.",
+    "new_v2_binding": "BOUND_V1",
+    "legacy_binding": "LEGACY_UNBOUND",
+    "runtime_implemented": false
+  }
 }

@@ -4,6 +4,8 @@
 
 Status: accepted architecture for Day 3 Prompt 1, 2026-10-07; DOC-ONLY. Nothing in this document is an implemented execution, authentication, migration, or crash guarantee.
 
+Amended by Day 3 Prompt 1.5 on 2026-10-08 (Pacific/Auckland), repair base 5b4a75bb58e62e3671cac35926065b5f9d284275. [ADR-014](adr/ADR-014-approval-plan-binding.md) is authoritative for exact approval-to-Plan identity and legacy eligibility; [repair evidence](evidence/day3-prompt1_5-approval-plan-binding.json) preserves the chronology of the correctly stopped Prompt 2 audit. This amendment is documentation only.
+
 Audit HEAD is 622edb4bf030fc0a0f8cd9b43336ad8e8153894b on main, initially clean. The annotated day2-final-freeze tag still resolves to c7d3e1ee051af40c69ec33d888ecf16475a2d789; the sole intervening change is the committed [Day 2 inventory](day2-inventory.md). Reviewed [README](../README.md), [final freeze](day2-final-freeze.md), [Run contract](day2-state-architecture-freeze.md), [hardening](day2-prompt4-hardening.md), domain/application/ports/adapters, four schemas, and the existing deterministic, restart and browser test structure.
 
 The repository actually contains ModelProvider, PlanningService, PlanValidator, RunService, RunRepository, SQLiteRunRepository, recover_runs, and create_app. Its metadata catalog names get_service_record, append_service_note, and set_maintenance_mode, version 1. No executable catalog, Action, executor, authenticated authorization, or Turn implementation exists. [ADR-013](adr/ADR-013-action-ledger-execution-boundary.md) records this bounded extension; the [implementation plan](day3-implementation-plan.md) lists later work.
@@ -73,9 +75,9 @@ Creation timing evaluation:
 | Immediately after Approved | Reject automatic creation: approval must not trigger admission/dispatch |
 | Explicit Action admission command after Approved | Choose: re-read and validate committed facts, then compile/persist only |
 
-The model supports Run -> 0..N Actions, one per admitted Plan step. Zero is normal before admission or for an ineligible Run. **The MVP admits exactly one Action only for an Approved Run whose entire Plan contains one append_service_note/1 SIDE_EFFECT step targeting service-demo.** A Ready read proposal, any rejected/intermediate Run, set_maintenance_mode, or any multi-step Plan is rejected as a whole. Do not silently execute a subset or treat prior proposed reads as having happened. Future N>1 requires a separately accepted sequencing/all-approvals contract.
+The model supports Run -> 0..N Actions, one per admitted Plan step. Zero is normal before admission or for an ineligible Run. **The MVP admits exactly one Action only for an Approved Run with verified BOUND_V1 approval whose entire Plan contains one append_service_note/1 SIDE_EFFECT step targeting service-demo.** A Ready read proposal, legacy unbound approval, any rejected/intermediate Run, set_maintenance_mode, or any multi-step Plan is rejected as a whole. Do not silently execute a subset or treat prior proposed reads as having happened. Future N>1 requires a separately accepted sequencing/all-approvals contract.
 
-Admission must check Run version/state, valid approval decision and immutable Plan in the same gate transaction as Action creation. UNIQUE(run_id, step_index) prevents a second logical Action for that step, regardless of caller key. Repeated admission returns existing IDs only if the complete stored specification matches. Different Runs can intentionally produce different effects; this design does not add cross-Run semantic Intent deduplication.
+Admission must check Run version/state, valid approval decision, BOUND_V1 exact Plan identity and current Plan equality in the same gate transaction as Action creation. Approved state alone is insufficient. Migrated LEGACY_UNBOUND approvals are permanently ineligible in the MVP. UNIQUE(run_id, step_index) prevents a second logical Action for that step, regardless of caller key. Repeated admission returns existing IDs only if the binding and complete stored specification still match. Different Runs can intentionally produce different effects; this design does not add cross-Run semantic Intent deduplication.
 
 ## 7. Action State Machine
 
@@ -108,7 +110,7 @@ Authorized describes a historical grant, not a perpetual right. Six states are j
 
 ## 8. Approval vs Authorization vs Execution
 
-Approval is the existing local policy gate. Action admission binds its exact decision_id, immutable Plan hash and Run version; admission does not call a tool. Day 2 consent never supplies a PrincipalContext.
+Approval is the existing local policy gate. Day 2 decisions do not prove exact historical Plan content. Future v2 approval atomically stores the exact contextual Plan digest in approval_plan_bindings; Action admission verifies that retained proof against the current Plan and binds decision_id, Plan hash and Run version. Missing/legacy/mismatched proof denies admission. Approval and admission do not call a tool, and Day 2 consent never supplies a PrincipalContext.
 
 A future transport verifier produces PrincipalContext from a privately provisioned local execution capability. The bounded MVP maps possession of that capability to one server-configured local-demo principal and a fixed allowlist of operations, append_service_note/1 and service-demo. It does not claim a verified human identity, distinct approver, multi-user ownership or full RBAC. Loopback address alone never grants permission. No capability, bad capability, unsupported tool/risk or absent authorizer means deny.
 
@@ -124,11 +126,11 @@ Capability material must be supplied through a private local operator channel in
 
 Use a trusted, versioned ActionCompiler; its input is the reloaded Run/Plan plus validated server decision/catalog/binding facts, never a client-submitted Plan. Reuse PlanValidator and canonical_json, but add execution admission rules:
 
-1. Validate stored Run, decision/history, Plan schema/semantics and trusted aggregate risk.
+1. In one admission transaction, validate stored Run, decision/history, Plan schema/semantics and trusted aggregate risk; require its BOUND_V1 companion and recompute the exact content/context digests from ADR-014. Reject missing, legacy, unsupported or mismatched proof before compilation, including accepted receipt replay. Do not repair a binding.
 2. Require Approved/v5 and the entire one-step MVP shape; deny unsupported risk, target, step count or missing executable binding.
 3. Resolve exact tool name/version through the server-owned registry; bind adapter_id and binding_revision. A catalog match alone is insufficient.
 4. Validate adapter input schema and equality of target/service_id. Canonical JSON serialization sorts keys and fixes encoding; it must not trim, rewrite or reinterpret note text, targets, booleans or numbers.
-5. Compute plan_digest and spec_digest with SHA-256 over versioned canonical UTF-8 representations. Bind run_id, Plan hash, step ordinal, tool/version, target, normalized arguments, trusted risk, approval decision, compiler revision, executable binding and stable execution_scope.
+5. Use ADR-014 canonical-plan-v1 as plan_digest. Compute spec_digest with SHA-256 over the versioned canonical UTF-8 specification, binding run_id, approved_run_version, Plan hash, step ordinal, tool/version, target, normalized arguments, trusted risk, approval decision and its derived approval-plan-v1 revision/digest, compiler revision, executable binding and stable execution_scope. The existing approval_decision_id references the authoritative binding; no duplicate binding column is added to Action.
 6. Persist immutable Action specification plus server UUIDv4 action_id/effect_key. A mismatch during later validation rejects; never silently repair an Action.
 
 For the demo, normalized arguments are the existing service_id and note with the existing bounds (note <=1024 characters; canonical arguments <=4 KiB). Runtime location and credentials come from trusted adapter configuration, not these arguments. A newer binding/policy cannot silently substitute behavior under a previously compiled Action.
@@ -207,8 +209,9 @@ Future v2 logical additions:
 | action_attempts | One immutable MVP attempt per Action, unique attempt_id, claim version, authorization and current policy proof |
 | action_command_receipts | Scoped accepted keys, operation/resource/body digest, accepted fact reference; no TTL |
 | action_events | One paired event per Action mutation/version, legal edge and bounded safe metadata |
+| approval_plan_bindings | One insert-only companion per approval decision; BOUND_V1 exact contextual digest or explicit LEGACY_UNBOUND with null proof fields, per ADR-014 |
 
-Attempts do not duplicate an independent mutable lifecycle. Action state/result is authoritative; attempt record and events prove the claim/result linkage. Validate all cross-table facts, canonical bytes, linked Run/approval/Plan digest and exact binding before returning trusted data. Hashes detect inconsistency; they are not cryptographic protection against a privileged attacker rewriting the complete DB.
+The repair adds one approval companion to the five Action concepts: nine total v2 tables including the preserved three v1 tables. Attempts do not duplicate an independent mutable lifecycle. Action state/result is authoritative; attempt record and events prove the claim/result linkage. Validate all cross-table facts, canonical bytes, exact approval proof, linked Run/approval/Plan digest and exact executable binding before returning trusted data. Hashes detect inconsistency; they are not cryptographic protection against a privileged attacker rewriting the complete DB.
 
 ## 14. Version / CAS
 
@@ -220,7 +223,8 @@ Each mutation guards action_id + expected version + allowed source state. A resu
 
 | Local operation | Atomic facts | External I/O |
 | --- | --- | --- |
-| Admission | Revalidate approved Run/version/Plan/decision; insert Action + event + accepted receipt | None |
+| v2 approval decision | Guard AwaitingApproval/version; exact Plan identity + decision + BOUND_V1 companion + Run terminal update + existing audit event | None |
+| Admission | Revalidate approved Run/version/Plan/decision/exact BOUND_V1 proof; insert Action + event + accepted receipt | None |
 | Authorization | Guard Pending/version/spec; insert grant + Authorized update + event + receipt | None |
 | Execute claim | Fresh verified authority and unchanged current policy/binding; guard Authorized/version; insert attempt + Executing update + requested-command receipt + claim event | None |
 | Result | Guard Executing/claim version/attempt; result + new state/version + event | Already completed/uncertain outside transaction |
@@ -249,6 +253,8 @@ Claim comparison: simple state/version CAS is selected; a durable unique attempt
 ## 17. Audit
 
 Use separate action_events; leave existing Run audit DDL, payloads and version chain untouched. Required durable facts are Action creation, authorization, execution request (receipt), claim/start opportunity (attempt/event), success, confirmed no-effect failure, Unknown and any future evidence-based reconciliation. Each successful Action state mutation appends one event at the new version in the same transaction. No-op reads/replay/conflicts append none.
+
+The existing Run decision event's decision_id joins approval_decisions to approval_plan_bindings for exact-identity traceability. Keep that payload shape; do not duplicate the digest in audit or treat audit/log text as the binding authority. In v2, bound Run reconstruction validates the retained digest before the current Plan is used to reconstruct history; startup and admission independently validate the same facts. Healthy LEGACY_UNBOUND remains readable with exact historical content NOT PROVEN.
 
 Record IDs, version/state edge, trusted subject/policy/spec references, safe outcome code, time and safe receipt reference. Do not put full note/Intent, bearer secrets, credentials, raw adapter bodies or exceptions in events or diagnostic logs. Persisted normalized arguments are user data, not scrubbed secrets; the ledger is not encrypted or administrator-proof. Logs are diagnostics, never authority for whether an effect occurred.
 
@@ -280,6 +286,10 @@ Validate authentication/visibility, path/body/key, then scoped receipt fingerpri
 | IDEMPOTENCY_CONFLICT | 409 / The request key is bound to different content. |
 | STALE_ACTION_VERSION / STALE_RUN_VERSION | 409 / The Action version does not match expected_action_version. / existing Run message |
 | RUN_NOT_ACTION_ELIGIBLE | 409 / The Run does not allow Action admission. |
+| APPROVAL_PLAN_BINDING_MISSING | 409 / The approval has no exact Plan binding. |
+| LEGACY_APPROVAL_UNBOUND | 409 / The historical approval has no exact Plan binding. |
+| APPROVAL_PLAN_MISMATCH | 409 / The stored Plan does not match the approval binding. |
+| APPROVAL_PLAN_BINDING_UNSUPPORTED | 409 / The approval binding format is not supported. |
 | ACTION_NOT_EXECUTABLE | 409 / The Action state does not allow this operation. |
 | EXECUTION_ALREADY_STARTED | 409 / This Action already has an execution attempt. |
 | TOOL_NOT_BOUND | 409 / The selected tool has no permitted execution binding. |
@@ -288,6 +298,8 @@ Validate authentication/visibility, path/body/key, then scoped receipt fingerpri
 | INTERNAL_ERROR | 500 / An internal Action error occurred. |
 
 Confirmed execution failure and unknown outcome are durable result codes EXECUTION_CONFIRMED_FAILED and EXECUTION_OUTCOME_UNKNOWN in the snapshot, not an HTTP claim that the remote system rolled back. SUCCESS uses EXECUTION_SUCCEEDED. Ordinary media/body errors retain 413/415 conventions. There is no retry/reconcile/general update/delete/list-all API or browser-triggered automatic authorization/execute. The existing Run and /api/plans APIs retain their contracts.
+
+Binding error classification is internal until Prompt 3 supplies new HTTP handlers. ADR-014 specifies that invalid bound data on a generic v2 Run read uses the existing safe DATABASE_UNAVAILABLE response, while invalid data found at startup prevents serving. Healthy legacy status is an admission denial, not a failed startup. The external approval body remains decision + expected_version + optional reason; the client supplies no authoritative digest.
 
 ## 19. Security Invariants
 
@@ -309,27 +321,29 @@ Managed credentials never enter model context or Plan output. This is a credenti
 | Duplicate side effects | REQUIRES_IMPLEMENTATION_CONTROL | CAS/attempt uniqueness + scoped receipts + stable downstream key; no cross-Run dedup claim |
 | Replay attacks | REQUIRES_IMPLEMENTATION_CONTROL | Credential verification, current permission, scoped request digests and one claim |
 | Stale Action execution | REQUIRES_IMPLEMENTATION_CONTROL | Independent expected version, exact binding/policy/spec and fresh permission |
-| Persisted argument tampering | REQUIRES_IMPLEMENTATION_CONTROL | Revalidate and compare original immutable Plan/decision/digests/history; reject inconsistencies |
+| Persisted argument tampering | REQUIRES_IMPLEMENTATION_CONTROL | Retain exact approval-time contextual digest, verify BOUND_V1 on v2 reads/admission/spec-sensitive gates, and deny legacy proof; current Plan/history alone is insufficient |
 | Privileged host/DB rewriting all evidence or malicious plugin | DEFERRED | Host/OS trust remains assumed; no tamper-proof ledger or sandbox is claimed |
 
 These classifications state design intent; actual prevention/control still needs later implementation and negative evidence.
 
 ## 20. SQLite v2 Direction
 
-Current schema remains v1. Future execution requires an explicit offline v1 -> v2 migration, with the five new concepts in section 13 and an explicit PRAGMA user_version increment. No physical SQL or migration code is added here.
+Current schema remains v1. Future execution requires an explicit offline v1 -> v2 migration, with the five Action concepts plus approval_plan_bindings in section 13 and an explicit PRAGMA user_version increment. No physical SQL or migration code is added here.
 
 1. Stop all app/helper owners; validate the exact v1 schema, all rows and history. Obtain a consistent private v1 backup with WAL accounted for; record its restore procedure.
-2. Run an explicitly requested migration, not an automatic startup repair. In one transaction, create exact new tables/indexes, validate the complete v2 structure and cross-table constraints, and set user_version=2. Any fault rolls back all changes.
+2. Run an explicitly requested migration, not an automatic startup repair. In one transaction, create all six new tables and their indexes, insert LEGACY_UNBOUND companion rows for every existing approval decision with no fabricated digest/revision/bound_at, validate the complete nine-table v2 structure and cross-table constraints, and set user_version=2. Any fault rolls back all changes. Migration creates no Action or new approval.
 3. Preserve all three v1 table definitions and their rows/versions/Plans/decisions/events unchanged. No reset, drop/recreate, UPDATE of old business facts, guessing, downgrade or in-memory fallback.
 4. Default v1 validation remains strict and still rejects version 2; v2 composition explicitly selects the v2 schema contract and reuses the named Run operations over preserved tables. Existing v1 future-schema rejection tests must remain meaningful rather than be weakened.
-5. v2 rejects versions >2, partial/extra/malformed schemas and corrupt data. A v1 DB has the tested explicit upgrade path; v2 startup validates only, never invents missing tables.
+5. v2 rejects versions >2, partial/extra/malformed schemas and corrupt data, including missing companions or inconsistent BOUND_V1 identity. A v1 DB requires the explicit upgrade path and its future proof; v2 startup validates only, never invents missing tables or bindings. Fresh explicitly selected v2 databases use the same nine-table contract.
 6. The old freeze binary correctly rejects a v2 DB. Rollback requires the frozen code plus restored consistent v1 backup; do not pretend moving the Git pointer reverses data migration or delete execution facts to downgrade.
 
 Indexes/constraints must enforce Action step identity, external key identity, one grant/attempt per MVP Action, scoped command identity, and unique event/action version. Physical DDL and API/schema resources belong to Prompt 2 with migration/rollback tests.
 
+New v2 APPROVE and REJECT decisions require BOUND_V1 in their atomic decision transaction. Migrated approvals never acquire historical binding by hashing the current Plan. A LEGACY_UNBOUND Approved Run remains Approved/v5 but non-executable for MVP; request a distinct v2 Run and new approval instead of re-approving/rebinding a terminal Run. A migrated AwaitingApproval Run can receive a genuinely new bound decision after the upgrade. See ADR-014 for field/nullability, canonical inputs, read/admission errors and duplicate rules.
+
 ## 21. Day 3 MVP
 
-One local app owner; one privately provisioned local capability principal; exactly one approved single-step append_service_note/1 SIDE_EFFECT Plan per admission; one compiled durable Action; separate authorization/execute commands; one CAS claim and one deterministic adapter invocation; durable result or Unknown; tool-free recovery and actual process/crash/idempotency evidence. The external demo store atomically binds a note effect to its stable key/receipt and is isolated from user/production data.
+One local app owner; one privately provisioned local capability principal; exactly one new exact-bound approved single-step append_service_note/1 SIDE_EFFECT Plan per admission; one compiled durable Action; separate authorization/execute commands; one CAS claim and one deterministic adapter invocation; durable result or Unknown; tool-free recovery and actual process/crash/idempotency evidence. Legacy unbound approval cannot be replaced by capability authorization. The external demo store atomically binds a note effect to its stable key/receipt and is isolated from user/production data.
 
 No production person-identity, distinct approver, general RBAC, multi-tool/step execution, APPROVAL_REQUIRED effects, Turn, cloud/MCP/HA, workers, retries, automatic reconciliation or public reconcile command is included. The future local capability verifier is mandatory before exposing mutations; default-deny composition and test-only authorizers must be distinct.
 
@@ -349,11 +363,11 @@ Every row records Decision, Rationale, Rejected alternatives and Consequences. N
 | --- | --- | --- | --- | --- |
 | TURN_REQUIRED | NO; Run + Action | A Run already identifies one immutable Intent/Plan; no conversation or repeated planning invariant needs Turn. | Run + Turn + Action; execution fields on Run | Turn is deferred; Action cannot mutate the frozen Run lifecycle. |
 | ACTION_DEFINITION | Durable identity for one compiled Plan-step operation; attempts are separate facts. | A logical effect must outlive requests and process attempts. | Action-as-HTTP-request; Action-as-attempt | One Action keeps one stable effect identity and independently records execution truth. |
-| ACTION_CREATION_TIME | Explicit POST /api/runs/{run_id}/actions after Approved; no execution. | Admission is separate from planning, approval, authorization and dispatch. | During planning; at validation/routing/approval automatically | Only a reloaded, validated, approved Plan can supply an Action; admission is idempotent. |
+| ACTION_CREATION_TIME | Explicit POST /api/runs/{run_id}/actions after Approved and verified BOUND_V1 exact Plan identity; no execution. | Admission is separate from planning, approval, authorization and dispatch. | During planning; at validation/routing/approval automatically | Only an exact-bound reloaded approved Plan can supply an Action; legacy approval is denied and replay never bypasses proof. |
 | ACTION_CARDINALITY | Model 0..N, one per admitted step; MVP accepts exactly one append_service_note step. | The frozen Plan supports multiple steps, but sequencing is not needed for this MVP. | One Action per Run regardless of steps; partial admission of unsupported Plans | No Actions before admission; multi-step/read/APPROVAL_REQUIRED execution is rejected as a whole. |
 | ACTION_STATE_MACHINE | Pending, Authorized, Executing, Succeeded, Failed, Unknown | Separate recorded permission and dispatch; preserve uncertain effects. | Run states; treating timeout as Failed; extra scheduling states | Unknown is non-executable and requires evidence for any future resolution. |
 | ACTION_VERSIONING | Independent Action CAS, starting at 1; each state mutation +1. | Execution concurrency must not change Run.version. | Reuse Run CAS; timestamp ordering; last-write-wins | Admission, authorization, claim and completion have their own guards. |
-| PLAN_TO_ACTION_COMPILATION | Trusted, versioned compiler over server-loaded Plan and decision. | Proposal data needs execution-specific binding and canonical identity. | Copy client/model JSON directly into an executor | Canonicalization preserves business content; stronger policy or binding mismatch rejects. |
+| PLAN_TO_ACTION_COMPILATION | Trusted compiler after ADR-014 content/context approval digest verification; no rebinding. | Current valid Plan and Approved state alone do not prove what was approved. | Copy client/model JSON directly into an executor; hash legacy current Plan as historical proof | Canonicalization preserves all Plan content; missing/legacy/mismatched proof and stronger policy reject. |
 | AUTHORIZATION_BOUNDARY | Verified PrincipalContext + deny-by-default AuthorizationPort; bound authorization record and fresh claim check. | LOCAL_USER and Approved establish no authenticated permissions. | Approve means permission; body actor fields; permissive test authorizer in production | MVP permits one private local execution capability and fixed demo scope; full user/RBAC consent is deferred. |
 | EXECUTION_COMMAND_BOUNDARY | Separate authorize then explicit execute with expected_action_version and Idempotency-Key. | An operator must request dispatch independently of approval. | Approval webhook auto-dispatch; execute embedded in Run creation | No model call or implicit tool call occurs in admission or authorization. |
 | IDEMPOTENCY_MODEL | Durable scoped command receipts; stable server effect_key and persisted execution_scope per Action. | A repeated request and a repeated external effect have different identities. | Process cache; model IDs; regenerate effect key for each request | Duplicates map to prior accepted work; different Runs remain distinct intentional operations. |
@@ -365,8 +379,16 @@ Every row records Decision, Rationale, Rejected alternatives and Consequences. N
 | EXECUTION_CLAIM_MODEL | Action state/version CAS + one durable attempt_id; no expiring lease. | One app owner needs one winning dispatch, not takeover machinery. | Lease expiry; background worker; process lock alone | Only confirmed winning claim receives a dispatch permit; old completions are fenced. |
 | ACTION_RECOVERY_MODEL | Validate ledger; Executing -> Unknown once; all other states unchanged. | Startup cannot prove whether a committed claim sent an effect. | Replay pending/claimed work; query tools at startup | Recovery remains deterministic/model-free/tool-free and requires stopped predecessor. |
 | AUDIT_MODEL | Separate action_events and durable command/authorization/attempt facts. | Day 2 audit schema and version chain are frozen. | Overload Run audit payloads; diagnostic logs as execution truth | Each Action mutation pairs one event; accepted execution request is recorded atomically with claim. |
-| SQLITE_V2_DIRECTION | Explicit offline atomic v1 -> v2 migration; preserve v1 rows/DDL; add five logical tables. | Action facts cannot be hidden in frozen Run tables. | Reset DB; automatic startup migration; weaken v1 validation | v1 remains current; future v2 mode is explicitly composed and rollback requires a consistent v1 backup. |
+| SQLITE_V2_DIRECTION | Explicit offline atomic v1 -> v2 migration; preserve v1 rows/DDL; add five Action tables and approval_plan_bindings. | Action and exact approval evidence cannot be hidden in frozen Run tables. | Reset DB; automatic startup migration; fabricate legacy digests; weaken v1 validation | Nine-table v2 mode is explicit; legacy decisions remain unbound; rollback requires a consistent v1 backup. |
 | HTTP_API_DIRECTION | Five APIs: Action admission/list/detail/authorize/execute; no public retry/reconcile API in MVP. | Separate creation and permission make the boundary inspectable; reads support lost-response lookup. | GET that creates Actions; unnecessary generic update or scheduler APIs | Strict bodies, safe envelopes, CAS and scoped idempotency apply only to new commands. |
 | DAY3_MVP_SCOPE | One local operator capability, one approved single-step SIDE_EFFECT Plan, one demo note adapter and one attempt. | This proves the gate/effect crash boundary without full platform machinery. | Multi-tool, APPROVAL_REQUIRED execution, Turn, cloud/MCP/HA | Full authenticated distinct consent, multi-step execution and reconciliation remain future gates. |
 
 Review against the inventory: rollback tag preserved; eight-state Run and v1 untouched; Approved != Executed; server state/version/risk and trusted policy retained; 686-case floor retained; future adapters go through the compiler/authorization/claim core. Architecture deferrals are limited to the documented future capabilities.
+
+## 24. Prompt 1.5 Approval / Exact Plan Binding Repair
+
+The prior Prompt 2 diagnostic is CORRECTLY_BLOCKED_BY_ARCHITECTURE_GAP, not an implementation regression: a valid post-approval Plan substitution passed existing v1 history checks, no files changed, and no unsafe Action implementation was committed. The original Prompt 1 acceptance and verification are historical DOC-ONLY records; this repair adds the missing execution prerequisite before implementation.
+
+Choose digest-only identity with complete Plan canonicalization and a context-bound approval digest in one dedicated approval_plan_bindings row. ADR-014 evaluates snapshot/digest alternatives, four storage options, immutability/read alternatives, exact inputs and atomicity, legacy/re-approval options, API/error behavior and T1-T9. It is authoritative for those details. New v2 decisions bind atomically; migrated legacy decisions carry explicit null proof and never become executable in MVP. v2 reads and admission verify retained evidence; no caller/model supplies a digest and no replay changes it.
+
+Prompt 2 must implement and prove that binding/migration/validation layer before compiler/admission PASS. Default v1 behavior and Day 2 evidence remain historical and unchanged; healthy migrated legacy reads stay compatible. This repair implements no SQL, approval, Action, tests or runtime feature. Future Action HTTP/capability work remains Prompt 3.

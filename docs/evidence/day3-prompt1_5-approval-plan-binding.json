@@ -1,0 +1,409 @@
+{
+  "task": "DAY3_PROMPT1_5_APPROVAL_PLAN_BINDING_FREEZE",
+  "recorded_at_utc": "2026-10-07T21:31:09Z",
+  "lane": "DOC_ONLY_ARCHITECTURE_REPAIR",
+  "base_commit": "5b4a75bb58e62e3671cac35926065b5f9d284275",
+  "branch": "main",
+  "day2_final_freeze_target": "c7d3e1ee051af40c69ec33d888ecf16475a2d789",
+  "baseline": {
+    "working_tree_clean": true,
+    "tracked_files": 125,
+    "protected_files": 121,
+    "protected_manifest_before": "6687f81a1872c6186914d997e075253e4afe469c75e666615a082cd96e2dcbf8"
+  },
+  "discovered_gap": {
+    "exact_plan_binding_missing": true,
+    "sources": [
+      "src/agentic_intent_gate/adapters/sqlite_schema.py: approval_decisions has no digest/snapshot",
+      "src/agentic_intent_gate/adapters/sqlite_run_repository.py: audit_payload has no Plan identity",
+      "src/agentic_intent_gate/adapters/sqlite_run_repository.py: _validate_history uses current run.plan"
+    ],
+    "reproduction": {
+      "source": "Preceding Prompt 2 audit in this session at the same base commit; diagnostic not rerun in Prompt 1.5",
+      "lane": "TEMPORARY_FILE_BACKED_APPROVAL_BINDING_DIAGNOSTIC",
+      "schema_version": 1,
+      "change": "Only canonical runs.validated_plan_json note changed from Plan A to Plan B after approval",
+      "run_state_before": "Approved",
+      "run_state_after": "Approved",
+      "run_version_before": 5,
+      "run_version_after": 5,
+      "approval_rows_unchanged": true,
+      "audit_rows_unchanged": true,
+      "run_identity_timestamps_unchanged": true,
+      "plan_a_digest": "eb59563f9a91a95a216a7f8d3c4998f0e41389aba9051f759d99058d4c704cd6",
+      "plan_b_digest": "8d2f219e3026cd528b70dccb85a40b539d65489dbefb22f9d5c9f8e39f606f71",
+      "diagnostic_digest_format": "SHA-256 of raw canonical Plan.to_dict JSON, not the new versioned identity; not historical approval proof",
+      "validation_observation": "Changed Plan accepted on repository reopen/get/validate_all",
+      "model_calls": 0,
+      "tool_calls": 0,
+      "temporary_fixture_cleanup": "PASS"
+    }
+  },
+  "security_invariant": "Current authoritative Plan must match retained approval-time exact content/context proof before compilation; Approved state and a valid current Plan alone are insufficient",
+  "decision": {
+    "identity_model": "Canonical digest only, with independently joined approval context; no duplicate approved snapshot",
+    "identity_options": {
+      "snapshot": "REJECT_MVP_REDUNDANT_USER_DATA",
+      "digest": "CHOSEN",
+      "snapshot_plus_digest": "DEFER_FORENSIC_RETENTION"
+    },
+    "canonicalization": {
+      "convention": "Existing canonical_json after strict parser/schema/trusted semantic-risk validation",
+      "encoding": "UTF-8 without BOM or trailing newline",
+      "key_order": "Sorted object keys",
+      "separators": [
+        ",",
+        ":"
+      ],
+      "ensure_ascii": false,
+      "allow_nan": false,
+      "unicode": "Preserve exact code points/string whitespace; no normalization, trimming or reinterpretation",
+      "numbers": "Existing strict lexical bounded integers only; floats/NaN/infinity rejected; booleans distinct",
+      "arrays": "Preserve ordered steps",
+      "fields_bound": [
+        "goal",
+        "target",
+        "steps in order",
+        "risk_class",
+        "every step tool_name/tool_version/complete arguments"
+      ],
+      "excluded": "No current Plan field excluded; Intent, HTTP credentials, storage paths and approval reason are not Plan fields"
+    },
+    "digest": {
+      "algorithm": "sha256",
+      "encoding": "64 lowercase hexadecimal characters",
+      "content_revision": "canonical-plan-v1",
+      "content_input": {
+        "identity_revision": "canonical-plan-v1",
+        "plan": "Complete validated Plan.to_dict()"
+      },
+      "content_output": "Action.plan_digest = SHA-256(canonical UTF-8 content input)",
+      "approval_revision": "approval-plan-v1",
+      "approval_input_keys": [
+        "identity_revision",
+        "run_id",
+        "decision_id",
+        "decision",
+        "run_version_before",
+        "run_version_after",
+        "decision_created_at",
+        "plan_identity_revision",
+        "plan_digest"
+      ],
+      "approval_context": "Server decision IDs/choice/4->5 versions/strict timestamp plus content revision/digest; no extra keys",
+      "authoritative_output": "approval_plan_digest = SHA-256(canonical UTF-8 approval context)",
+      "algorithm_agility": "No separate algorithm field; identity revision pins algorithm/input; unknown revision rejected"
+    },
+    "storage": {
+      "authority": "approval_plan_bindings",
+      "fields": [
+        "decision_id",
+        "binding_status",
+        "identity_revision",
+        "approval_plan_digest",
+        "bound_at"
+      ],
+      "key": "decision_id primary key and FK approval_decisions.decision_id",
+      "cardinality": "Exactly one companion for every decision; no duplicate/orphan/contradictory row",
+      "statuses": {
+        "BOUND_V1": {
+          "identity_revision": "approval-plan-v1",
+          "approval_plan_digest": "lowercase hex SHA-256",
+          "bound_at": "equals joined decision.created_at"
+        },
+        "LEGACY_UNBOUND": {
+          "identity_revision": null,
+          "approval_plan_digest": null,
+          "bound_at": null
+        }
+      },
+      "storage_options": {
+        "approval_decisions": "Avoid changing frozen v1 DDL",
+        "audit_payload": "Trace reference only",
+        "run_row": "Not independent retained approval evidence",
+        "dedicated_companion": "CHOSEN"
+      },
+      "immutability": "Named insert-at-decision/read validation; no update/delete/rebind API; DB shape/key constraints plus application immutability and digest verification",
+      "triggers": "Not required by this minimum architecture",
+      "bound_status_meaning": "BOUND_V1 is identity revision 1 inside future SQLite v2, not historical SQLite v1 binding"
+    },
+    "atomicity": {
+      "transaction": "Short BEGIN IMMEDIATE, guarded AwaitingApproval/v4",
+      "facts": [
+        "authoritative Plan validation",
+        "server decision identity/time",
+        "exact digest companion",
+        "decision",
+        "Run Approved or Rejected/v5 CAS",
+        "existing linked audit event"
+      ],
+      "end_state_validation": "Complete Run/decision/binding/audit linkage validated before one commit",
+      "failure": "Rollback all facts; uncertain commit safe error, no guessed success/automatic replay",
+      "duplicate": "Existing stale/state conflict; no new decision/event/binding and no digest overwrite"
+    }
+  },
+  "legacy_v1": {
+    "binding_status": "LEGACY_UNBOUND",
+    "scope": "Every migrated existing APPROVE/REJECT decision",
+    "action_admission": "DENY for MVP",
+    "migration_rule": "Preserve all three old tables/rows, add only explicit null-proof companions; never hash current legacy Plan as historical evidence",
+    "reapproval_rule": "No reset/re-approval/rebinding of terminal legacy Run; use a distinct v2 Run and new explicit approval",
+    "migrated_awaiting_approval": "May receive a genuinely new bound v2 decision after migration; no historical decision invented",
+    "legacy_read": "Healthy legacy response/state/version remains unchanged; exact historical Plan NOT PROVEN",
+    "later_authorization_substitute": false
+  },
+  "future_v2": {
+    "approval_binding_required": true,
+    "decision_choices": [
+      "APPROVE",
+      "REJECT"
+    ],
+    "binding_status": "BOUND_V1",
+    "original_v1_tables_preserved": [
+      "runs",
+      "approval_decisions",
+      "audit_events"
+    ],
+    "added_concepts": [
+      "actions",
+      "action_authorizations",
+      "action_attempts",
+      "action_command_receipts",
+      "action_events",
+      "approval_plan_bindings"
+    ],
+    "total_tables": 9,
+    "migration": "Explicit offline atomic upgrade with consistent WAL-aware backup under stopped ownership; no startup upgrade",
+    "fresh_db": "Explicit v2 composition initializes same nine-table contract",
+    "v1_default": "Strict unchanged; rejects v2",
+    "reopen": "Validation only; no missing binding/table repair",
+    "future_schema": "Fail closed",
+    "run_reconstruction": "Verify bound Approved/Rejected identity before using current Plan for history; startup validates all companions",
+    "read_failure": "Invalid binding -> existing DATABASE_UNAVAILABLE; startup refuses service; healthy legacy status is readable"
+  },
+  "compiler": {
+    "binding_precondition": "Same transaction loads Run/Plan/decision/companion/history; Approved/v5 + APPROVE4->5 + valid BOUND_V1 + current content/context digest equality",
+    "receipt_replay": "Retains receipt-before-CAS order but never bypasses current binding/spec checks",
+    "supported_plan_shape": "Whole single append_service_note/1 SIDE_EFFECT Plan for service-demo",
+    "spec_binding": "Existing Action spec digest additionally derives linked approval revision/digest; existing approval_decision_id is the reference; no duplicate Action column",
+    "binding_repair": false,
+    "model_calls": 0,
+    "tool_calls": 0
+  },
+  "api": {
+    "external_approval_api_changed": false,
+    "body": [
+      "decision",
+      "expected_version",
+      "optional reason"
+    ],
+    "client_digest_authority": false,
+    "run_response_changed": false,
+    "run_audit_payload_changed": false,
+    "audit_role": "Existing decision_id joins decision and binding; no duplicated digest; logs not authority",
+    "new_action_http_phase": 3,
+    "admission_errors": {
+      "APPROVAL_PLAN_BINDING_MISSING": {
+        "status": 409,
+        "message": "The approval has no exact Plan binding."
+      },
+      "LEGACY_APPROVAL_UNBOUND": {
+        "status": 409,
+        "message": "The historical approval has no exact Plan binding."
+      },
+      "APPROVAL_PLAN_MISMATCH": {
+        "status": 409,
+        "message": "The stored Plan does not match the approval binding."
+      },
+      "APPROVAL_PLAN_BINDING_UNSUPPORTED": {
+        "status": 409,
+        "message": "The approval binding format is not supported."
+      }
+    },
+    "error_limit": "Typed admission failure; generic Run read retains safe storage response and rejected startup cannot promise an HTTP response; no raw digest/SQL/path/Plan disclosure",
+    "binding_error_precedence": [
+      "After valid Run/decision/history linkage: missing companion or null required BOUND_V1 proof -> APPROVAL_PLAN_BINDING_MISSING",
+      "Correctly shaped LEGACY_UNBOUND/null proof -> LEGACY_APPROVAL_UNBOUND",
+      "Unknown status/revision, malformed non-null proof or contradictory legacy proof -> APPROVAL_PLAN_BINDING_UNSUPPORTED",
+      "Otherwise recomputed content/context disagreement -> APPROVAL_PLAN_MISMATCH",
+      "FK/cardinality/history corruption retains safe storage errors"
+    ]
+  },
+  "security": {
+    "tamper_cases": [
+      {
+        "id": "T1",
+        "trigger": "Approved Plan A replaced with valid Plan B",
+        "expected": "Bound content/context mismatch denies read/admission; never rebind",
+        "validation_lane": "REQUIRED_FUTURE_IMPLEMENTATION_TEST_NOT_RUN"
+      },
+      {
+        "id": "T2",
+        "trigger": "Same tool, changed arguments",
+        "expected": "Exact canonical arguments change content digest; deny",
+        "validation_lane": "REQUIRED_FUTURE_IMPLEMENTATION_TEST_NOT_RUN"
+      },
+      {
+        "id": "T3",
+        "trigger": "Target/resource changed",
+        "expected": "Schema/semantic target check or digest mismatch denies",
+        "validation_lane": "REQUIRED_FUTURE_IMPLEMENTATION_TEST_NOT_RUN"
+      },
+      {
+        "id": "T4",
+        "trigger": "Steps reordered",
+        "expected": "Array order is bound; digest mismatch denies; MVP multi-step whole Plan also denied",
+        "validation_lane": "REQUIRED_FUTURE_IMPLEMENTATION_TEST_NOT_RUN"
+      },
+      {
+        "id": "T5",
+        "trigger": "Extra executable step inserted",
+        "expected": "Full Plan identity and whole-Plan shape reject; no partial compilation",
+        "validation_lane": "REQUIRED_FUTURE_IMPLEMENTATION_TEST_NOT_RUN"
+      },
+      {
+        "id": "T6",
+        "trigger": "Non-execution metadata changed",
+        "expected": "All current Plan fields including goal/risk bound; unknown fields schema-rejected",
+        "validation_lane": "REQUIRED_FUTURE_IMPLEMENTATION_TEST_NOT_RUN"
+      },
+      {
+        "id": "T7",
+        "trigger": "Approval/binding copied to another Run",
+        "expected": "Joined links and context digest bind Run/decision/choice/versions/time; copied evidence rejected",
+        "validation_lane": "REQUIRED_FUTURE_IMPLEMENTATION_TEST_NOT_RUN"
+      },
+      {
+        "id": "T8",
+        "trigger": "Migrated v1 Approved Run admission",
+        "expected": "LEGACY_UNBOUND returned; historical Run retained; zero Actions/model/tool calls",
+        "validation_lane": "REQUIRED_FUTURE_IMPLEMENTATION_TEST_NOT_RUN"
+      },
+      {
+        "id": "T9",
+        "trigger": "Approval replay after Plan mutation",
+        "expected": "No overwrite/rebinding; bound corruption denied before or during guards; healthy duplicates retain existing CAS/state conflict",
+        "validation_lane": "REQUIRED_FUTURE_IMPLEMENTATION_TEST_NOT_RUN"
+      }
+    ],
+    "approval_authorization_separate": true,
+    "authorization": "Later verified permission binds exact compiled spec and cannot replace missing exact approval",
+    "limits": [
+      "Not authenticated human/distinct consent",
+      "Trusted app/Plan immutability before approval transaction",
+      "Privileged rewriting of all evidence remains outside host trust boundary"
+    ]
+  },
+  "prompt2": {
+    "prior_result": "CORRECTLY_BLOCKED_BY_ARCHITECTURE_GAP",
+    "prior_reported_gate": "DAY3_PROMPT2_ACTION_PERSISTENCE=FAIL",
+    "prior_files_changed": 0,
+    "unsafe_partial_implementation_committed": false,
+    "action_execution_existed_when_discovered": false,
+    "restart_condition": "Architecture repair resolved at DOC_ONLY level; separately requested implementation first supplies companion/atomic v2 approval/truthful migration/binding validation, then compiler/admission",
+    "required_evidence": [
+      "all legacy decisions explicitly unbound",
+      "new v2 APPROVE/REJECT and migrated AwaitingApproval bound",
+      "decision/binding/Run/audit/commit rollback",
+      "T1-T9 and missing/orphan/revision/context/content corruption",
+      "legacy admission rejected without Actions",
+      "pure reads/reopen and no startup auto-upgrade",
+      "same/different/concurrent keys and receipt atomicity",
+      "original 686-case deterministic floor and packaging/quality"
+    ],
+    "superseded_eligibility": "Migrated v1 Approved Run is not admission-eligible; use a genuinely new bound v2 decision",
+    "scope_clarifications": [
+      "Migration remains explicit/offline",
+      "HTTP Action handlers and capability verification remain Prompt 3",
+      "Effect key created once at admission, stable through replay/reopen",
+      "Receipt uniqueness remains subject/operation/resource/key scoped"
+    ],
+    "implementation_started_in_repair": false
+  },
+  "p0": [],
+  "p1": [],
+  "p2": [
+    "Optional forensic approved snapshots",
+    "Separately reviewed legacy consent-refresh/evidence-import and identity/schema revision evolution",
+    "Protection against privileged full-ledger rewriting/authenticated human proof"
+  ],
+  "verification": {
+    "status": "PASS_DOC_ONLY",
+    "architecture_acceptance": {
+      "exact_approval_plan_invariant": "FROZEN_DOC_ONLY",
+      "canonical_plan_identity": "FROZEN_DOC_ONLY",
+      "deterministic_canonicalization": "FROZEN_DOC_ONLY",
+      "digest_strategy": "FROZEN_DOC_ONLY",
+      "authoritative_storage": "FROZEN_DOC_ONLY",
+      "atomic_approval_binding": "FROZEN_DOC_ONLY",
+      "new_v2_decisions_bound": "FROZEN_DOC_ONLY",
+      "legacy_v1_classified_unbound": "FROZEN_DOC_ONLY",
+      "no_fabricated_migration_proof": "FROZEN_DOC_ONLY",
+      "legacy_admission_denied": "FROZEN_DOC_ONLY",
+      "safe_legacy_path": "FROZEN_DOC_ONLY",
+      "duplicate_cannot_rebind": "FROZEN_DOC_ONLY",
+      "postapproval_mutation_rejected": "FROZEN_DOC_ONLY",
+      "compiler_exact_binding_required": "FROZEN_DOC_ONLY",
+      "client_digest_not_authority": "FROZEN_DOC_ONLY",
+      "audit_reference_role": "FROZEN_DOC_ONLY",
+      "approval_authorization_separate": "FROZEN_DOC_ONLY",
+      "external_api_unchanged": "FROZEN_DOC_ONLY",
+      "sqlite_v2_impact": "FROZEN_DOC_ONLY",
+      "threat_cases_T1_T9": "FROZEN_DOC_ONLY",
+      "prompt2_restart_updated": "FROZEN_DOC_ONLY",
+      "no_product_change": "FROZEN_DOC_ONLY",
+      "no_p0_or_p1_architecture_ambiguity": "FROZEN_DOC_ONLY"
+    },
+    "json_parse": "PASS_BOTH_EVIDENCE_FILES",
+    "markdown_local_links": "PASS",
+    "whitespace_and_final_newlines": "PASS_ALL_SIX_FILES",
+    "decision_text_consistency": "PASS_21_ROWS",
+    "threat_case_count": 9,
+    "git_diff_check": "PASS",
+    "credential_scan": "PASS_ZERO_HIGH_SIGNAL_MATCHES",
+    "changed_file_scope": "PASS_EXACT_SIX_UNSTAGED_FILES",
+    "staged_files": 0,
+    "protected_tracked_files": 121,
+    "protected_manifest_before": "6687f81a1872c6186914d997e075253e4afe469c75e666615a082cd96e2dcbf8",
+    "protected_manifest_after": "6687f81a1872c6186914d997e075253e4afe469c75e666615a082cd96e2dcbf8",
+    "day2_preservation": "PASS_BYTE_IDENTICAL_PROTECTED_FILES",
+    "head_after": "5b4a75bb58e62e3671cac35926065b5f9d284275",
+    "day2_tag_target_after": "c7d3e1ee051af40c69ec33d888ecf16475a2d789",
+    "product_tests_run": 0,
+    "diagnostic_rerun": 0,
+    "live_ollama_calls": 0,
+    "tool_calls": 0,
+    "runtime_binding_verified": false,
+    "migration_implemented": false,
+    "checked_at_utc": "2026-10-07T21:36:01Z"
+  },
+  "scope": {
+    "documentation_only": true,
+    "product_code_changed": false,
+    "tests_changed": false,
+    "schemas_implemented": false,
+    "migration_implemented": false,
+    "action_implemented": false,
+    "approval_implemented": false,
+    "execution_implemented": false,
+    "run_states_changed": false,
+    "runtime_config_changed": false,
+    "dependencies_changed": false,
+    "ui_changed": false,
+    "day2_evidence_changed": false,
+    "day2_inventory_changed": false,
+    "commit": false,
+    "push": false,
+    "tag": false,
+    "release": false
+  },
+  "files_changed": [
+    "docs/day3-action-execution-architecture-freeze.md",
+    "docs/adr/ADR-013-action-ledger-execution-boundary.md",
+    "docs/day3-implementation-plan.md",
+    "docs/evidence/day3-prompt1-architecture-freeze.json",
+    "docs/adr/ADR-014-approval-plan-binding.md",
+    "docs/evidence/day3-prompt1_5-approval-plan-binding.json"
+  ],
+  "freeze_marker": "DAY3_APPROVAL_PLAN_BINDING_FREEZE=PASS"
+}

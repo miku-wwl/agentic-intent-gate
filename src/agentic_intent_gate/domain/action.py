@@ -35,6 +35,12 @@ RECONCILIATION_EDGES = frozenset(
 
 
 class ActionCode(StrEnum):
+    AUTHENTICATION_REQUIRED = "AUTHENTICATION_REQUIRED"
+    NOT_AUTHORIZED = "ACTION_NOT_AUTHORIZED"
+    KEY_REQUIRED = "IDEMPOTENCY_KEY_REQUIRED"
+    ALREADY_STARTED = "EXECUTION_ALREADY_STARTED"
+    TOOL_REJECTED = "TOOL_REJECTED"
+    INTERNAL_ERROR = "INTERNAL_ERROR"
     INVALID_REQUEST = "INVALID_ACTION_REQUEST"
     NOT_FOUND = "ACTION_NOT_FOUND"
     STALE_VERSION = "STALE_ACTION_VERSION"
@@ -47,6 +53,12 @@ class ActionCode(StrEnum):
 
 
 ACTION_MESSAGES = {
+    ActionCode.AUTHENTICATION_REQUIRED: "Verified execution credentials are required.",
+    ActionCode.NOT_AUTHORIZED: "The execution policy does not permit this operation.",
+    ActionCode.KEY_REQUIRED: "A stable Idempotency-Key is required.",
+    ActionCode.ALREADY_STARTED: "This Action already has an execution attempt.",
+    ActionCode.TOOL_REJECTED: "The compiled tool input was rejected.",
+    ActionCode.INTERNAL_ERROR: "An internal Action error occurred.",
     ActionCode.INVALID_REQUEST: "The request does not match the Action contract.",
     ActionCode.NOT_FOUND: "The Action was not found.",
     ActionCode.STALE_VERSION: "The Action version does not match expected_action_version.",
@@ -147,6 +159,7 @@ class Action:
     version: int = 1
     updated_at: str | None = None
     result: Mapping | None = None
+    authorization: Mapping | None = None
 
     def __post_init__(self):
         if (
@@ -208,6 +221,17 @@ class Action:
             ):
                 fail("ACTION_RECEIPT_REFERENCE")
             object.__setattr__(self, "result", freeze_json(value))
+        if self.authorization is not None:
+            value = strict_object(canonical_json(thaw_json(self.authorization)), max_bytes=1024)
+            if (
+                set(value) != {"authorization_id", "subject_id", "policy_revision", "authorized_at"}
+                or not valid_uuid(value["authorization_id"])
+                or not identifier(value["subject_id"], limit=128)
+                or not identifier(value["policy_revision"])
+            ):
+                fail("ACTION_AUTHORIZATION")
+            parse_timestamp(value["authorized_at"])
+            object.__setattr__(self, "authorization", freeze_json(value))
 
     def snapshot(self):
         spec = self.spec.to_dict()
@@ -228,7 +252,7 @@ class Action:
             "version": self.version,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
-            "authorization": None,
+            "authorization": thaw_json(self.authorization),
             "result": thaw_json(self.result),
         }
 
@@ -241,3 +265,18 @@ def guard_action(action: Action | None, expected_version: int, allowed_states):
         raise ActionError(ActionCode.STALE_VERSION)
     if action.state not in allowed_states:
         raise ActionError(ActionCode.NOT_EXECUTABLE)
+
+
+def safe_result(state, receipt=None):
+    code, message = {
+        ActionState.Succeeded: ("EXECUTION_SUCCEEDED", "The demo note effect was confirmed."),
+        ActionState.Failed: (
+            "EXECUTION_CONFIRMED_FAILED",
+            "The external effect was confirmed not to have occurred.",
+        ),
+        ActionState.Unknown: (
+            "EXECUTION_OUTCOME_UNKNOWN",
+            "The external effect outcome is unknown.",
+        ),
+    }[state]
+    return {"code": code, "message": message, "receipt_reference": receipt}

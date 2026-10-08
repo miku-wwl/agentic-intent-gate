@@ -50,10 +50,12 @@ def action_from_row(row):
     spec = CompiledSpec(
         **values | {"risk_class": Risk(values["risk_class"]), "normalized_arguments": arguments}
     )
-    # Future named lifecycle writers/validators are not part of this binary.
-    if lifecycle["state"] != "Pending" or result_raw is not None:
-        fail("ACTION_LIFECYCLE_NOT_IMPLEMENTED")
-    return Action(spec=spec, **lifecycle | {"state": ActionState(lifecycle["state"])})
+    result = strict_object(result_raw, max_bytes=1024) if result_raw is not None else None
+    if result is not None and canonical_json(result) != result_raw:
+        fail("ACTION_RESULT_NOT_CANONICAL")
+    return Action(
+        spec=spec, result=result, **lifecycle | {"state": ActionState(lifecycle["state"])}
+    )
 
 
 def validated_action(connection, runs, row, compiler=None):
@@ -63,68 +65,32 @@ def validated_action(connection, runs, row, compiler=None):
         fail("ACTION_RUN_MISSING")
     decision = linked_decision(connection, run)
     binding = binding_for(connection, decision)
-    if compiler is None:
-        # Startup validates retained versioned facts. This grants no executable registry/capability.
-        spec = action.spec
-        compiler = ActionCompiler(
-            runs.validator,
-            (
-                ToolBinding(
-                    spec.tool_name,
-                    spec.tool_version,
-                    spec.adapter_id,
-                    spec.binding_revision,
-                    spec.target,
-                    spec.execution_scope,
-                ),
-            ),
+    # Historical integrity is independent of the CURRENT executable registry. Retained
+    # metadata supplies the versioned hash input, not a dispatch permission or callable.
+    spec = action.spec
+    try:
+        retained = ToolBinding(
+            spec.tool_name,
+            spec.tool_version,
+            spec.adapter_id,
+            spec.binding_revision,
+            spec.target,
+            spec.execution_scope,
         )
+    except ActionError:
+        fail("ACTION_RETAINED_TOOL_CONTRACT")
+    compiler = ActionCompiler(runs.validator, (retained,))
     compiler.validate_spec(action.spec, run, decision, binding)
     if action.created_at < run.updated_at:
         fail("ACTION_SPEC_LINK")
-    events = connection.execute(
-        "SELECT * FROM action_events WHERE action_id=? ORDER BY action_version", (action.action_id,)
-    ).fetchall()
-    if len(events) != 1:
-        fail("ACTION_EVENT_COUNT")
-    event = events[0]
-    if (
-        event["action_version"] != 1
-        or event["event_type"] != "ACTION_CREATED"
-        or event["created_at"] != action.created_at
-        or event["spec_digest"] != action.spec.spec_digest
-        or event["safe_payload_json"] != canonical_json(creation_payload(action))
-    ):
-        fail("ACTION_CREATION_EVENT")
-    receipts = connection.execute(
-        "SELECT * FROM action_command_receipts WHERE accepted_action_id=?", (action.action_id,)
-    ).fetchall()
-    if not receipts:
-        fail("ACTION_RECEIPT_MISSING")
-    for receipt in receipts:
-        AdmissionCommand(
-            receipt["resource_id"], 5, receipt["subject_id"], receipt["idempotency_key"]
-        )
-        parse_timestamp(receipt["accepted_at"])
-        if (
-            receipt["operation"] != "admit"
-            or receipt["resource_id"] != action.spec.run_id
-            or receipt["accepted_version"] != 1
-            or receipt["accepted_at"] < action.created_at
-            or receipt["body_digest"] != digest({"expected_run_version": 5})
-        ):
-            fail("ACTION_RECEIPT_LINK")
-    return action
+    from agentic_intent_gate.adapters.sqlite_action_ledger import validate_history
+
+    return validate_history(connection, action)
 
 
 def validate_ledger(connection, runs, compiler=None):
     if connection.execute("PRAGMA foreign_key_check").fetchall():
         fail("ACTION_FOREIGN_KEYS")
-    if (
-        connection.execute("SELECT 1 FROM action_authorizations LIMIT 1").fetchone()
-        or connection.execute("SELECT 1 FROM action_attempts LIMIT 1").fetchone()
-    ):
-        fail("ACTION_FUTURE_FACTS_NOT_IMPLEMENTED")
     for row in connection.execute("SELECT * FROM actions ORDER BY action_id").fetchall():
         validated_action(connection, runs, row, compiler)
 
@@ -204,8 +170,12 @@ class SQLiteActionRepository:
             f"INSERT INTO actions({names}) VALUES ({placeholders})", tuple(values.values())
         )
 
-    def admit(self, command):
+    def admit(self, command, *, principal=None, policy=None):
         AdmissionCommand(**vars(command))
+        if policy is not None:
+            policy.require(principal, "admit")
+            if command.subject_id != principal.subject_id:
+                raise ActionError(ActionCode.NOT_AUTHORIZED)
         fingerprint = digest({"expected_run_version": command.expected_run_version})
         with self._transaction(write=True) as connection:
             receipt = connection.execute(
@@ -224,6 +194,8 @@ class SQLiteActionRepository:
                 raise ActionError(ActionCode.RUN_NOT_ELIGIBLE)
             binding = binding_for(connection, decision)
             spec = self.compiler.compile(run, decision, binding)
+            if policy is not None:
+                policy.permit(principal, "admit", spec)
             if receipt:
                 action = self._load(connection, receipt["accepted_action_id"])
                 if action is None or action.spec != spec:

@@ -34,7 +34,13 @@ def _json_utf8(content_type: str) -> bool:
     return True
 
 
-def create_app(service: PlanningService, *, run_service: RunService | None = None) -> FastAPI:
+def create_app(
+    service: PlanningService,
+    *,
+    run_service: RunService | None = None,
+    action_gateway=None,
+    capability_verifier=None,
+) -> FastAPI:
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, debug=False)
     page = files("agentic_intent_gate.adapters").joinpath("static", "index.html").read_text("utf-8")
 
@@ -79,6 +85,10 @@ def create_app(service: PlanningService, *, run_service: RunService | None = Non
 
     if run_service is not None:
         _add_run_routes(app, run_service)
+    if action_gateway is not None:
+        from agentic_intent_gate.adapters.action_http import add_action_routes
+
+        add_action_routes(app, action_gateway, capability_verifier)
     return app
 
 

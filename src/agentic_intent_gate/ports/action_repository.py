@@ -52,3 +52,47 @@ class ActionRepository(Protocol):
     def get(self, action_id: str) -> Action | None: ...
     def list_for_run(self, run_id: str) -> tuple[Action, ...]: ...
     def validate_all(self) -> None: ...
+
+
+@dataclass(frozen=True)
+class ActionCommand:
+    action_id: str
+    expected_action_version: int
+    idempotency_key: str
+
+    def __post_init__(self):
+        if (
+            not valid_uuid(self.action_id)
+            or not valid_uuid(self.idempotency_key)
+            or type(self.expected_action_version) is not int
+            or not 1 <= self.expected_action_version <= MAX_VERSION
+        ):
+            raise ActionError(ActionCode.INVALID_REQUEST)
+
+    @classmethod
+    def parse(cls, action_id, raw, *, idempotency_key):
+        value = strict_object(raw, max_bytes=REQUEST_BYTES)
+        if set(value) != {"expected_action_version"}:
+            raise ActionError(ActionCode.INVALID_REQUEST)
+        return cls(action_id, value["expected_action_version"], idempotency_key)
+
+
+@dataclass(frozen=True)
+class CommandResult:
+    action: Action
+    replayed: bool
+
+    def to_dict(self):
+        return {"action": self.action.snapshot(), "replayed": self.replayed}
+
+
+@dataclass(frozen=True)
+class ClaimResult(CommandResult):
+    attempt_id: str | None = None
+
+
+class ExecutionRepository(ActionRepository, Protocol):
+    def authorize(self, command, principal, policy) -> CommandResult: ...
+    def claim(self, command, principal, policy) -> ClaimResult: ...
+    def finish(self, action_id, attempt_id, result) -> Action: ...
+    def recover(self, *, owners_stopped: bool) -> int: ...

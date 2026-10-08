@@ -4,8 +4,11 @@ import argparse
 import asyncio
 import hashlib
 import json
+import secrets
+import sqlite3
 import sys
 import tempfile
+from contextlib import closing
 from importlib.metadata import version
 from importlib.resources import files
 from pathlib import Path
@@ -14,13 +17,18 @@ from uuid import uuid4
 import httpx
 
 import agentic_intent_gate
+from agentic_intent_gate.adapters.executable_registry import ExecutableRegistry
+from agentic_intent_gate.adapters.local_capability import CapabilityVerifier, LocalDemoAuthorization
 from agentic_intent_gate.adapters.local_http import create_app
+from agentic_intent_gate.adapters.service_demo import DemoNoteExecutor, provision_demo_store
+from agentic_intent_gate.adapters.sqlite_action_execution import SQLiteExecutionRepository
 from agentic_intent_gate.adapters.sqlite_actions import SQLiteActionRepository
 from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
 from agentic_intent_gate.adapters.sqlite_v2_migration import migrate_v1_to_v2
 from agentic_intent_gate.adapters.sqlite_v2_runs import SQLiteV2RunRepository
 from agentic_intent_gate.adapters.tool_catalog import build_validator
 from agentic_intent_gate.application.action_compiler import ActionCompiler, ToolBinding
+from agentic_intent_gate.application.action_execution import ActionExecutionGateway
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.runs import RunService
 from agentic_intent_gate.domain.approval_binding import BindingCode, BindingError
@@ -81,6 +89,7 @@ def verify(source, output):
     app = create_app(planning, run_service=RunService(repository, planning))
     run_results = {}
     action_results = {}
+    execution_results = {}
 
     async def probe():
         async with httpx.AsyncClient(
@@ -198,8 +207,88 @@ def verify(source, output):
                 bound_approval="PASS",
                 admission_replay_reopen="PASS",
                 pending_version=1,
-                action_http_routes="NOT_IMPLEMENTED",
+                action_http_routes="DEFAULT_RUN_ONLY_COMPOSITION_404",
                 tool_calls=0,
+            )
+            # Explicit installed-wheel Prompt 3 composition, separate from the default 404 API.
+            demo_path = Path(temporary.name) / "isolated-demo.sqlite3"
+            scope = admitted.action.spec.execution_scope
+            provision_demo_store(demo_path, scope)
+            executor = DemoNoteExecutor(demo_path, scope, gate_path=database)
+            registry = ExecutableRegistry(executor)
+            token = secrets.token_hex(32)
+            verifier = CapabilityVerifier(
+                token,
+                subject_id="package-subject",
+                binding=executor.binding,
+                operations=("read", "admit", "authorize", "execute"),
+            )
+            policy = LocalDemoAuthorization(verifier, policy_revision="demo-policy-v1")
+            execution_repo = SQLiteExecutionRepository(v2, compiler)
+            calls = []
+            original = executor.execute
+
+            async def counted(*args):
+                calls.append(True)
+                return await original(*args)
+
+            executor.execute = counted
+            execution_app = create_app(
+                planning,
+                run_service=RunService(v2, planning),
+                action_gateway=ActionExecutionGateway(execution_repo, policy, registry),
+                capability_verifier=verifier,
+            )
+            action_url = "/api/actions/" + admitted.action.action_id
+            headers = {"Authorization": "Bearer " + token, "Idempotency-Key": str(uuid4())}
+            async with httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=execution_app), base_url="http://127.0.0.1"
+            ) as execution_client:
+                assert (await execution_client.get(action_url)).status_code == 401
+                authorized = await execution_client.post(
+                    action_url + "/authorize", headers=headers, json={"expected_action_version": 1}
+                )
+                assert (
+                    authorized.status_code == 200
+                    and authorized.json()["action"]["state"] == "Authorized"
+                )
+                assert len(calls) == 0
+                headers["Idempotency-Key"] = str(uuid4())
+                finished = await execution_client.post(
+                    action_url + "/execute", headers=headers, json={"expected_action_version": 2}
+                )
+                assert (
+                    finished.status_code == 200
+                    and finished.json()["action"]["state"] == "Succeeded"
+                )
+                replay = await execution_client.post(
+                    action_url + "/execute", headers=headers, json={"expected_action_version": 2}
+                )
+                assert replay.status_code == 200 and replay.json()["replayed"] and len(calls) == 1
+                reopened = SQLiteExecutionRepository(
+                    SQLiteV2RunRepository(database, validator), compiler
+                )
+                assert reopened.get(admitted.action.action_id).version == 4
+                assert reopened.recover(owners_stopped=True) == 0
+                with closing(sqlite3.connect(demo_path)) as external:
+                    assert external.execute("SELECT COUNT(*) FROM notes").fetchone()[0] == 1
+                    assert external.execute("SELECT COUNT(*) FROM receipts").fetchone()[0] == 1
+                    receipt = external.execute("SELECT receipt_reference FROM receipts").fetchone()[
+                        0
+                    ]
+                    assert receipt == finished.json()["action"]["result"]["receipt_reference"]
+            execution_results.update(
+                capability="PASS",
+                authorization="PASS",
+                execution="PASS",
+                replay_reopen="PASS",
+                state="Succeeded",
+                version=4,
+                adapter_calls=1,
+                external_notes=1,
+                external_receipts=1,
+                separate_database=True,
+                automatic_retry=False,
             )
             return page.status_code, response.status_code
 
@@ -223,6 +312,7 @@ def verify(source, output):
         "provider_calls": provider.calls,
         "day2": run_results,
         "day3_prompt2": action_results,
+        "day3_prompt3": execution_results,
         "versions": {name: version(name) for name in ("fastapi", "httpx", "jsonschema", "uvicorn")},
     }
     output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")

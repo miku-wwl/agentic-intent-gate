@@ -43,6 +43,20 @@ def create_app(
 ) -> FastAPI:
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, debug=False)
     page = files("agentic_intent_gate.adapters").joinpath("static", "index.html").read_text("utf-8")
+    if action_gateway is not None:
+        from agentic_intent_gate.adapters.local_capability import CapabilityVerifier
+
+        # Public UI hints for the single server-configured principal. They grant no authority;
+        # the page first verifies visibility with GET and every command retains its own check.
+        operations = (
+            sorted(capability_verifier.operations & {"read", "admit", "authorize", "execute"})
+            if isinstance(capability_verifier, CapabilityVerifier)
+            else []
+        )
+        page = page.replace(
+            'data-action-enabled="false" data-action-operations=""',
+            f'data-action-enabled="true" data-action-operations="{",".join(operations)}"',
+        )
 
     @app.get("/", response_class=HTMLResponse)
     async def planning_preview() -> HTMLResponse:

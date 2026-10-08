@@ -36,6 +36,13 @@
     #approval-reason { min-height: 80px; }
     #run-status { color: #475467; }
     #run-state { font-weight: 700; }
+    input[type="password"] { width: 100%; min-width: 0; padding: 12px; border: 1px solid #98a2b3; border-radius: 6px; font: inherit; }
+    #action-console { overflow-wrap: anywhere; }
+    #action-state { font-weight: 700; }
+    #action-warning { padding: 12px; border: 1px solid #b7791f; border-radius: 6px; background: #fff8e7; color: #744210; }
+    #action-error { color: #912f27; }
+    #action-list { padding-left: 20px; }
+    #action-list button { max-width: 100%; overflow-wrap: anywhere; text-align: left; }
     dl { display: grid; grid-template-columns: 88px 1fr; gap: 12px; margin-bottom: 24px; }
     dt { color: #475467; }
     dd { margin: 0; overflow-wrap: anywhere; }
@@ -54,7 +61,7 @@
         <div class="brand">AgenticIntentGate · local control surface</div>
         <h1 id="run-console-title">Runs &amp; local approval</h1>
         <p class="muted">Intent → durable Run → validated Plan → local decision.</p>
-        <p class="notice">No tools execute. Approved means approval only, for possible later execution.</p>
+        <p id="execution-notice" class="notice">No tools execute. Approved means approval only, for possible later execution.</p>
       </header>
       <section class="card" aria-labelledby="builder-title">
         <h2 id="builder-title">Intent Builder</h2>
@@ -117,6 +124,50 @@
         <h2 id="run-plan-error-title">Plan rejected</h2>
         <p><code id="run-plan-error-code"></code>: <span id="run-plan-error-message"></span></p>
         <p class="muted">This failed Run is persisted. Refresh only reads it; no generation is retried.</p>
+      </section>
+      <section id="action-console" class="card" aria-labelledby="action-console-title" data-action-enabled="false" data-action-operations="" hidden>
+        <h2 id="action-console-title">Actions · controlled local demo</h2>
+        <p>Run approval, Action authorization and execution are separate explicit commands. The Run stays Approved while its Action records the observed effect.</p>
+        <form id="capability-form" autocomplete="off" novalidate>
+          <label for="action-capability">Local demo capability</label>
+          <input id="action-capability" type="password" autocomplete="off" spellcheck="false" autocapitalize="none" aria-describedby="capability-help">
+          <p id="capability-help" class="muted">Provide the privately provisioned capability. It stays in this page's memory and must be entered again after reload. This is a local demo, not a production login.</p>
+          <div class="actions">
+            <button id="use-capability" type="submit">Use capability</button>
+            <button id="clear-capability" class="secondary" type="button">Clear capability</button>
+          </div>
+        </form>
+        <p id="capability-status" role="status" aria-live="polite">Capability required to read or change Actions.</p>
+        <p id="action-permissions" class="muted"></p>
+        <p id="admission-help" class="muted"></p>
+        <div class="actions">
+          <button id="admit-action" type="button" disabled>Admit Action</button>
+          <button id="refresh-actions" class="secondary" type="button" disabled>Refresh Actions</button>
+        </div>
+        <p id="action-status" role="status" aria-live="polite" aria-atomic="true">No Action data loaded.</p>
+        <div id="action-error" role="alert" hidden><p><code id="action-error-code"></code>: <span id="action-error-message"></span></p><p id="action-error-help"></p></div>
+        <ul id="action-list" aria-label="Associated Actions"></ul>
+        <section id="action-details" aria-labelledby="action-details-title" hidden>
+          <h3 id="action-details-title">Action details</h3>
+          <dl>
+            <dt>Action ID</dt><dd id="action-id"></dd>
+            <dt>Action state</dt><dd id="action-state"></dd>
+            <dt>Action version</dt><dd id="action-version"></dd>
+            <dt>Tool</dt><dd id="action-tool"></dd>
+            <dt>Trusted target</dt><dd id="action-target"></dd>
+            <dt>Created (UTC)</dt><dd id="action-created"></dd>
+            <dt>Updated (UTC)</dt><dd id="action-updated"></dd>
+            <dt>Authorization</dt><dd id="action-authorization"></dd>
+          </dl>
+          <h3>Exact normalized arguments</h3><pre id="action-arguments"></pre>
+          <p id="action-explanation"></p>
+          <p id="action-warning" role="alert" hidden></p>
+          <div class="actions">
+            <button id="authorize-action" type="button" hidden disabled>Authorize Action</button>
+            <button id="execute-action" type="button" hidden disabled>Execute Action</button>
+          </div>
+          <div id="action-result" hidden><h3>Persisted execution result</h3><p><code id="action-result-code"></code>: <span id="action-result-message"></span></p><p>Receipt reference: <code id="action-receipt"></code></p></div>
+        </section>
       </section>
     </section>
     <header>
@@ -394,6 +445,7 @@
         el("run-steps").replaceChildren();
         el("approval-reason").value = "";
         rememberId(null);
+        window.dispatchEvent(new CustomEvent("aig-run", {detail: null}));
       }
 
       function isDisplayableRun(run) {
@@ -437,7 +489,7 @@
         el("approval-form").hidden = !waiting;
         el("approval-summary").textContent = waiting
           ? `Decision applies to Run version ${run.version}. Trusted risk: ${run.risk_class}.`
-          : `${run.state} at Run version ${run.version}. No tools executed. Decision reason and actor records are not exposed by this API.`;
+          : `${run.state} at Run version ${run.version}. ${el("action-console").dataset.actionEnabled === "true" ? "Approval alone does not execute an Action." : "No tools executed."} Decision reason and actor records are not exposed by this API.`;
         el("approval-reason").value = "";
       }
 
@@ -459,8 +511,9 @@
         el("run-plan-error").hidden = run.state !== "PlanRejected";
         el("run-plan-error-code").textContent = run.error?.code || "";
         el("run-plan-error-message").textContent = run.error ? messages[run.error.code] : "";
-        el("run-status").textContent = `Run loaded: ${labels[run.state]}. No tools executed.`;
+        el("run-status").textContent = `Run loaded: ${labels[run.state]}. ${el("action-console").dataset.actionEnabled === "true" ? "Approval alone does not execute an Action." : "No tools executed."}`;
         el("run-details").focus();
+        window.dispatchEvent(new CustomEvent("aig-run", {detail: run}));
       }
 
       async function requestRun(path, options, expectedId = null) {
@@ -555,6 +608,230 @@
         if (validId(restored)) { rememberId(restored); getRun(); }
         else renderError("RUN_NOT_FOUND", "The URL must contain a canonical Run UUID.");
       }
+    })();
+  </script>
+  <script>
+    (() => {
+      "use strict";
+      const el = id => document.getElementById(id);
+      const panel = el("action-console");
+      if (panel.dataset.actionEnabled !== "true") return;
+      const permissions = new Set(panel.dataset.actionOperations.split(",").filter(
+        value => ["read", "admit", "authorize", "execute"].includes(value)
+      ));
+      const validId = value => typeof value === "string"
+        && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value);
+      const explanations = {
+        Pending: "Compiled and persisted. This Action has not been authorized or executed.",
+        Authorized: "Authorization is recorded. Execute Action is a separate explicit command.",
+        Executing: "An execution attempt is recorded. The effect is not yet confirmed; Refresh Actions reads its current state.",
+        Succeeded: "Execution confirmed by the backend's persisted effect receipt.",
+        Failed: "The backend confirmed that the intended external effect did not occur.",
+        Unknown: "Execution outcome is unknown. The operation may have completed. Automatic replay is disabled to prevent duplicate effects."
+      };
+      const errors = {
+        AUTHENTICATION_REQUIRED: "Verified execution credentials are required. Re-enter the capability.",
+        ACTION_NOT_AUTHORIZED: "The execution policy does not permit this operation.",
+        INVALID_ACTION_REQUEST: "The request does not match the Action contract.",
+        IDEMPOTENCY_KEY_REQUIRED: "A stable Idempotency-Key is required.",
+        ACTION_NOT_FOUND: "The Action was not found.", RUN_NOT_FOUND: "The Run was not found.",
+        IDEMPOTENCY_CONFLICT: "The request key is bound to different content.",
+        STALE_ACTION_VERSION: "The Action version changed. Its current state is being refreshed.",
+        STALE_RUN_VERSION: "The Run version changed. Refresh Run before another command.",
+        RUN_NOT_ACTION_ELIGIBLE: "The Run does not allow Action admission.",
+        APPROVAL_PLAN_BINDING_MISSING: "The approval has no exact Plan binding.",
+        LEGACY_APPROVAL_UNBOUND: "The historical approval has no exact Plan binding. Create a distinct new Run and review its new Plan.",
+        APPROVAL_PLAN_MISMATCH: "The stored Plan does not match the approval binding.",
+        APPROVAL_PLAN_BINDING_UNSUPPORTED: "The approval binding format is not supported.",
+        ACTION_NOT_EXECUTABLE: "The Action state does not allow this operation.",
+        EXECUTION_ALREADY_STARTED: "This Action already has an execution attempt.",
+        TOOL_NOT_BOUND: "The selected tool has no permitted execution binding.",
+        PLAN_NOT_EXECUTABLE: "The Plan is outside the supported execution scope.",
+        TOOL_REJECTED: "The compiled tool input was rejected.",
+        DATABASE_UNAVAILABLE: "The Action store is unavailable. No outcome is inferred.",
+        INTERNAL_ERROR: "An internal Action error occurred. No outcome is inferred.",
+        REQUEST_TOO_LARGE: "The request exceeds the allowed size.",
+        UNSUPPORTED_MEDIA_TYPE: "Use application/json with UTF-8 encoding.",
+        NETWORK_ERROR: "The connection ended or timed out. The command outcome is not confirmed.",
+        UNEXPECTED_RESPONSE: "The application returned an unexpected response. No outcome is inferred."
+      };
+      let credential = "", verified = false, run = null, actions = [], selected = null;
+      let mutation = null, reading = false, epoch = 0, sequence = 0;
+      const commands = new Map(), locks = new Set();
+      el("execution-notice").textContent = "Approval alone does not execute a tool. The local demo requires separate admission, verified authorization and explicit execution.";
+
+      function eligible() {
+        const plan = run?.plan, step = plan?.steps?.[0];
+        return run?.state === "Approved" && run.version === 5 && plan?.steps?.length === 1
+          && plan.target === "service-demo" && plan.risk_class === "SIDE_EFFECT"
+          && step.tool_name === "append_service_note" && step.tool_version === "1";
+      }
+      function showError(code, help = "No command is automatically replayed. Refresh Actions only reads the backend.") {
+        const safe = typeof code === "string" && Object.hasOwn(errors, code) ? code : "UNEXPECTED_RESPONSE";
+        el("action-error-code").textContent = safe;
+        el("action-error-message").textContent = errors[safe];
+        el("action-error-help").textContent = help;
+        el("action-error").hidden = false;
+      }
+      function clearError() { el("action-error").hidden = true; }
+      function snapshot(value) {
+        return value && validId(value.action_id) && value.run_id === run?.run_id
+          && Object.hasOwn(explanations, value.state) && Number.isSafeInteger(value.version)
+          && value.version > 0 && typeof value.tool_name === "string" && typeof value.tool_version === "string"
+          && typeof value.target === "string" && typeof value.created_at === "string"
+          && typeof value.updated_at === "string" && value.normalized_arguments
+          && typeof value.normalized_arguments === "object" && !Array.isArray(value.normalized_arguments)
+          && (value.authorization === null || (typeof value.authorization?.subject_id === "string"
+            && typeof value.authorization.policy_revision === "string" && typeof value.authorization.authorized_at === "string"))
+          && (value.result === null || (["EXECUTION_SUCCEEDED", "EXECUTION_CONFIRMED_FAILED", "EXECUTION_OUTCOME_UNKNOWN"].includes(value.result?.code)
+            && typeof value.result.message === "string" && (value.result.receipt_reference === null || validId(value.result.receipt_reference))));
+      }
+      function render() {
+        const action = actions.find(value => value.action_id === selected);
+        panel.hidden = !run;
+        panel.setAttribute("aria-busy", String(Boolean(mutation) || reading));
+        el("capability-status").textContent = verified ? "Capability verified for Action visibility." : "Capability required to read or change Actions.";
+        el("action-permissions").textContent = verified ? `Server-configured operation scope: ${[...permissions].join(", ") || "none"}. Each command is checked again by the backend.` : "";
+        el("use-capability").disabled = Boolean(mutation) || reading || !run;
+        el("clear-capability").disabled = Boolean(mutation);
+        el("refresh-actions").disabled = !credential || !run || reading;
+        el("admit-action").hidden = !eligible() || !permissions.has("admit");
+        el("admit-action").disabled = !verified || Boolean(mutation) || reading || actions.length > 0 || locks.has(`admit:${run?.run_id}`);
+        el("admission-help").textContent = eligible()
+          ? "Admission creates a Pending Action from this exact approved single-step Plan. The backend verifies retained approval and current tool binding."
+          : "Action admission requires an Approved single-step append_service_note/1 SIDE_EFFECT Plan for service-demo.";
+        el("action-list").replaceChildren();
+        for (const value of actions) {
+          const item = document.createElement("li"), button = document.createElement("button");
+          button.type = "button"; button.className = "secondary";
+          button.textContent = `${value.action_id} · ${value.state} · v${value.version}`;
+          button.disabled = Boolean(mutation);
+          button.addEventListener("click", () => { selected = value.action_id; rememberAction(); render(); });
+          item.append(button); el("action-list").append(item);
+        }
+        el("action-details").hidden = !action;
+        for (const [id, value] of [
+          ["action-id", action?.action_id], ["action-state", action?.state], ["action-version", action?.version],
+          ["action-tool", action ? `${action.tool_name} · v${action.tool_version}` : ""],
+          ["action-target", action?.target], ["action-created", action?.created_at], ["action-updated", action?.updated_at],
+          ["action-arguments", action ? JSON.stringify(action.normalized_arguments, null, 2) : ""],
+          ["action-authorization", action?.authorization ? `Recorded for ${action.authorization.subject_id} under ${action.authorization.policy_revision} at ${action.authorization.authorized_at}.` : "Not recorded"],
+          ["action-explanation", action ? explanations[action.state] : ""],
+          ["action-result-code", action?.result?.code], ["action-result-message", action?.result?.message],
+          ["action-receipt", action?.result?.receipt_reference || "None"]
+        ]) el(id).textContent = String(value ?? "");
+        el("action-warning").hidden = action?.state !== "Unknown";
+        el("action-warning").textContent = action?.state === "Unknown" ? explanations.Unknown : "";
+        el("action-result").hidden = !action?.result;
+        for (const [operation, state] of [["authorize", "Pending"], ["execute", "Authorized"]]) {
+          const button = el(`${operation}-action`);
+          button.hidden = !action || action.state !== state || !permissions.has(operation);
+          button.disabled = button.hidden || !verified || Boolean(mutation) || reading || locks.has(`${operation}:${selected}`);
+        }
+        if (mutation) el("action-status").textContent = `${mutation === "execute" ? "Execution request" : mutation === "authorize" ? "Authorization request" : "Admission request"} in progress. Only backend state confirms its outcome.`;
+        else if (!reading) el("action-status").textContent = action ? `Backend Action: ${action.state}, version ${action.version}.` : verified ? "No associated Action has been admitted." : "No Action data loaded.";
+      }
+      function rememberAction() {
+        const url = new URL(window.location.href);
+        if (selected) url.searchParams.set("action_id", selected); else url.searchParams.delete("action_id");
+        window.history.replaceState(null, "", url);
+      }
+      async function request(path, options = {}) {
+        const controller = new AbortController(), timer = setTimeout(() => controller.abort(), options.method === "POST" ? 12000 : 5000);
+        try {
+          const response = await fetch(path, {...options, signal: controller.signal, mode: "same-origin", credentials: "omit", redirect: "error", cache: "no-store",
+            headers: {...options.headers, Authorization: `Bearer ${credential}`}});
+          let body;
+          try { body = await response.json(); } catch { throw "UNEXPECTED_RESPONSE"; }
+          if (!response.ok) throw typeof body?.error?.code === "string" ? body.error.code : "UNEXPECTED_RESPONSE";
+          return body;
+        } catch (error) { throw typeof error === "string" ? error : "NETWORK_ERROR"; }
+        finally { clearTimeout(timer); }
+      }
+      async function refreshActions() {
+        if (!credential || !run) return false;
+        const id = run.run_id, ticket = ++sequence, generation = epoch;
+        reading = true; render();
+        try {
+          const body = await request(`/api/runs/${id}/actions`);
+          if (generation !== epoch || ticket !== sequence) return false;
+          if (body?.run_id !== id || !Array.isArray(body.actions) || !body.actions.every(snapshot)) throw "UNEXPECTED_RESPONSE";
+          let next = body.actions;
+          if (selected && !next.some(value => value.action_id === selected)) throw "ACTION_NOT_FOUND";
+          const chosen = selected || next[0]?.action_id;
+          if (chosen) {
+            const detail = await request(`/api/actions/${chosen}`);
+            if (generation !== epoch || ticket !== sequence) return false;
+            if (!snapshot(detail) || detail.action_id !== chosen) throw "UNEXPECTED_RESPONSE";
+            next = next.map(value => value.action_id === chosen && detail.version >= value.version ? detail : value);
+          }
+          if (next.some(value => actions.some(old => old.action_id === value.action_id && old.version > value.version))) throw "UNEXPECTED_RESPONSE";
+          actions = next; selected = chosen || null; verified = true; rememberAction();
+          return true;
+        } catch (code) {
+          if (generation !== epoch || ticket !== sequence) return false;
+          showError(code);
+          if (code === "AUTHENTICATION_REQUIRED") { credential = ""; verified = false; actions = []; }
+          return false;
+        } finally { if (generation === epoch && ticket === sequence) { reading = false; render(); } }
+      }
+      async function mutate(operation) {
+        const action = actions.find(value => value.action_id === selected);
+        const lock = operation === "admit" ? `admit:${run?.run_id}` : `${operation}:${selected}`;
+        if (mutation || reading || !verified || !permissions.has(operation) || locks.has(lock)) return;
+        if (operation === "admit" ? !eligible() || actions.length > 0 : !action || action.state !== (operation === "authorize" ? "Pending" : "Authorized")) return;
+        const id = operation === "admit" ? run.run_id : action.action_id, generation = epoch;
+        const body = operation === "admit" ? {expected_run_version: run.version} : {expected_action_version: action.version};
+        const command = {key: crypto.randomUUID(), body}; commands.set(lock, command); locks.add(lock);
+        mutation = operation; clearError(); render();
+        const progressTimer = operation === "execute" ? setTimeout(() => { if (generation === epoch) refreshActions(); }, 200) : null;
+        try {
+          const response = await request(operation === "admit" ? `/api/runs/${id}/actions` : `/api/actions/${id}/${operation}`, {
+            method: "POST", headers: {"Content-Type": "application/json", "Idempotency-Key": command.key}, body: JSON.stringify(command.body)
+          });
+          if (generation !== epoch) return;
+          if (operation === "admit" ? response?.run_id !== run.run_id || !Array.isArray(response.actions) : !snapshot(response?.action) || response.action.action_id !== id) throw "UNEXPECTED_RESPONSE";
+          // Command responses are acceptance/lookup evidence. GET supplies the displayed snapshot.
+          await refreshActions();
+        } catch (code) {
+          if (generation === epoch) {
+            showError(code);
+            if (code === "AUTHENTICATION_REQUIRED") { credential = ""; verified = false; actions = []; }
+            else await refreshActions();
+          }
+        } finally {
+          clearTimeout(progressTimer);
+          if (generation === epoch) { mutation = null; render(); }
+        }
+      }
+      el("capability-form").addEventListener("submit", async event => {
+        event.preventDefault(); if (mutation || reading || !run) return;
+        credential = el("action-capability").value; el("action-capability").value = "";
+        verified = false; actions = []; clearError();
+        if (!/^[0-9a-f]{64}$/.test(credential)) { credential = ""; showError("AUTHENTICATION_REQUIRED"); render(); return; }
+        await refreshActions();
+      });
+      function clearCapability() {
+        credential = ""; verified = false; actions = []; el("action-capability").value = ""; ++epoch; ++sequence; reading = false; render();
+      }
+      el("clear-capability").addEventListener("click", clearCapability);
+      el("refresh-actions").addEventListener("click", () => { clearError(); refreshActions(); });
+      el("admit-action").addEventListener("click", () => mutate("admit"));
+      el("authorize-action").addEventListener("click", () => mutate("authorize"));
+      el("execute-action").addEventListener("click", () => mutate("execute"));
+      window.addEventListener("pagehide", clearCapability);
+      window.addEventListener("aig-run", event => {
+        const next = event.detail;
+        if (run?.run_id !== next?.run_id) {
+          ++epoch; ++sequence; reading = false; mutation = null; actions = [];
+          const link = new URL(window.location.href).searchParams.get("action_id");
+          selected = run === null && validId(link) ? link : null;
+          if (link !== null && !validId(link)) showError("INVALID_ACTION_REQUEST", "Action links require a canonical Action UUID and its Run ID.");
+          if (run !== null || next === null) { selected = null; rememberAction(); }
+        }
+        run = next; render(); if (credential && run) refreshActions();
+      });
+      render();
     })();
   </script>
 </body>

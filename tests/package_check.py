@@ -244,6 +244,25 @@ def verify(source, output):
             async with httpx.AsyncClient(
                 transport=httpx.ASGITransport(app=execution_app), base_url="http://127.0.0.1"
             ) as execution_client:
+                action_page = await execution_client.get("/")
+                assert action_page.status_code == 200
+                assert 'data-action-enabled="true"' in action_page.text
+                assert 'data-action-operations="admit,authorize,execute,read"' in action_page.text
+                assert 'id="action-capability" type="password"' in action_page.text
+                for control in (
+                    "action-console",
+                    "admit-action",
+                    "authorize-action",
+                    "execute-action",
+                    "refresh-actions",
+                    "clear-capability",
+                    "action-warning",
+                    "action-result",
+                ):
+                    assert f'id="{control}"' in action_page.text
+                if token in action_page.text:
+                    raise AssertionError("Installed Action page exposed managed credential")
+                assert "textContent" in action_page.text and 'redirect: "error"' in action_page.text
                 assert (await execution_client.get(action_url)).status_code == 401
                 authorized = await execution_client.post(
                     action_url + "/authorize", headers=headers, json={"expected_action_version": 1}
@@ -313,6 +332,14 @@ def verify(source, output):
         "day2": run_results,
         "day3_prompt2": action_results,
         "day3_prompt3": execution_results,
+        "day3_prompt4": {
+            "installed_action_ui": "PASS",
+            "masked_capability_input": "PASS",
+            "public_operation_scope_wiring": "PASS",
+            "credential_in_html": False,
+            "runtime_and_static_resources_byte_identical": True,
+            "actual_browser": "NOT_RUN_PACKAGE_PROBE_IS_HTTP_ONLY",
+        },
         "versions": {name: version(name) for name in ("fastapi", "httpx", "jsonschema", "uvicorn")},
     }
     output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")

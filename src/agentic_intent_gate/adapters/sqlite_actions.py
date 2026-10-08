@@ -119,9 +119,16 @@ class SQLiteActionRepository:
             raise ActionError(ActionCode.DATABASE_UNAVAILABLE) from None
         finally:
             if connection is not None:
-                if connection.in_transaction:
-                    connection.rollback()
-                connection.close()
+                try:
+                    try:
+                        if connection.in_transaction:
+                            connection.rollback()
+                    finally:
+                        connection.close()
+                except Exception:
+                    # A disconnected/failed cleanup must not mask the safe store error
+                    # or imply that an unconfirmed outcome became durable.
+                    raise ActionError(ActionCode.DATABASE_UNAVAILABLE) from None
 
     def validate_all(self):
         with self._transaction() as connection:

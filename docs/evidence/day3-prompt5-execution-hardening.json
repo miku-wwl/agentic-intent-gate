@@ -1,0 +1,206 @@
+{
+  "task": "DAY3_PROMPT5_EXECUTION_RELIABILITY_HARDENING",
+  "recorded_at_utc": "2026-10-08T13:24:13Z",
+  "starting_commit": "b069ee181e75de80c61a5318148da4da37e97207",
+  "baseline": {
+    "branch": "main",
+    "initial_worktree": "CLEAN",
+    "prompt4_committed_pushed_pass": true,
+    "head_tracking_live_github_equal": true,
+    "day2_final_freeze_target": "c7d3e1ee051af40c69ec33d888ecf16475a2d789",
+    "tag_unchanged": true
+  },
+  "scope": {
+    "production_change": "Action repository cleanup always attempts close and normalizes failures to DATABASE_UNAVAILABLE",
+    "new_unique_cases": 38,
+    "schema_migration_api_ui_authorization_contract_changed": false,
+    "automatic_retry_reconciliation_worker_ha_new_tool": false,
+    "live_llm_cloud_mcp": false,
+    "prompt6_or_day4": false,
+    "commit_push_tag_release": false,
+    "files": [
+      "src/agentic_intent_gate/adapters/sqlite_actions.py",
+      "tests/execution_fault_worker.py",
+      "tests/execution_process_helpers.py",
+      "tests/test_execution_hardening.py",
+      "docs/day3-prompt5-execution-hardening.md",
+      "docs/evidence/day3-prompt5-execution-hardening.json"
+    ]
+  },
+  "crash_windows": {
+    "before_claim_commit": {"window": "A", "before": "Authorized/v2", "recovered": "Authorized/v2", "calls": 0, "attempts": 0, "notes": 0, "receipts": 0, "final_events": 2, "http_response_delivered": false, "result": "PASS"},
+    "after_claim_before_call": {"window": "B", "before": "Executing/v3", "recovered": "Unknown/v4", "calls": 0, "attempts": 1, "notes": 0, "receipts": 0, "final_events": 4, "http_response_delivered": false, "result": "PASS"},
+    "during_tool_call": {"window": "C", "barrier": "Instrumented adapter port entered before downstream operation", "before": "Executing/v3", "recovered": "Unknown/v4", "calls": 1, "attempts": 1, "notes": 0, "receipts": 0, "final_events": 4, "http_response_delivered": false, "result": "PASS"},
+    "after_effect_before_result": {"window": "D", "barrier": "After actual downstream COMMIT", "before": "Executing/v3", "recovered": "Unknown/v4", "calls": 1, "attempts": 1, "notes": 1, "receipts": 1, "final_events": 4, "http_response_delivered": false, "result": "PASS"},
+    "confirmed_failure_before_result": {"window": "E", "barrier": "Actual STORE_IDENTITY_MISMATCH no-effect result before gateway persistence", "before": "Executing/v3", "recovered": "Unknown/v4", "calls": 1, "attempts": 1, "notes": 0, "receipts": 0, "final_events": 4, "http_response_delivered": false, "result": "PASS"},
+    "after_success_commit_before_response": {"window": "F", "before": "Succeeded/v4", "recovered": "Succeeded/v4", "calls": 1, "attempts": 1, "notes": 1, "receipts": 1, "final_events": 4, "http_response_delivered": false, "result": "PASS"},
+    "after_unknown_commit_before_response": {"window": "G", "barrier": "Lost actual downstream commit acknowledgement, then gate Unknown COMMIT", "before": "Unknown/v4", "recovered": "Unknown/v4", "calls": 1, "attempts": 1, "notes": 1, "receipts": 1, "final_events": 4, "http_response_delivered": false, "result": "PASS"},
+    "interrupted_authorization": {"window": "H", "operations": ["admit", "authorize"], "barrier": "Before actual gate transaction COMMIT", "recovered": "Exact pre-command business rows", "new_orphans": 0, "calls": 0, "notes": 0, "receipts": 0, "http_response_delivered": false, "result": "PASS"}
+  },
+  "process_termination": {
+    "platform": "Windows; CPython 3.13.9",
+    "real_subprocesses_used": true,
+    "termination_mechanism": "Retained Popen handle to actual base interpreter; Popen.kill -> Windows TerminateProcess, followed by bounded wait",
+    "isolation": "Fresh external synthetic SQLite v2 gate and separate demo store, nonce/PID/phase checks, authority only through stdin; no broad PID kill",
+    "composition": "Test-only real HTTP composition with actual production components and owner/recovery ordering; not private capability-file provisioning proof",
+    "stable_run_scope": "Three focused runs plus complete regression; excludes development subsets",
+    "owned_child_records": 284,
+    "explicit_barrier_kills": 80,
+    "normal_cleanup": "Request stop, bounded wait then owned-handle kill fallback if necessary; no claim all exits were graceful",
+    "cleanup": "PASS: processes waited, parent readers joined, streams/clients closed, individual listener probes closed; live task-process audit zero"
+  },
+  "ownership": {
+    "single_owner": "PASS: exact frozen OS lock, no lease/age takeover",
+    "competing_process": "PASS: active owner blocks recovery/startup; simultaneous starts have one owner and one denial",
+    "active_execution_protection": "PASS: Executing rows unchanged until the owned predecessor is actually killed",
+    "quiescence": "Reviewed product adapter has no detached helper; owner kernel termination plus explicit stopped attestation before restart"
+  },
+  "recovery": {
+    "executing_to_unknown": "PASS",
+    "repeated_recovery": {"repetitions": [1, 2, 10], "second_actual_restart": true, "additional_versions_events_grants_attempts_effects": 0},
+    "tool_replays": 0,
+    "model_calls": 0,
+    "model_evidence": "Action commands/recovery do not generate a Plan; child composition uses a provider that raises if called, no live endpoint; existing forbidden-provider recovery regressions passed",
+    "run_approval_plan_binding_unchanged": true,
+    "interrupted_run_and_action_independent": "PASS",
+    "retired_binding_historical_read_and_recovery": "PASS; original retained spec preserved, current-registry execute denied",
+    "get_action_list_run_purity": "PASS: repeated actual HTTP GETs leave complete business rows/effects unchanged"
+  },
+  "idempotency": {
+    "admission": "PASS: actual post-commit response loss, two interpreter restarts, same key/body replay and changed-body conflict",
+    "authorization": "PASS: actual post-commit response loss, two interpreter restarts, grant/receipt identity stable and changed-body conflict",
+    "execution": "PASS: exact persisted key replays current outcome only, changed body conflicts, fresh key cannot dispatch again",
+    "across_restart": true,
+    "downstream_receipts": "PASS: actual independent connection/process contenders, same payload receipt stable, changed payload confirmed rejection; busy uncertainty is Unknown, no fabricated rejection",
+    "stable_effect_identity": true,
+    "gate_retry_implemented": false
+  },
+  "concurrency": {
+    "request_count": 20,
+    "variants": ["same key", "different keys"],
+    "real_http": true,
+    "independent_sqlite_connections": true,
+    "winning_claims": 1,
+    "attempts": 1,
+    "adapter_invocations": 1,
+    "downstream_effects": 1,
+    "downstream_receipts": 1,
+    "final_action_events": 4,
+    "count_scope": "Each isolated 20-request positive gateway case, not suite aggregation",
+    "stale_versions_and_duplicate_writers": "PASS",
+    "test_only_drained_claim_barrier": "Waits for every contender before independent gate write probe; does not change production CAS/deadlines"
+  },
+  "outcomes": {
+    "confirmed_success": "PASS: matching actual retained receipt, durable Succeeded",
+    "confirmed_no_effect_failure": "PASS: actual store identity rejection; existing validation/payload conflict tests retained",
+    "unknown": "PASS: kill/incomplete claim/lost downstream acknowledgement/adapter exception/timeout/cancel after possible or actual effect",
+    "result_commit_failure": "PASS: real busy lock plus controlled UPDATE/COMMIT/connection interruption; 503, Executing before recovery, Unknown only after actual recovery commit",
+    "lost_result_commit_acknowledgement": "PASS: 503 but actual committed Succeeded is read/replayed without resend",
+    "response_loss": "PASS: actual process death before HTTP delivery, no fabricated Action response",
+    "stale_wrong_attempt_late_duplicate_completion": "PASS: no outcome/event overwrite"
+  },
+  "timeout": {
+    "cancellation_behavior": "After a real effect, durable Unknown then CancelledError re-raised; Uvicorn generic 500, independently verified by GET/restart with no resend",
+    "expired_dispatch_budget": "PASS: no downstream note/receipt",
+    "event_loop_blocking": true,
+    "measurement_method": "Actual downstream BEGIN IMMEDIATE blocker, 10ms tool budget, event-loop heartbeat",
+    "focused_measurements_seconds": [
+      {"run": 1, "elapsed": 0.4597493000328541, "heartbeat_lag": 0.4699615000281483},
+      {"run": 2, "elapsed": 0.45501039997907355, "heartbeat_lag": 0.46098869998240843},
+      {"run": 3, "elapsed": 0.4666410000063479, "heartbeat_lag": 0.4786465999786742}
+    ],
+    "full_measurement_seconds": {"elapsed": 0.4717646000208333, "heartbeat_lag": 0.47376980003900826},
+    "measured_state": "Unknown",
+    "measured_notes": 0,
+    "limitations": "Cooperative soft deadline, not preemptive SQLite/disk/OS or arbitrary-effect cancellation. Frozen architecture explicitly excludes hard disk/OS timing; no helper/offload contract added."
+  },
+  "defects": [
+    {
+      "id": "P5-CLEANUP-ERROR",
+      "classification": "Safe error/cleanup defect; no reproduced P0 duplicate effect or authority bypass",
+      "reproduction": "Real HTTP result-close test: actual connection closed before result persistence; finally's in_transaction masks DATABASE_UNAVAILABLE as INTERNAL_ERROR/500",
+      "root_cause": "Cleanup exceptions escape normalized transaction error handling; rollback failure can skip close",
+      "fix": "Nested try/finally always attempts close; cleanup faults normalize to DATABASE_UNAVAILABLE",
+      "file": "src/agentic_intent_gate/adapters/sqlite_actions.py",
+      "regressions": ["test_result_storage_fault_honest_error_then_restart[result-close]", "test_cleanup_fault_still_closes_and_preserves_safe_store_error[in_transaction]", "test_cleanup_fault_still_closes_and_preserves_safe_store_error[rollback]", "test_cleanup_fault_still_closes_and_preserves_safe_store_error[close]"],
+      "result": "PASS: 503 safe error, no false terminal result; actual close verified, rows/effects preserved and recovery conservative"
+    }
+  ],
+  "ui_browser_compatibility": {
+    "passed": 126,
+    "failed": 0,
+    "real_backend_and_legacy_lanes_preserved": true,
+    "unknown_reload_stale_lost_response_memory_only_capability_xss": "PASS",
+    "browser": "Installed headless msedge 154.0.4258.53",
+    "evidence": ".runtime/browser-evidence/20261008T130025232019Z/results.json",
+    "screenshots_visually_reviewed": ["action-pending.png", "action-authorized.png", "action-executing.png", "action-happy-path.png", "action-unknown.png"],
+    "managed_browser_credentials_scanned": 50,
+    "credential_exposure": "PASS: zero exposure in final browser artifacts/JUnit; new child stdout checked against its memory-only authority",
+    "traces_videos": false
+  },
+  "tests": {
+    "previous_baseline": 1051,
+    "new_tests": 38,
+    "final_unique_passed": 1089,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "live_deselected": 5,
+    "junit_elapsed_seconds": 914.486,
+    "console_elapsed_seconds": 914.63,
+    "junit": ".runtime/day3-prompt5/full.xml",
+    "command": ".venv/Scripts/python.exe -m pytest -q --tb=short --junitxml=.runtime/day3-prompt5/full.xml --basetemp=D:/Ollama/Temp/aig-day3-prompt5-full",
+    "repeated_focused_runs": [
+      {"run": 1, "passed": 38, "failed": 0, "errors": 0, "junit_seconds": 316.161, "console_seconds": 316.50, "junit": ".runtime/day3-prompt5/repeat-1.xml", "process_telemetry": ".runtime/day3-prompt5/repeat-1-processes.jsonl"},
+      {"run": 2, "passed": 38, "failed": 0, "errors": 0, "junit_seconds": 318.280, "console_seconds": 318.55, "junit": ".runtime/day3-prompt5/repeat-2.xml", "process_telemetry": ".runtime/day3-prompt5/repeat-2-processes.jsonl"},
+      {"run": 3, "passed": 38, "failed": 0, "errors": 0, "junit_seconds": 319.259, "console_seconds": 319.55, "junit": ".runtime/day3-prompt5/repeat-3.xml", "process_telemetry": ".runtime/day3-prompt5/repeat-3-processes.jsonl"}
+    ],
+    "repetition_revision_note": "All three use the same production fix and 38 failure cases. Runs 1/2 precede one additional post-restart execute changed-body conflict assertion; run 3 and full include it.",
+    "full_process_telemetry": ".runtime/day3-prompt5/full-processes.jsonl",
+    "overlapping_subsets_added": false,
+    "development_corrections": ["Venv launcher PID mismatch", "Connection proxy row_factory delegation", "Cancelled HTTP response may be non-JSON", "Bounded process exit timing after confirmed receipt", "Busy downstream contention is conservative Unknown, not guaranteed payload rejection"]
+  },
+  "quality": {
+    "ruff_check": "PASS",
+    "ruff_format_check": "PASS",
+    "git_diff_check": "PASS",
+    "offline_lock_check": "PASS: 34 resolved packages",
+    "source_dependency_check": "PASS: 34 compatible packages",
+    "installed_dependency_check": "PASS: 23 compatible runtime packages",
+    "wheel_and_sdist_build": "PASS: offline; final documentation/evidence-only refresh, runtime unchanged",
+    "isolated_installation": "PASS: D:/Ollama/Temp/aig-day3-prompt5-package-verify/venv",
+    "runtime_resource_verification": "PASS: 45 runtime/four schemas byte-identical after production fix; installed protected HTTP/execution/replay one note/receipt",
+    "package_probe": ".runtime/day3-prompt5/package-verification.json",
+    "package_probe_is_browser_evidence": false,
+    "candidate_secret_scan": "PASS: 170 candidate files, zero high-signal secret/prohibited-artifact hits",
+    "final_archive_scan": "PASS: wheel 53 files, sdist 171 files; 45 runtime/four schema files in each, zero high-signal secret/database/private credential/cache/traversal hits",
+    "junit_and_child_telemetry_authority_scan": "PASS: 14 artifact files, zero nonuniform 64hex authority literals; one uniform synthetic tamper-test literal; child output individually checked against raw authority",
+    "cleanup": {
+      "result": "PASS",
+      "stable_owned_child_records_stopped": 284,
+      "browser_servers_stopped": 127,
+      "browsers_and_driver_contexts_closed": 5,
+      "browser_action_directories_removed": 50,
+      "browser_run_directories_removed": 13,
+      "distinct_recorded_ports": 378,
+      "currently_listening_recorded_ports": 0,
+      "task_processes": 0,
+      "repository_runtime_db_wal_shm": 0,
+      "repository_private_capability_files": 0,
+      "private_capability_files_in_stable_external_roots": 0,
+      "retained_stable_external_synthetic_db_wal_shm": 999,
+      "retained_per_basetemp_root": [76, 76, 76, 771],
+      "physical_cache_deletion_claimed": false,
+      "external_cache": "NON_BLOCKING: outside repository/package, synthetic only, no authority/live owner/listener/user or production DB; development/default caches not included in this scoped count, no broad removal"
+    }
+  },
+  "p0": 0,
+  "p1": 0,
+  "p2": [
+    "Synchronous SQLite can block the event loop; deadlines are cooperative, no hard disk/OS/arbitrary-effect cancellation guarantee",
+    "Windows/headless installed Edge local evidence only; POSIX/cross-browser/cloud/physical power-loss NOT RUN",
+    "No production RBAC/distinct authenticated consent/HA/worker/retry/Unknown resolver or external reconciliation",
+    "Benign external synthetic cache retained, not physically deleted; no user data cleanup"
+  ],
+  "final_gate": "DAY3_PROMPT5_EXECUTION_HARDENING=PASS"
+}

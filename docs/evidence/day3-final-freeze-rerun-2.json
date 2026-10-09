@@ -1,0 +1,1596 @@
+{
+  "task": "DAY3_FINAL_FREEZE_RERUN_2",
+  "recorded_at_utc": "2026-10-09T09:00:02.226627+00:00",
+  "branch": "main",
+  "starting_head": "d573598d21fce905fe16d0b528d275795ebb98c0",
+  "origin_main": "d573598d21fce905fe16d0b528d275795ebb98c0",
+  "day2_tag": {
+    "name": "day2-final-freeze",
+    "target": "c7d3e1ee051af40c69ec33d888ecf16475a2d789"
+  },
+  "baseline": {
+    "initial_worktree": "CLEAN",
+    "initial_index": "EMPTY",
+    "git_fetch_origin_main": "PASS",
+    "fresh_git_ls_remote_main": "d573598d21fce905fe16d0b528d275795ebb98c0",
+    "corrective_commits": [
+      "bd9aea9b01031ce5e706cd8c90d1b63a0beed914",
+      "f9701a9b47d9d303f6e85e23614d7a1132f61364",
+      "d573598d21fce905fe16d0b528d275795ebb98c0"
+    ],
+    "concurrent_implementation": "No observed task process at preflight; final tracked-source/Git integrity unchanged",
+    "new_report_paths_preexisting": false
+  },
+  "historical_audit": {
+    "first_freeze_fail": "DAY3_FINAL_FREEZE=FAIL",
+    "first_p1_correction": "DAY3_P1_V2_RUN_CLEANUP_FIX=PASS",
+    "second_freeze_fail": "DAY3_FINAL_FREEZE_RERUN=FAIL",
+    "migration_correction": "DAY3_P1_MIGRATION_CLEANUP_FIX=PASS",
+    "sqlite_consolidation": {
+      "consolidation": "PASS",
+      "dynamic_audit": "PASS",
+      "regression": "PASS",
+      "final_freeze": "NOT_RERUN"
+    },
+    "committed_hash_verification": "PASS_10_OF_10_START_AND_END",
+    "hashes": [
+      {
+        "path": "docs/day3-final-freeze.md",
+        "sha256": "528dd6a65b45d65a4b91792f166a6a47bde107ef5ee0b7c327507da7507b4d98",
+        "committed_blob": "f28fe164ee24def474dcbdafaa47d263b2b8dafd",
+        "working_blob": "f28fe164ee24def474dcbdafaa47d263b2b8dafd"
+      },
+      {
+        "path": "docs/evidence/day3-final-freeze.json",
+        "sha256": "7f1662ca9976668ce2d3ce9f6d362e163153db3a4cd553fdf223bf2536fbbfe5",
+        "committed_blob": "7f06258c37080f433a9e5d9b17ca64ebd8d9cf5e",
+        "working_blob": "7f06258c37080f433a9e5d9b17ca64ebd8d9cf5e"
+      },
+      {
+        "path": "docs/day3-p1-v2-run-cleanup-fix.md",
+        "sha256": "22b50bf8f1f8605f4d922b0b1e64374f86d477660dff74112b73f228d21f7d59",
+        "committed_blob": "f528a3215d2efbd7a732b5f3fefe4e9c7855eeef",
+        "working_blob": "f528a3215d2efbd7a732b5f3fefe4e9c7855eeef"
+      },
+      {
+        "path": "docs/evidence/day3-p1-v2-run-cleanup-fix.json",
+        "sha256": "cad600abf789e01e4de2a3fe73fa0e67973e1f89dce3dae3a6418a5f1ffd33cf",
+        "committed_blob": "26e3c0b4d50762d63de2da0049c8a7af5ca2d42f",
+        "working_blob": "26e3c0b4d50762d63de2da0049c8a7af5ca2d42f"
+      },
+      {
+        "path": "docs/day3-final-freeze-rerun.md",
+        "sha256": "331b4f6dcec159bb7c67a831efb26137a3d5caa0970aff2550b11435a40a5257",
+        "committed_blob": "7f2b3adb24eedc073d737993e9086ba37c3dbe4d",
+        "working_blob": "7f2b3adb24eedc073d737993e9086ba37c3dbe4d"
+      },
+      {
+        "path": "docs/evidence/day3-final-freeze-rerun.json",
+        "sha256": "f36787530e66a8e424e7f0e3a93bbc28e50f93a9bc68f3ac0c76470bbf64fa30",
+        "committed_blob": "63e742ae9a3df0a99e511d52bb786893bc606b61",
+        "working_blob": "63e742ae9a3df0a99e511d52bb786893bc606b61"
+      },
+      {
+        "path": "docs/day3-p1-migration-cleanup-fix.md",
+        "sha256": "b0c3f51642a09a5f1a01e103295645f713e80142deebff4852d5aa091fc6072a",
+        "committed_blob": "a2a86cb147815121acb0b1ac638876360b788a8a",
+        "working_blob": "a2a86cb147815121acb0b1ac638876360b788a8a"
+      },
+      {
+        "path": "docs/evidence/day3-p1-migration-cleanup-fix.json",
+        "sha256": "b05c3a8d57741cfdced98f7e6e261ba8be1c8e699cee3dc2ca8fdb749a4b4f19",
+        "committed_blob": "a2f1fcd73b8367e759fc862771dea4e649c710e4",
+        "working_blob": "a2f1fcd73b8367e759fc862771dea4e649c710e4"
+      },
+      {
+        "path": "docs/day3-sqlite-cleanup-consolidation.md",
+        "sha256": "8aab906d5fce379f1608f94859c9cff6a399aa7168404ce91d15b3eda88324f2",
+        "committed_blob": "5938fbb400f9844604695b0b2098189f2b54aa66",
+        "working_blob": "5938fbb400f9844604695b0b2098189f2b54aa66"
+      },
+      {
+        "path": "docs/evidence/day3-sqlite-cleanup-consolidation.json",
+        "sha256": "50c6abda95c24ea9507e6db35e338447a93e7935e5e409bec98b263c56074870",
+        "committed_blob": "45fb81c725941185449f7538a194400b071a66ac",
+        "working_blob": "45fb81c725941185449f7538a194400b071a66ac"
+      }
+    ],
+    "links": [
+      {
+        "source": "docs/day3-final-freeze.md",
+        "target": "evidence/day3-final-freeze.json",
+        "exists": true
+      },
+      {
+        "source": "docs/day3-final-freeze.md",
+        "target": "../src/agentic_intent_gate/adapters/sqlite_v2_runs.py",
+        "exists": true
+      },
+      {
+        "source": "docs/day3-final-freeze.md",
+        "target": "../src/agentic_intent_gate/adapters/local_http.py",
+        "exists": true
+      },
+      {
+        "source": "docs/day3-final-freeze.md",
+        "target": "day3-prompt5-execution-hardening.md",
+        "exists": true
+      },
+      {
+        "source": "docs/day3-p1-v2-run-cleanup-fix.md",
+        "target": "evidence/day3-p1-v2-run-cleanup-fix.json",
+        "exists": true
+      },
+      {
+        "source": "docs/day3-final-freeze-rerun.md",
+        "target": "evidence/day3-final-freeze-rerun.json",
+        "exists": true
+      },
+      {
+        "source": "docs/day3-p1-migration-cleanup-fix.md",
+        "target": "evidence/day3-p1-migration-cleanup-fix.json",
+        "exists": true
+      }
+    ],
+    "json_valid_count": 5
+  },
+  "architecture": {
+    "result": "PASS_FROZEN_CONTRACTS",
+    "run_states": [
+      "IntentReceived",
+      "PlanGenerating",
+      "PlanValidated",
+      "Ready",
+      "AwaitingApproval",
+      "Approved",
+      "Rejected",
+      "PlanRejected"
+    ],
+    "action_states": [
+      "Pending",
+      "Authorized",
+      "Executing",
+      "Succeeded",
+      "Failed",
+      "Unknown"
+    ],
+    "turn_required": false,
+    "schema_version": 2,
+    "strict_tables": 9,
+    "approval_authorization_separation": true,
+    "execution_boundary": "Explicit verified command -> committed claim -> closed control transaction -> reviewed executor -> attempt-specific result CAS",
+    "model_generated_authority": false,
+    "automatic_execution": false,
+    "adr_references": [
+      "docs/adr/ADR-013-action-ledger-execution-boundary.md",
+      "docs/adr/ADR-014-approval-plan-binding.md"
+    ]
+  },
+  "sqlite_cleanup": {
+    "result": "FAIL_PRIMARY_ERROR_PRECEDENCE",
+    "audited_owners": [
+      {
+        "path": "src/agentic_intent_gate/adapters/sqlite_schema.py",
+        "owner": "v1 initialization; open_existing delegates ownership",
+        "close_safety": "PASS",
+        "primary_error_precedence": "PASS"
+      },
+      {
+        "path": "src/agentic_intent_gate/adapters/sqlite_v2_schema.py",
+        "owner": "v2 initialization and closing-owned in-memory reference",
+        "close_safety": "PASS",
+        "primary_error_precedence": "PASS"
+      },
+      {
+        "path": "src/agentic_intent_gate/adapters/sqlite_run_repository.py",
+        "owner": "v1 Run transaction",
+        "close_safety": "PASS",
+        "primary_error_precedence": "PASS"
+      },
+      {
+        "path": "src/agentic_intent_gate/adapters/sqlite_v2_runs.py",
+        "owner": "v2 Run transaction",
+        "close_safety": "PASS",
+        "primary_error_precedence": "PASS"
+      },
+      {
+        "path": "src/agentic_intent_gate/adapters/sqlite_v2_migration.py",
+        "owner": "migration writer, source reader, backup",
+        "close_safety": "PASS",
+        "primary_error_precedence": "PASS"
+      },
+      {
+        "path": "src/agentic_intent_gate/adapters/sqlite_actions.py",
+        "owner": "Action transaction",
+        "close_safety": "PASS",
+        "primary_error_precedence": "FAIL"
+      },
+      {
+        "path": "src/agentic_intent_gate/adapters/sqlite_action_execution.py",
+        "owner": "inherits Action transaction; no separate connection opener",
+        "close_safety": "PASS",
+        "primary_error_precedence": "FAIL_INHERITED"
+      },
+      {
+        "path": "src/agentic_intent_gate/adapters/service_demo.py",
+        "owner": "demo provisioning and DemoNoteExecutor",
+        "close_safety": "PASS",
+        "primary_error_precedence": "PASS_SAFE_UNKNOWN"
+      }
+    ],
+    "targeted_test_count": 280,
+    "targeted_junit": {
+      "tests": 280,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 83.288,
+      "unique_ids": 280,
+      "browser_tests": 0,
+      "modules": {
+        "tests.test_v2_run_cleanup": 30,
+        "tests.test_migration_cleanup": 34,
+        "tests.test_sqlite_cleanup_consolidation": 25,
+        "tests.test_service_demo_adapter": 14,
+        "tests.test_sqlite_run_repository": 79,
+        "tests.test_action_persistence": 98
+      }
+    },
+    "targeted_command": "uv run python -m pytest -q tests/test_v2_run_cleanup.py tests/test_migration_cleanup.py tests/test_sqlite_cleanup_consolidation.py tests/test_service_demo_adapter.py tests/test_sqlite_run_repository.py tests/test_action_persistence.py --junitxml \".runtime/day3-final-freeze-rerun-2/20261009T083603Z/targeted/junit.xml\" --basetemp \"D:/Ollama/Temp/aig-freeze2-20261009T083603Z-targeted\"",
+    "rollback_failure": "PASS_INDEPENDENT_CLOSE",
+    "transaction_inspection_failure": "PASS_INDEPENDENT_CLOSE",
+    "close_attempt": "PASS_NOT_GUARANTEED_PHYSICAL_RELEASE",
+    "second_writer_commit": "PASS_REAL_UPDATE_OR_INSERT_PLUS_COMMIT_WITH_RETAINED_REFERENCE",
+    "retained_lock": "NO_AVOIDABLE_RECOVERABLE_LOCK; deliberately nonfunctional physical close retains lock until controller native cleanup",
+    "commit_uncertainty": "PASS_NO_FABRICATED_SUCCESS_OR_AUTO_REPLAY",
+    "exception_classification": {
+      "safe_raw_translation": "PASS",
+      "primary_domain_precedence": "FAIL",
+      "finding_id": "D3-FREEZE-RERUN2-P1-ACTION-CLEANUP-PRECEDENCE"
+    },
+    "known_physical_close_limitation": "Independently attempted close cannot guarantee physical release if injected driver refuses it; cleanup controllers explicitly release retained handles",
+    "fact_kind_counts": {
+      "v2-run-lock": 29,
+      "v2-run-matrix": 10,
+      "v2-run-precedence": 12,
+      "v2-run-http": 8,
+      "v2-run-http-cleanup": 8,
+      "migration-handle": 90,
+      "migration-writer": 37,
+      "migration-matrix": 16,
+      "migration-original": 2,
+      "migration-close-refusal": 1,
+      "postfix-suspicious-path": 3,
+      "cleanup-reproduction": 4,
+      "cleanup-matrix": 5,
+      "v2-cleanup-secondary-fault": 3,
+      "physical-close-refusal": 1,
+      "v2-reopen-idempotence": 1,
+      "prepatch-memory-reference-connection": 1,
+      "repeat-demo-provision": 1,
+      "executor-uncertainty": 3,
+      "executor-cancellation-after-commit": 1,
+      "executor-unavailable-conflict": 1
+    },
+    "v2_run_lock_observations": {
+      "count": 29,
+      "rollback_attempts": 17,
+      "close_attempts": 29,
+      "independent_writer_commits": 29,
+      "residual_locks": 0
+    },
+    "action_primary_domain_fault_observations": [
+      {
+        "cleanup_mode": "normal",
+        "expected_primary": [
+          409,
+          "STALE_ACTION_VERSION"
+        ],
+        "actual": [
+          409,
+          "STALE_ACTION_VERSION"
+        ],
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "second_writer_commit": "PASS",
+        "strong_reference_retained": true,
+        "business_rows_unchanged": true,
+        "action_state": "Pending",
+        "action_version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "adapter_invocations": 0,
+        "notes": 0,
+        "receipts": 0
+      },
+      {
+        "cleanup_mode": "rollback",
+        "expected_primary": [
+          409,
+          "STALE_ACTION_VERSION"
+        ],
+        "actual": [
+          503,
+          "DATABASE_UNAVAILABLE"
+        ],
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "second_writer_commit": "PASS",
+        "strong_reference_retained": true,
+        "business_rows_unchanged": true,
+        "action_state": "Pending",
+        "action_version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "adapter_invocations": 0,
+        "notes": 0,
+        "receipts": 0
+      },
+      {
+        "cleanup_mode": "inspection",
+        "expected_primary": [
+          409,
+          "STALE_ACTION_VERSION"
+        ],
+        "actual": [
+          503,
+          "DATABASE_UNAVAILABLE"
+        ],
+        "rollback_attempts": 0,
+        "close_attempts": 1,
+        "second_writer_commit": "PASS",
+        "strong_reference_retained": true,
+        "business_rows_unchanged": true,
+        "action_state": "Pending",
+        "action_version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "adapter_invocations": 0,
+        "notes": 0,
+        "receipts": 0
+      },
+      {
+        "cleanup_mode": "close",
+        "expected_primary": [
+          409,
+          "STALE_ACTION_VERSION"
+        ],
+        "actual": [
+          503,
+          "DATABASE_UNAVAILABLE"
+        ],
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "second_writer_commit": "PASS",
+        "strong_reference_retained": true,
+        "business_rows_unchanged": true,
+        "action_state": "Pending",
+        "action_version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "adapter_invocations": 0,
+        "notes": 0,
+        "receipts": 0
+      }
+    ],
+    "initializer_secondary_faults": [
+      {
+        "kind": "v2-cleanup-secondary-fault",
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "close_mode": "",
+        "writer": {
+          "result": "PASS",
+          "seconds": 0.0059958999627269804
+        },
+        "schema": {
+          "version": 0,
+          "tables": [],
+          "integrity": [
+            [
+              "ok"
+            ]
+          ],
+          "foreign_keys": []
+        }
+      },
+      {
+        "kind": "v2-cleanup-secondary-fault",
+        "rollback_attempts": 0,
+        "close_attempts": 1,
+        "close_mode": "",
+        "writer": {
+          "result": "PASS",
+          "seconds": 0.005531100032385439
+        },
+        "schema": {
+          "version": 0,
+          "tables": [],
+          "integrity": [
+            [
+              "ok"
+            ]
+          ],
+          "foreign_keys": []
+        }
+      },
+      {
+        "kind": "v2-cleanup-secondary-fault",
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "close_mode": "ack",
+        "writer": {
+          "result": "PASS",
+          "seconds": 0.004622299980837852
+        },
+        "schema": {
+          "version": 0,
+          "tables": [],
+          "integrity": [
+            [
+              "ok"
+            ]
+          ],
+          "foreign_keys": []
+        }
+      }
+    ],
+    "executor_uncertainty": [
+      {
+        "kind": "executor-uncertainty",
+        "commit_mode": "before",
+        "close_mode": "",
+        "outcome": "UNKNOWN_OUTCOME",
+        "notes": 0,
+        "receipts": 0,
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "retry_count": 0
+      },
+      {
+        "kind": "executor-uncertainty",
+        "commit_mode": "after",
+        "close_mode": "",
+        "outcome": "UNKNOWN_OUTCOME",
+        "notes": 1,
+        "receipts": 1,
+        "rollback_attempts": 0,
+        "close_attempts": 1,
+        "retry_count": 0
+      },
+      {
+        "kind": "executor-uncertainty",
+        "commit_mode": "",
+        "close_mode": "ack",
+        "outcome": "UNKNOWN_OUTCOME",
+        "notes": 1,
+        "receipts": 1,
+        "rollback_attempts": 0,
+        "close_attempts": 1,
+        "retry_count": 0
+      }
+    ]
+  },
+  "migration": {
+    "result": "PASS",
+    "schema_version": 2,
+    "strict_table_count": 9,
+    "v1_compatibility": "PASS",
+    "historical_data_integrity": "PASS",
+    "legacy_approval_classification": "LEGACY_UNBOUND_NULL_PROOF; not admission authority",
+    "atomicity": "PASS; rolled-back DDL leaves original v1 schema/history; commit ACK loss leaves durable v2 but reports unavailable",
+    "implicit_migrations": false,
+    "future_schema_rejection": "PASS",
+    "matrix": [
+      {
+        "kind": "migration-matrix",
+        "case": "01-clean",
+        "result": "PASS",
+        "committed": true,
+        "error_type": null,
+        "error_code": null,
+        "version": 2,
+        "history_preserved": true,
+        "atomicity": true,
+        "orphan_or_partial_rows": false
+      },
+      {
+        "kind": "migration-matrix",
+        "case": "02-before-begin",
+        "result": "PASS",
+        "committed": false,
+        "error_type": "RunStoreError",
+        "error_code": "DATABASE_UNAVAILABLE",
+        "version": 1,
+        "history_preserved": true,
+        "atomicity": true,
+        "orphan_or_partial_rows": false
+      },
+      {
+        "kind": "migration-matrix",
+        "case": "03-ddl-rollback",
+        "result": "PASS",
+        "committed": false,
+        "error_type": "RunStoreError",
+        "error_code": "DATABASE_UNAVAILABLE",
+        "version": 1,
+        "history_preserved": true,
+        "atomicity": true,
+        "orphan_or_partial_rows": false
+      },
+      {
+        "kind": "migration-matrix",
+        "case": "04-ddl-rollback-throws",
+        "result": "PASS",
+        "committed": false,
+        "error_type": "RunStoreError",
+        "error_code": "DATABASE_UNAVAILABLE",
+        "version": 1,
+        "history_preserved": true,
+        "atomicity": true,
+        "orphan_or_partial_rows": false
+      },
+      {
+        "kind": "migration-matrix",
+        "case": "05-inspection-throws",
+        "result": "PASS",
+        "committed": false,
+        "error_type": "RunStoreError",
+        "error_code": "DATABASE_UNAVAILABLE",
+        "version": 1,
+        "history_preserved": true,
+        "atomicity": true,
+        "orphan_or_partial_rows": false
+      },
+      {
+        "kind": "migration-matrix",
+        "case": "06-rollback-close-throws",
+        "result": "PASS",
+        "committed": false,
+        "error_type": "RunStoreError",
+        "error_code": "DATABASE_UNAVAILABLE",
+        "version": 1,
+        "history_preserved": true,
+        "atomicity": true,
+        "orphan_or_partial_rows": false
+      },
+      {
+        "kind": "migration-matrix",
+        "case": "07-acquisition",
+        "result": "PASS",
+        "committed": false,
+        "error_type": "RunStoreError",
+        "error_code": "DATABASE_UNAVAILABLE",
+        "version": 1,
+        "history_preserved": true,
+        "atomicity": true,
+        "orphan_or_partial_rows": false
+      },
+      {
+        "kind": "migration-matrix",
+        "case": "08-commit-before",
+        "result": "PASS",
+        "committed": false,
+        "error_type": "RunStoreError",
+        "error_code": "DATABASE_UNAVAILABLE",
+        "version": 1,
+        "history_preserved": true,
+        "atomicity": true,
+        "orphan_or_partial_rows": false
+      },
+      {
+        "kind": "migration-matrix",
+        "case": "09-commit-after",
+        "result": "PASS",
+        "committed": true,
+        "error_type": "RunStoreError",
+        "error_code": "DATABASE_UNAVAILABLE",
+        "version": 2,
+        "history_preserved": true,
+        "atomicity": true,
+        "orphan_or_partial_rows": false
+      },
+      {
+        "kind": "migration-matrix",
+        "case": "10-close-after-success",
+        "result": "PASS",
+        "committed": true,
+        "error_type": "RunStoreError",
+        "error_code": "DATABASE_UNAVAILABLE",
+        "version": 2,
+        "history_preserved": true,
+        "atomicity": true,
+        "orphan_or_partial_rows": false
+      },
+      {
+        "kind": "migration-matrix",
+        "case": "11-explicit-retry",
+        "result": "PASS",
+        "committed": false,
+        "error_type": "RunStoreError",
+        "error_code": "DATABASE_UNAVAILABLE",
+        "version": 2,
+        "history_preserved": true,
+        "atomicity": true,
+        "orphan_or_partial_rows": false
+      },
+      {
+        "kind": "migration-matrix",
+        "case": "12-already-v2",
+        "result": "PASS",
+        "committed": false,
+        "error_type": "RunStoreError",
+        "error_code": "DATABASE_SCHEMA_UNSUPPORTED",
+        "version": 2,
+        "history_preserved": true,
+        "atomicity": true,
+        "orphan_or_partial_rows": false
+      },
+      {
+        "kind": "migration-matrix",
+        "case": "13-future-schema",
+        "result": "PASS",
+        "committed": false,
+        "error_type": "RunStoreError",
+        "error_code": "DATABASE_SCHEMA_UNSUPPORTED",
+        "version": 7,
+        "history_preserved": true,
+        "atomicity": true,
+        "orphan_or_partial_rows": false
+      },
+      {
+        "kind": "migration-matrix",
+        "case": "14-data-midway",
+        "result": "PASS",
+        "committed": false,
+        "error_type": "RunStoreError",
+        "error_code": "DATABASE_UNAVAILABLE",
+        "version": 1,
+        "history_preserved": true,
+        "atomicity": true,
+        "orphan_or_partial_rows": false
+      },
+      {
+        "kind": "migration-matrix",
+        "case": "15-legacy-classification",
+        "result": "PASS",
+        "committed": true,
+        "error_type": null,
+        "error_code": null,
+        "version": 2,
+        "history_preserved": true,
+        "atomicity": true,
+        "orphan_or_partial_rows": false
+      },
+      {
+        "kind": "migration-matrix",
+        "case": "16-fresh-reopen-e2e",
+        "result": "PASS",
+        "committed": true,
+        "error_type": null,
+        "error_code": null,
+        "version": 2,
+        "history_preserved": true,
+        "atomicity": true,
+        "orphan_or_partial_rows": false
+      }
+    ]
+  },
+  "approval": {
+    "result": "PASS",
+    "canonical_identity": "canonical-plan-v1",
+    "approval_identity": "approval-plan-v1",
+    "exact_binding": "BOUND_V1",
+    "legacy_rejection": "PASS",
+    "tamper_rejection": "PASS",
+    "atomic_decision": "PASS_DECISION_BINDING_RUN_AUDIT",
+    "binding_schemas_changed": false,
+    "full_regression_module_cases": 66
+  },
+  "action": {
+    "result": "PASS_LEDGER_INVARIANTS",
+    "admission": "EXPLICIT_PENDING_V1",
+    "compiler": "Trusted complete supported single-step Plan only; no model call",
+    "immutable_spec": "PASS_action-spec-v1_with_exact_approval_link",
+    "idempotency": "PASS_REPLAY_AND_CONFLICT",
+    "cas": "PASS_INDEPENDENT_ACTION_VERSION",
+    "full_persistence_module_cases": 98
+  },
+  "authorization": {
+    "result": "PASS_AUTHORITY_BOUNDARY_WITH_P1_ERROR_PRECEDENCE_EXCEPTION",
+    "capability": "Explicit private test-only Bearer capability; no default privilege",
+    "principal": "Server-derived issuer-bound PrincipalContext",
+    "permission_scope": "read/admit/authorize/execute checked separately",
+    "action_binding": "Exact spec digest, subject, scope, policy revision",
+    "cas": "PASS_NORMAL_GUARD; cleanup conflict classification FAIL",
+    "authorization_external_effects": 0,
+    "local_user_authority": false
+  },
+  "execution": {
+    "result": "PASS_EFFECT_SAFETY",
+    "trusted_registry": "Static reviewed append_service_note/1 -> service-demo",
+    "explicit_command": true,
+    "durable_claim": "PASS_COMMIT_BEFORE_DISPATCH",
+    "attempt_count": 1,
+    "count_scope": "single isolated HTTP happy path, not aggregate suite",
+    "downstream_adapter": "Real DemoNoteExecutor with independent SQLite",
+    "result_persistence": "PASS_ATTEMPT_SPECIFIC_CAS",
+    "no_auto_retry": true,
+    "no_auto_reconciliation": true,
+    "unknown_semantics": "Unconfirmed effect becomes Unknown, never invented Failed or success",
+    "control_second_writer_commits_during_dispatch": 1,
+    "timeout": "SOFT_NOT_HARD_PREEMPTION"
+  },
+  "recovery": {
+    "result": "PASS",
+    "historical_crash_evidence": {
+      "path": "docs/evidence/day3-prompt5-execution-hardening.json",
+      "windows": "A-H",
+      "current_correspondence": "Reviewed current workers/gateway/state guards; historical results not reused as fresh result"
+    },
+    "fresh_crash_smoke": {
+      "command": "uv run python -m pytest -q 'tests/test_execution_hardening.py::test_real_termination_crash_windows[B-Executing-Unknown-0-0-4]' 'tests/test_execution_hardening.py::test_real_termination_crash_windows[D-Executing-Unknown-1-1-4]' tests/test_execution_hardening.py::test_active_owner_blocks_competing_startup_and_recovery --junitxml \".runtime/day3-final-freeze-rerun-2/20261009T083603Z/crash/junit.xml\" --basetemp \"D:/Ollama/Temp/aig-freeze2-20261009T083603Z-crash\"",
+      "passed": 3,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "pytest_duration_seconds": 41.47,
+      "junit": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "duration_seconds": 41.204,
+        "unique_ids": 3,
+        "browser_tests": 0,
+        "modules": {
+          "tests.test_execution_hardening": 3
+        }
+      },
+      "windows": [
+        {
+          "kind": "crash-window",
+          "window": "B",
+          "persisted_before": "Executing",
+          "recovered_state": "Unknown",
+          "calls": 0,
+          "notes": 0,
+          "receipts": 0,
+          "attempts": 1,
+          "events": 4,
+          "schema_unchanged": true,
+          "convergence_repetitions": [
+            1,
+            2,
+            10
+          ]
+        },
+        {
+          "kind": "crash-window",
+          "window": "D",
+          "persisted_before": "Executing",
+          "recovered_state": "Unknown",
+          "calls": 1,
+          "notes": 1,
+          "receipts": 1,
+          "attempts": 1,
+          "events": 4,
+          "schema_unchanged": true,
+          "convergence_repetitions": [
+            1,
+            2,
+            10
+          ]
+        }
+      ]
+    },
+    "active_owner_protection": "PASS_COMPETING_PROCESS_DENIED_NO_LIVE_RECOVERY",
+    "convergence": {
+      "repetitions": [
+        1,
+        2,
+        10
+      ],
+      "second_actual_restart": true,
+      "new_attempts_events_effects": 0
+    },
+    "unknown_preservation": "PASS",
+    "external_replay_count": 0,
+    "termination": "Retained test-owned Popen handles only, bounded waits; no broad process kill"
+  },
+  "positive_http_smoke": {
+    "result": "PASS",
+    "real_http": true,
+    "plan_approval_via_real_http": true,
+    "provider": "One deterministic structured provider call; no live model",
+    "control_sqlite": "Fresh real v2 file",
+    "downstream_sqlite": "Fresh independent real demo file",
+    "action_count": 1,
+    "authorization_count": 1,
+    "winning_claim_count": 1,
+    "attempt_count": 1,
+    "adapter_invocation_count": 1,
+    "note_count": 1,
+    "receipt_count": 1,
+    "command_receipt_count": 3,
+    "action_event_count": 4,
+    "final_state": "Succeeded",
+    "restart_verification": "PASS",
+    "idempotency_verification": "PASS_NO_DUPLICATE",
+    "control_writer_during_dispatch": 1,
+    "execution_version": 4,
+    "run_version": 5
+  },
+  "negative_http_smoke": {
+    "result": "PASS_A_TO_N_STANDARD_CASES",
+    "executed_cases": 14,
+    "response_results": [
+      {
+        "case": "A",
+        "scenario": "missing",
+        "expected": [
+          401,
+          "AUTHENTICATION_REQUIRED"
+        ],
+        "actual": [
+          401,
+          "AUTHENTICATION_REQUIRED"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "B",
+        "scenario": "invalid",
+        "expected": [
+          401,
+          "AUTHENTICATION_REQUIRED"
+        ],
+        "actual": [
+          401,
+          "AUTHENTICATION_REQUIRED"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "C",
+        "scenario": "permission",
+        "expected": [
+          403,
+          "ACTION_NOT_AUTHORIZED"
+        ],
+        "actual": [
+          403,
+          "ACTION_NOT_AUTHORIZED"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "D",
+        "scenario": "not-approved",
+        "expected": [
+          409,
+          "RUN_NOT_ACTION_ELIGIBLE"
+        ],
+        "actual": [
+          409,
+          "RUN_NOT_ACTION_ELIGIBLE"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "E",
+        "scenario": "legacy",
+        "expected": [
+          409,
+          "LEGACY_APPROVAL_UNBOUND"
+        ],
+        "actual": [
+          409,
+          "LEGACY_APPROVAL_UNBOUND"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "F",
+        "scenario": "plan-tamper",
+        "expected": [
+          409,
+          "APPROVAL_PLAN_MISMATCH"
+        ],
+        "actual": [
+          409,
+          "APPROVAL_PLAN_MISMATCH"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "G",
+        "scenario": "spec-tamper",
+        "expected": [
+          503,
+          "DATABASE_UNAVAILABLE"
+        ],
+        "actual": [
+          503,
+          "DATABASE_UNAVAILABLE"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "H",
+        "scenario": "stale",
+        "expected": [
+          409,
+          "STALE_ACTION_VERSION"
+        ],
+        "actual": [
+          409,
+          "STALE_ACTION_VERSION"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "I",
+        "scenario": "succeeded",
+        "expected": [
+          409,
+          "EXECUTION_ALREADY_STARTED"
+        ],
+        "actual": [
+          409,
+          "EXECUTION_ALREADY_STARTED"
+        ],
+        "baseline_notes": 1,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "J",
+        "scenario": "unknown",
+        "expected": [
+          409,
+          "EXECUTION_ALREADY_STARTED"
+        ],
+        "actual": [
+          409,
+          "EXECUTION_ALREADY_STARTED"
+        ],
+        "baseline_notes": 1,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "K",
+        "scenario": "retired",
+        "expected": [
+          409,
+          "TOOL_NOT_BOUND"
+        ],
+        "actual": [
+          409,
+          "TOOL_NOT_BOUND"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "L",
+        "scenario": "storage",
+        "expected": [
+          503,
+          "DATABASE_UNAVAILABLE"
+        ],
+        "actual": [
+          503,
+          "DATABASE_UNAVAILABLE"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "M",
+        "scenario": "idempotency-conflict",
+        "expected": [
+          409,
+          "IDEMPOTENCY_CONFLICT"
+        ],
+        "actual": [
+          409,
+          "IDEMPOTENCY_CONFLICT"
+        ],
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "N",
+        "scenario": "untrusted-local-user-mutation",
+        "expected": [
+          401,
+          "AUTHENTICATION_REQUIRED"
+        ],
+        "actual": [
+          401,
+          "AUTHENTICATION_REQUIRED"
+        ],
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      }
+    ],
+    "unauthorized_effect_count": 0,
+    "additional_required_fault_check": {
+      "result": "FAIL_P1",
+      "finding_id": "D3-FREEZE-RERUN2-P1-ACTION-CLEANUP-PRECEDENCE",
+      "observations": [
+        {
+          "cleanup_mode": "normal",
+          "expected_primary": [
+            409,
+            "STALE_ACTION_VERSION"
+          ],
+          "actual": [
+            409,
+            "STALE_ACTION_VERSION"
+          ],
+          "rollback_attempts": 1,
+          "close_attempts": 1,
+          "second_writer_commit": "PASS",
+          "strong_reference_retained": true,
+          "business_rows_unchanged": true,
+          "action_state": "Pending",
+          "action_version": 1,
+          "grants": 0,
+          "attempts": 0,
+          "adapter_invocations": 0,
+          "notes": 0,
+          "receipts": 0
+        },
+        {
+          "cleanup_mode": "rollback",
+          "expected_primary": [
+            409,
+            "STALE_ACTION_VERSION"
+          ],
+          "actual": [
+            503,
+            "DATABASE_UNAVAILABLE"
+          ],
+          "rollback_attempts": 1,
+          "close_attempts": 1,
+          "second_writer_commit": "PASS",
+          "strong_reference_retained": true,
+          "business_rows_unchanged": true,
+          "action_state": "Pending",
+          "action_version": 1,
+          "grants": 0,
+          "attempts": 0,
+          "adapter_invocations": 0,
+          "notes": 0,
+          "receipts": 0
+        },
+        {
+          "cleanup_mode": "inspection",
+          "expected_primary": [
+            409,
+            "STALE_ACTION_VERSION"
+          ],
+          "actual": [
+            503,
+            "DATABASE_UNAVAILABLE"
+          ],
+          "rollback_attempts": 0,
+          "close_attempts": 1,
+          "second_writer_commit": "PASS",
+          "strong_reference_retained": true,
+          "business_rows_unchanged": true,
+          "action_state": "Pending",
+          "action_version": 1,
+          "grants": 0,
+          "attempts": 0,
+          "adapter_invocations": 0,
+          "notes": 0,
+          "receipts": 0
+        },
+        {
+          "cleanup_mode": "close",
+          "expected_primary": [
+            409,
+            "STALE_ACTION_VERSION"
+          ],
+          "actual": [
+            503,
+            "DATABASE_UNAVAILABLE"
+          ],
+          "rollback_attempts": 1,
+          "close_attempts": 1,
+          "second_writer_commit": "PASS",
+          "strong_reference_retained": true,
+          "business_rows_unchanged": true,
+          "action_state": "Pending",
+          "action_version": 1,
+          "grants": 0,
+          "attempts": 0,
+          "adapter_invocations": 0,
+          "notes": 0,
+          "receipts": 0
+        }
+      ]
+    }
+  },
+  "tests": {
+    "historical_baseline": {
+      "unique_passed": 1178,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "live_deselected": 5,
+      "browser_subset": 126,
+      "scope": "HISTORICAL_ONLY"
+    },
+    "command": "uv run python -m pytest -q --junitxml \".runtime/day3-final-freeze-rerun-2/20261009T083603Z/full/junit.xml\" --basetemp \"D:/Ollama/Temp/aig-freeze2-20261009T083603Z-full\"",
+    "python": "3.13.9",
+    "selection": "Existing pyproject addopts -ra -m 'not live'; no added skips/exclusions",
+    "current_collected": 1183,
+    "current_selected": 1178,
+    "current_unique_passed": 1178,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "live_deselected": 5,
+    "browser_subset": 126,
+    "duration_seconds": 960.61,
+    "parent_elapsed_seconds": 968.2861408,
+    "exit_code": 0,
+    "junit": {
+      "tests": 1178,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 960.48,
+      "unique_ids": 1178,
+      "browser_tests": 126,
+      "modules": {
+        "tests.browser.test_action_ui_e2e": 49,
+        "tests.browser.test_browser_e2e": 6,
+        "tests.browser.test_frontend": 19,
+        "tests.browser.test_run_frontend": 39,
+        "tests.browser.test_run_ui_e2e": 13,
+        "tests.test_action_authorization": 21,
+        "tests.test_action_binding_compatibility": 2,
+        "tests.test_action_capability": 10,
+        "tests.test_action_execution": 34,
+        "tests.test_action_http": 59,
+        "tests.test_action_persistence": 98,
+        "tests.test_action_recovery": 12,
+        "tests.test_approval_plan_binding": 66,
+        "tests.test_configuration": 19,
+        "tests.test_execution_hardening": 38,
+        "tests.test_hardening": 20,
+        "tests.test_local_runtime_configuration": 19,
+        "tests.test_migration_cleanup": 34,
+        "tests.test_model_provider": 33,
+        "tests.test_ollama_json_mode": 20,
+        "tests.test_plan_validation": 68,
+        "tests.test_plans_api": 25,
+        "tests.test_preview_page": 1,
+        "tests.test_run_contracts": 169,
+        "tests.test_run_hardening": 52,
+        "tests.test_run_recovery": 17,
+        "tests.test_run_service": 26,
+        "tests.test_runs_api": 61,
+        "tests.test_service_demo_adapter": 14,
+        "tests.test_sqlite_cleanup_consolidation": 25,
+        "tests.test_sqlite_run_repository": 79,
+        "tests.test_v2_run_cleanup": 30
+      }
+    },
+    "collection_check": "1178/1183 tests collected (5 deselected) in 1.24s",
+    "focused_counts_not_added": 280,
+    "crash_smoke_counts_not_added": 3,
+    "browser": {
+      "result": "PASS",
+      "path": ".runtime/browser-evidence/20261009T084042450281Z/results.json",
+      "count": 126,
+      "real_http_planning_cases": 6,
+      "real_http_sqlite_run_cases": 13,
+      "real_http_sqlite_action_cases": 49,
+      "controlled_response_frontend_cases": 58,
+      "scope": "All use real browser. 49 Action +13 Run use real HTTP/SQLite; 6 planning backend cases real HTTP; 58 controlled-response UI cases are not real execution proof",
+      "tests": 126,
+      "outcomes": {
+        "passed": 126
+      },
+      "servers": 127,
+      "action_servers": 50,
+      "run_servers": 13,
+      "browsers": [
+        {
+          "channel": "msedge",
+          "version": "154.0.4258.62",
+          "headless": true,
+          "closed": true,
+          "driver_context_exited": true
+        },
+        {
+          "channel": "msedge",
+          "version": "154.0.4258.62",
+          "headless": true,
+          "closed": true,
+          "driver_context_exited": true
+        },
+        {
+          "channel": "msedge",
+          "version": "154.0.4258.62",
+          "headless": true,
+          "closed": true,
+          "driver_context_exited": true
+        },
+        {
+          "channel": "msedge",
+          "version": "154.0.4258.62",
+          "headless": true,
+          "closed": true,
+          "driver_context_exited": true
+        },
+        {
+          "channel": "msedge",
+          "version": "154.0.4258.62",
+          "headless": true,
+          "closed": true,
+          "driver_context_exited": true
+        }
+      ],
+      "credential_scan": "PASS",
+      "managed_credential_count": 50,
+      "all_servers_stopped": true,
+      "all_business_directories_removed": true,
+      "behaviors": "Run/approval/action UI, no approval or authorization implicit dispatch, masked memory-only capability, reload/GET purity, concurrent-tab idempotency/CAS, Unknown unsafe Execute disabled, untrusted text safe"
+    }
+  },
+  "packaging": {
+    "result": "PASS",
+    "wheel": {
+      "path": ".runtime/day3-final-freeze-rerun-2/20261009T083603Z/package/dist/agentic_intent_gate-0.1.0-py3-none-any.whl",
+      "sha256": "a214d243d116b4a13d81e36e6a8deceff1cd2be760eaaa1de9010f5d5b6fa0f8",
+      "member_count": 53,
+      "runtime_resources": 45,
+      "schema_resources": 4,
+      "artifact_alerts": [],
+      "secret_alerts": [],
+      "runtime_absolute_path_alerts": []
+    },
+    "sdist": {
+      "path": ".runtime/day3-final-freeze-rerun-2/20261009T083603Z/package/dist/agentic_intent_gate-0.1.0.tar.gz",
+      "sha256": "8264830561a6ac4edc93f9b6e06acf71f293d4fd6a41c29bacb23e1b8b647394",
+      "member_count": 184,
+      "runtime_resources": 45,
+      "schema_resources": 4,
+      "artifact_alerts": [
+        "agentic_intent_gate-0.1.0/.env.example"
+      ],
+      "secret_alerts": [],
+      "runtime_absolute_path_alerts": []
+    },
+    "isolated_install": {
+      "result": "PASS_NONEDITABLE_OFFLINE",
+      "environment": "D:\\Ollama\\Temp\\aig-freeze2-20261009T083603Z-package\\venv",
+      "import_location": "D:\\Ollama\\Temp\\aig-freeze2-20261009T083603Z-package\\venv\\Lib\\site-packages\\agentic_intent_gate\\__init__.py",
+      "working_directory": "D:\\Ollama\\Temp\\aig-freeze2-20261009T083603Z-package",
+      "installed_compatible_packages": 23
+    },
+    "runtime_resources": 45,
+    "schema_resources": 4,
+    "dependency_lock": "uv lock --check PASS; locked tree and offline hash-locked runtime export/install PASS; uv pip check PASS",
+    "package_check": "PACKAGE_REPRODUCIBILITY=PASS",
+    "package_probe_browser": "NOT_RUN_HTTP_ONLY; actual browser verified separately in full suite",
+    "static_resource_byte_identical": true,
+    "runtime_source_bytes_match": true,
+    "schema_sha256": {
+      "day1-intent.schema.json": "670250dec6877ea99f64f1cd071fdfa9681b1a7cfd97e319dfbe61c961b8efe3",
+      "day1-plan.schema.json": "5730316d6075769771c7d3e4f1aead46cb023e198c562ca1ea61d7ac8cf3a5bd",
+      "day2-approval.schema.json": "a26e354aabd9090b8e0bffae7cb4ce16a5bf93c0fda4ff0d0391025a44f6f83c",
+      "day2-run.schema.json": "f3af6076a814a5f33981820399aaf1dd3a62439fe5612fb19eb6d4049a41010d"
+    },
+    "quality": {
+      "ruff_check": "PASS",
+      "ruff_format_check": "PASS_INITIAL_146_FINAL_147_FILES",
+      "git_diff_check": "PASS"
+    },
+    "commands": [
+      "uv lock --check",
+      "uv tree --locked --no-dev",
+      "uv export --locked --offline --no-dev --format requirements-txt --no-emit-project --output-file \".runtime/day3-final-freeze-rerun-2/20261009T083603Z/package/runtime-requirements.txt\"",
+      "uv build --offline --wheel --sdist -o \".runtime/day3-final-freeze-rerun-2/20261009T083603Z/package/dist\"",
+      "uv venv --python 3.13 D:/Ollama/Temp/aig-freeze2-20261009T083603Z-package/venv",
+      "uv pip install --offline --require-hashes runtime-requirements.txt",
+      "uv pip install --offline --no-deps fresh wheel",
+      "uv pip check",
+      "isolated venv python tests/package_check.py repo output-json"
+    ],
+    "runtime_absolute_path_dependency": "NO_DETECTED_IN_45_RUNTIME_RESOURCES_AND_EXTERNAL_CWD_PROBE"
+  },
+  "security": {
+    "result": "PASS_BOUNDED_SCOPE",
+    "capability_handling": "Masked browser input, memory-only, no storage; test authority not logged/tracked",
+    "secret_scan": {
+      "result": "PASS_HIGH_SIGNAL_NONEXHAUSTIVE",
+      "scanned_tracked_files": 183,
+      "final_source_and_reports_scanned_files": 185,
+      "new_reports_checked_separately": true,
+      "source_alerts": [],
+      "patterns": "Private-key headers, known provider/GitHub/AWS key prefixes, literal privileged 64-hex token/password/API assignments; no values emitted"
+    },
+    "artifact_scan": {
+      "result": "PASS",
+      "wheel_members": 53,
+      "sdist_members": 184,
+      "sqlite_wal_shm_credential_model_runtime_cache_alerts": [],
+      "reviewed_allowlist": ".env.example contains only documented loopback/default settings; no secret. Included only as source example."
+    },
+    "owned_process_cleanup": {
+      "result": "PASS",
+      "process_fact_records": 80,
+      "unique_recorded_child_pids": 76,
+      "remaining_recorded_child_pids": 0,
+      "task_commandline_survivors": 0,
+      "browser_instances_closed": 5,
+      "browser_driver_contexts_exited": 5,
+      "all_fact_records_stopped": true
+    },
+    "listener_cleanup": {
+      "result": "PASS",
+      "independent_recorded_port_probes": 212,
+      "all_closed": true,
+      "browser_server_records": 127,
+      "all_http_contexts_stop_and_probe_their_listener": true
+    },
+    "http_temporary_business_directories_removed": true,
+    "browser_temporary_business_directories_removed": true,
+    "retained_external_directories": [
+      "D:/Ollama/Temp/aig-freeze2-20261009T083603Z-targeted",
+      "D:/Ollama/Temp/aig-freeze2-20261009T083603Z-crash",
+      "D:/Ollama/Temp/aig-freeze2-20261009T083603Z-full",
+      "D:/Ollama/Temp/aig-freeze2-20261009T083603Z-package"
+    ],
+    "retained_ignored_evidence": [
+      ".runtime/day3-final-freeze-rerun-2/20261009T083603Z",
+      ".runtime/browser-evidence/20261009T084042450281Z"
+    ],
+    "retained_resource_note": "Pytest synthetic DB artifacts, package venv, build/log/JUnit/screenshot evidence retained intentionally; no live owned process/connection claimed. User data, Ollama and unrelated caches untouched.",
+    "cloud_calls": 0,
+    "live_ollama_calls": 0,
+    "mcp_integrations": 0
+  },
+  "day4_readiness": {
+    "core_reusable": "YES_ARCHITECTURALLY",
+    "frozen_contracts": "Run/Action, approval identity, immutable specification, trusted compiler, authorization port, registry, ToolExecutor/ExecutionSpec/AttemptContext/ToolOutcome, claim/attempt/CAS, no-replay recovery",
+    "readiness": "NO_UNRESOLVED_CORE_P1",
+    "gate": "FAIL",
+    "blockers": [
+      "D3-FREEZE-RERUN2-P1-ACTION-CLEANUP-PRECEDENCE"
+    ],
+    "adapter_specific_requirements": [
+      "executable target",
+      "strict validated arguments/schema",
+      "trusted binding/revision",
+      "permission scope",
+      "side-effect class",
+      "downstream idempotency scope/payload/retention",
+      "timeout/cancellation behavior",
+      "Unknown classification",
+      "fault injection",
+      "authorization tests"
+    ],
+    "universal_plugin_framework_required": false,
+    "unreviewed_adapter_safety_automatic": false
+  },
+  "p0_findings": [],
+  "p1_findings": [
+    {
+      "id": "D3-FREEZE-RERUN2-P1-ACTION-CLEANUP-PRECEDENCE",
+      "severity": "P1",
+      "status": "UNRESOLVED_VERIFICATION_ONLY",
+      "affected_source": "src/agentic_intent_gate/adapters/sqlite_actions.py:108",
+      "inherited_by": "SQLiteExecutionRepository",
+      "violation": "Required SQLite cleanup invariants 4 and 5: cleanup unexpectedly replaces a primary typed safe Action/domain conflict.",
+      "fault_setup": "Real isolated SQLite v2 file; bound Approved/v5 Run, admitted Pending/v1 Action; authorize with stale expected_action_version=2. Retain a real sqlite3.Connection subclass. Independently inject rollback, in_transaction inspection, or close acknowledgement exception after physical close.",
+      "expected": "Preserve primary STALE_ACTION_VERSION / HTTP 409 while independently attempting close; record secondary cleanup uncertainty without claiming success.",
+      "actual": "Normal control returns 409 STALE_ACTION_VERSION; all three secondary fault modes return 503 DATABASE_UNAVAILABLE.",
+      "observations": [
+        {
+          "cleanup_mode": "normal",
+          "expected_primary": [
+            409,
+            "STALE_ACTION_VERSION"
+          ],
+          "actual": [
+            409,
+            "STALE_ACTION_VERSION"
+          ],
+          "rollback_attempts": 1,
+          "close_attempts": 1,
+          "second_writer_commit": "PASS",
+          "strong_reference_retained": true,
+          "business_rows_unchanged": true,
+          "action_state": "Pending",
+          "action_version": 1,
+          "grants": 0,
+          "attempts": 0,
+          "adapter_invocations": 0,
+          "notes": 0,
+          "receipts": 0
+        },
+        {
+          "cleanup_mode": "rollback",
+          "expected_primary": [
+            409,
+            "STALE_ACTION_VERSION"
+          ],
+          "actual": [
+            503,
+            "DATABASE_UNAVAILABLE"
+          ],
+          "rollback_attempts": 1,
+          "close_attempts": 1,
+          "second_writer_commit": "PASS",
+          "strong_reference_retained": true,
+          "business_rows_unchanged": true,
+          "action_state": "Pending",
+          "action_version": 1,
+          "grants": 0,
+          "attempts": 0,
+          "adapter_invocations": 0,
+          "notes": 0,
+          "receipts": 0
+        },
+        {
+          "cleanup_mode": "inspection",
+          "expected_primary": [
+            409,
+            "STALE_ACTION_VERSION"
+          ],
+          "actual": [
+            503,
+            "DATABASE_UNAVAILABLE"
+          ],
+          "rollback_attempts": 0,
+          "close_attempts": 1,
+          "second_writer_commit": "PASS",
+          "strong_reference_retained": true,
+          "business_rows_unchanged": true,
+          "action_state": "Pending",
+          "action_version": 1,
+          "grants": 0,
+          "attempts": 0,
+          "adapter_invocations": 0,
+          "notes": 0,
+          "receipts": 0
+        },
+        {
+          "cleanup_mode": "close",
+          "expected_primary": [
+            409,
+            "STALE_ACTION_VERSION"
+          ],
+          "actual": [
+            503,
+            "DATABASE_UNAVAILABLE"
+          ],
+          "rollback_attempts": 1,
+          "close_attempts": 1,
+          "second_writer_commit": "PASS",
+          "strong_reference_retained": true,
+          "business_rows_unchanged": true,
+          "action_state": "Pending",
+          "action_version": 1,
+          "grants": 0,
+          "attempts": 0,
+          "adapter_invocations": 0,
+          "notes": 0,
+          "receipts": 0
+        }
+      ],
+      "persistent_state": "Action Pending/v1; zero grants, attempts, adapter calls, notes and receipts. Complete business rows unchanged. Second writer UPDATE and COMMIT succeeds in every mode while strong reference is retained.",
+      "impact": "Meaningful CAS/domain conflict is misclassified as a database outage, violating required safe error precedence. No demonstrated lock leak, secret exposure, authorization bypass or external duplicate effect.",
+      "smallest_recommended_correction": "In the Action transaction helper preserve an active primary typed safe error; keep independent close; safely classify cleanup-only uncertainty and record secondary cleanup failure. Add direct and real-HTTP stale/domain-error plus rollback/inspection/close regressions. This is recommendation only, not implemented.",
+      "reproduction_commands": [
+        "$env:PYTHONPATH = 'D:\\workshop\\oct\\agentic-intent-gate\\tests;D:\\workshop\\oct\\agentic-intent-gate\\src'",
+        "uv run python '.runtime/day3-final-freeze-rerun-2/20261009T083603Z/scripts/precedence_probe.py'",
+        "uv run python '.runtime/day3-final-freeze-rerun-2/20261009T083603Z/scripts/freeze_http.py' '.runtime/day3-final-freeze-rerun-2/20261009T083603Z/http'"
+      ],
+      "verification_continued_safely": true
+    }
+  ],
+  "p2_deferred": [
+    "Local bearer capability is not production user identity/RBAC or authenticated distinct-approver consent.",
+    "Single-owner local SQLite only; no multi-worker HA, distributed locks or production cloud validation.",
+    "Downstream scoped idempotency is not universal exactly-once semantics.",
+    "No automatic retry/reconciliation; Unknown deliberately sacrifices progress.",
+    "Async deadlines are soft; blocking SQLite or arbitrary external effects cannot be forcibly undone.",
+    "Static reviewed demo registry is not a generic plugin system; future bindings require separate review.",
+    "No live competition adapter, cloud/MCP integration, physical power-loss or hostile-host protection validation.",
+    "Driver refusal of physical close can retain a lock despite independent close attempt; not a new avoidable-cleanup P1."
+  ],
+  "evidence_paths": {
+    "targeted_facts": ".runtime/day3-final-freeze-rerun-2/20261009T083603Z/targeted/facts.jsonl",
+    "targeted_junit": ".runtime/day3-final-freeze-rerun-2/20261009T083603Z/targeted/junit.xml",
+    "direct_precedence": ".runtime/day3-final-freeze-rerun-2/20261009T083603Z/targeted/action-primary-precedence.json",
+    "http": ".runtime/day3-final-freeze-rerun-2/20261009T083603Z/http/freeze-http.json",
+    "crash_facts": ".runtime/day3-final-freeze-rerun-2/20261009T083603Z/crash/facts.jsonl",
+    "crash_junit": ".runtime/day3-final-freeze-rerun-2/20261009T083603Z/crash/junit.xml",
+    "full_log": ".runtime/day3-final-freeze-rerun-2/20261009T083603Z/full/pytest.log",
+    "full_facts": ".runtime/day3-final-freeze-rerun-2/20261009T083603Z/full/facts.jsonl",
+    "full_junit": ".runtime/day3-final-freeze-rerun-2/20261009T083603Z/full/junit.xml",
+    "browser": ".runtime/browser-evidence/20261009T084042450281Z/results.json",
+    "package_check": ".runtime/day3-final-freeze-rerun-2/20261009T083603Z/package/package-check.json",
+    "reproduction_script": ".runtime/day3-final-freeze-rerun-2/20261009T083603Z/scripts/precedence_probe.py",
+    "http_script": ".runtime/day3-final-freeze-rerun-2/20261009T083603Z/scripts/freeze_http.py",
+    "snapshot_script": ".runtime/day3-final-freeze-rerun-2/20261009T083603Z/scripts/audit_snapshot.py"
+  },
+  "harness_notes": "First temporary HTTP runner used incorrect Intent body field 'intent', causing its own assertion; corrected only ignored harness to documented 'text', then complete fresh run passed. Temporary artifact audit runner corrected file filtering/local ordering only. No product/test repair; development runs not included in unique counts.",
+  "scope": {
+    "only_new_repository_deliverables": [
+      "docs/day3-final-freeze-rerun-2.md",
+      "docs/evidence/day3-final-freeze-rerun-2.json"
+    ],
+    "production_tests_schemas_dependencies_ui_historical_files_changed": false,
+    "new_states_turn_auth_redesign_retry_reconciliation_adapter": false,
+    "staged": false,
+    "commit_push_tag_release": false,
+    "day4_code": false,
+    "expected_final_status": "Exactly two untracked reports; tracked diff and index empty; HEAD/tag unchanged"
+  },
+  "final_gate": {
+    "DAY3_FINAL_FREEZE_RERUN_2": "FAIL",
+    "DAY3_COMPETITION_ADAPTER_READINESS": "FAIL",
+    "DAY3_FINAL_FREEZE_READY_FOR_CHECKPOINT": "FAIL",
+    "ready_to_freeze": false,
+    "reason": "Required primary-domain-error cleanup precedence fails independently in direct real SQLite and actual HTTP despite green existing suite."
+  }
+}

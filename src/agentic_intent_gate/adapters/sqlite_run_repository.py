@@ -85,6 +85,7 @@ class SQLiteRunRepository:
         self, *, write: bool = False, run_id: str | None = None
     ) -> Iterator[sqlite3.Connection]:
         connection = None
+        primary_error = None
         try:
             connection = open_existing(self.path)
             configure_connection(connection)
@@ -93,17 +94,36 @@ class SQLiteRunRepository:
             yield connection
             connection.commit()
         except RunStoreError as exc:
-            raise RunStoreError(exc.code, run_id or exc.run_id) from None
+            primary_error = RunStoreError(exc.code, run_id or exc.run_id)
+            raise primary_error from None
         except Exception:
             # A failed/unconfirmed COMMIT is never turned into a guessed successful Run.
-            raise RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE, run_id) from None
+            primary_error = RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE, run_id)
+            raise primary_error from None
+        except BaseException as error:
+            primary_error = error
+            raise
         finally:
             if connection is not None:
+                cleanup_error = None
                 try:
-                    if connection.in_transaction:
-                        connection.rollback()
-                finally:
-                    connection.close()
+                    try:
+                        if connection.in_transaction:
+                            connection.rollback()
+                    finally:
+                        connection.close()
+                except BaseException as error:
+                    cleanup_error = error
+                if cleanup_error is not None:
+                    if primary_error is None:
+                        primary_error = (
+                            RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE, run_id)
+                            if isinstance(cleanup_error, Exception)
+                            else cleanup_error
+                        )
+                        primary_error.add_note("Run transaction cleanup failed.")
+                        raise primary_error from None
+                    primary_error.add_note("Run transaction cleanup failed.")
 
     def _canonical_plan(self, plan: Plan) -> tuple[Plan, str]:
         raw = canonical_json(plan.to_dict())

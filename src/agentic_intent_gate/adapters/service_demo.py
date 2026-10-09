@@ -55,8 +55,10 @@ def provision_demo_store(path, execution_scope):
         raise ActionError(ActionCode.INVALID_REQUEST)
     path = resolve_database_path(path)
     private_backup_file(path)
-    connection = sqlite3.connect(path, isolation_level=None)
+    connection = None
+    primary_error = None
     try:
+        connection = sqlite3.connect(path, isolation_level=None)
         connection.execute("PRAGMA journal_mode=WAL")
         configure_connection(connection)
         connection.execute("BEGIN IMMEDIATE")
@@ -66,10 +68,36 @@ def provision_demo_store(path, execution_scope):
         connection.execute("PRAGMA user_version=1")
         validate_store(connection, execution_scope)
         connection.commit()
+    except ActionError as error:
+        primary_error = error
+        raise
+    except (sqlite3.Error, OSError):
+        primary_error = ActionError(ActionCode.DATABASE_UNAVAILABLE)
+        raise primary_error from None
+    except BaseException as error:
+        primary_error = error
+        raise
     finally:
-        if connection.in_transaction:
-            connection.rollback()
-        connection.close()
+        if connection is not None:
+            cleanup_error = None
+            try:
+                try:
+                    if connection.in_transaction:
+                        connection.rollback()
+                finally:
+                    connection.close()
+            except BaseException as error:
+                cleanup_error = error
+            if cleanup_error is not None:
+                if primary_error is None:
+                    primary_error = (
+                        ActionError(ActionCode.DATABASE_UNAVAILABLE)
+                        if isinstance(cleanup_error, Exception)
+                        else cleanup_error
+                    )
+                    primary_error.add_note("Demo store initialization cleanup failed.")
+                    raise primary_error from None
+                primary_error.add_note("Demo store initialization cleanup failed.")
 
 
 class DemoNoteExecutor:
@@ -94,6 +122,7 @@ class DemoNoteExecutor:
     async def execute(self, spec, effect_key, context):
         connection = None
         committed = False
+        primary_error = None
 
         def evidence(category, *, receipt=None, reason=None):
             return ToolOutcome(
@@ -173,11 +202,30 @@ class DemoNoteExecutor:
             connection.commit()
             committed = True
             return evidence(Outcome.SUCCESS, receipt=receipt)
-        except Exception:
+        except Exception as error:
             # Including ambiguous downstream COMMIT. A transport/storage fault never proves failure.
+            primary_error = error
             return ToolOutcome(Outcome.UNKNOWN_OUTCOME)
+        except BaseException as error:
+            primary_error = error
+            raise
         finally:
             if connection is not None:
-                if connection.in_transaction and not committed:
-                    connection.rollback()
-                connection.close()
+                cleanup_error = None
+                try:
+                    try:
+                        if connection.in_transaction and not committed:
+                            connection.rollback()
+                    finally:
+                        connection.close()
+                except BaseException as error:
+                    cleanup_error = error
+                if cleanup_error is not None:
+                    if primary_error is not None:
+                        primary_error.add_note(
+                            "Demo execution cleanup failed; outcome remains unknown."
+                        )
+                    elif isinstance(cleanup_error, Exception):
+                        return ToolOutcome(Outcome.UNKNOWN_OUTCOME)
+                    else:
+                        raise cleanup_error

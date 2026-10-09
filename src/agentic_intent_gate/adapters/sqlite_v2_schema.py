@@ -1,6 +1,7 @@
 """Explicit nine-table contract; never an automatic v1 upgrade."""
 
 import sqlite3
+from contextlib import closing
 from functools import lru_cache
 from pathlib import Path
 
@@ -121,7 +122,7 @@ def objects(connection):
 @lru_cache(maxsize=1)
 def expected_objects():
     # Ephemeral DDL reference only, never a fallback store for application data.
-    with sqlite3.connect(":memory:") as reference:
+    with closing(sqlite3.connect(":memory:")) as reference:
         for ddl in TABLES.values():
             reference.execute(ddl)
         return objects(reference)
@@ -135,6 +136,7 @@ def validate_schema(connection, *, migrating=False):
 
 def initialize_database(path: Path):
     connection = None
+    primary_error = None
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         connection = (
@@ -155,10 +157,33 @@ def initialize_database(path: Path):
         if connection.execute("PRAGMA journal_mode = WAL").fetchone()[0].lower() != "wal":
             raise RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE)
         configure_connection(connection)
+    except RunStoreError as error:
+        primary_error = error
+        raise
     except (sqlite3.Error, OSError):
-        raise RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE) from None
+        primary_error = RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE)
+        raise primary_error from None
+    except BaseException as error:
+        primary_error = error
+        raise
     finally:
         if connection is not None:
-            if connection.in_transaction:
-                connection.rollback()
-            connection.close()
+            cleanup_error = None
+            try:
+                try:
+                    if connection.in_transaction:
+                        connection.rollback()
+                finally:
+                    connection.close()
+            except BaseException as error:
+                cleanup_error = error
+            if cleanup_error is not None:
+                if primary_error is None:
+                    primary_error = (
+                        RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE)
+                        if isinstance(cleanup_error, Exception)
+                        else cleanup_error
+                    )
+                    primary_error.add_note("SQLite initialization cleanup failed.")
+                    raise primary_error from None
+                primary_error.add_note("SQLite initialization cleanup failed.")

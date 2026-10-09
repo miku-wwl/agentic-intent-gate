@@ -126,6 +126,7 @@ def open_existing(path: Path) -> sqlite3.Connection:
 
 def initialize_database(path: Path) -> None:
     connection = None
+    primary_error = None
     try:
         if sqlite3.sqlite_version_info < (3, 38, 0):
             raise RunStoreError(RunErrorCode.DATABASE_SCHEMA_UNSUPPORTED)
@@ -155,12 +156,33 @@ def initialize_database(path: Path) -> None:
         if connection.execute("PRAGMA journal_mode = WAL").fetchone()[0].lower() != "wal":
             raise RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE)
         configure_connection(connection)
+    except RunStoreError as error:
+        primary_error = error
+        raise
     except (sqlite3.Error, OSError):
-        raise RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE) from None
+        primary_error = RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE)
+        raise primary_error from None
+    except BaseException as error:
+        primary_error = error
+        raise
     finally:
         if connection is not None:
+            cleanup_error = None
             try:
-                if connection.in_transaction:
-                    connection.rollback()
-            finally:
-                connection.close()
+                try:
+                    if connection.in_transaction:
+                        connection.rollback()
+                finally:
+                    connection.close()
+            except BaseException as error:
+                cleanup_error = error
+            if cleanup_error is not None:
+                if primary_error is None:
+                    primary_error = (
+                        RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE)
+                        if isinstance(cleanup_error, Exception)
+                        else cleanup_error
+                    )
+                    primary_error.add_note("SQLite initialization cleanup failed.")
+                    raise primary_error from None
+                primary_error.add_note("SQLite initialization cleanup failed.")

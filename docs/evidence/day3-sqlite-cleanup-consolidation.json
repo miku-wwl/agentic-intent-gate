@@ -1,0 +1,236 @@
+{
+  "task": "DAY3_SQLITE_CLEANUP_CONSOLIDATION",
+  "recorded_at_utc": "2026-10-09T03:32:20Z",
+  "starting_commit": "3de7802a1266cc48fd94213b71816ad88d292d42",
+  "branch": "main",
+  "origin_main": "3de7802a1266cc48fd94213b71816ad88d292d42",
+  "day2_final_freeze_tag": {
+    "name": "day2-final-freeze",
+    "commit": "c7d3e1ee051af40c69ec33d888ecf16475a2d789"
+  },
+  "working_tree_baseline": {
+    "initial_index_empty": true,
+    "initial_unrelated_changes": 0,
+    "pre_existing_paths": [
+      "src/agentic_intent_gate/adapters/sqlite_v2_migration.py",
+      "tests/test_migration_cleanup.py",
+      "docs/day3-p1-migration-cleanup-fix.md",
+      "docs/evidence/day3-p1-migration-cleanup-fix.json",
+      "docs/day3-final-freeze-rerun.md",
+      "docs/evidence/day3-final-freeze-rerun.json"
+    ],
+    "final_index_empty": true,
+    "commit_push_tag_release": "NOT_PERFORMED"
+  },
+  "preserved_prior_work": {
+    "migration_source_hash_before": "dcea9bb450273d8042b5e9cc840bd350c204e4266c4e35ac193eb2fe9ea84b7d",
+    "migration_source_hash_after": "dcea9bb450273d8042b5e9cc840bd350c204e4266c4e35ac193eb2fe9ea84b7d",
+    "migration_tests_hash_before": "4f599d2c2cb285ed1fbefc5ce4528862a8b0b774a137efec96568f3b47656355",
+    "migration_tests_hash_after": "4f599d2c2cb285ed1fbefc5ce4528862a8b0b774a137efec96568f3b47656355",
+    "pre_existing_hashes_before_after": {
+      "docs/day3-p1-migration-cleanup-fix.md": "b0c3f51642a09a5f1a01e103295645f713e80142deebff4852d5aa091fc6072a",
+      "docs/evidence/day3-p1-migration-cleanup-fix.json": "b05c3a8d57741cfdced98f7e6e261ba8be1c8e699cee3dc2ca8fdb749a4b4f19",
+      "docs/day3-final-freeze-rerun.md": "331b4f6dcec159bb7c67a831efb26137a3d5caa0970aff2550b11435a40a5257",
+      "docs/evidence/day3-final-freeze-rerun.json": "f36787530e66a8e424e7f0e3a93bbc28e50f93a9bc68f3ac0c76470bbf64fa30"
+    },
+    "historical_hashes_before_after": {
+      "docs/day3-final-freeze.md": "528dd6a65b45d65a4b91792f166a6a47bde107ef5ee0b7c327507da7507b4d98",
+      "docs/evidence/day3-final-freeze.json": "7f1662ca9976668ce2d3ce9f6d362e163153db3a4cd553fdf223bf2536fbbfe5",
+      "docs/day3-p1-v2-run-cleanup-fix.md": "22b50bf8f1f8605f4d922b0b1e64374f86d477660dff74112b73f228d21f7d59",
+      "docs/evidence/day3-p1-v2-run-cleanup-fix.json": "cad600abf789e01e4de2a3fe73fa0e67973e1f89dce3dae3a6418a5f1ffd33cf"
+    },
+    "migration_test_hash_note": "An earlier task-summary transcription contained one extra e; the verified file hash is the 64-character value recorded above. The file timestamp predates this task and its bytes remained unchanged."
+  },
+  "reproductions": {
+    "sqlite_v2_schema": {
+      "file": "src/agentic_intent_gate/adapters/sqlite_v2_schema.py",
+      "function": "initialize_database",
+      "pre_fix_repetitions": 2,
+      "injection": "CREATE TABLE actions fails, then rollback raises",
+      "pre_fix_result": "raw OperationalError; rollback attempted once; close skipped; transaction retained",
+      "second_writer": [
+        {"result": "BLOCKED", "seconds": 0.0917299},
+        {"result": "BLOCKED", "seconds": 0.1129372}
+      ],
+      "diagnostic_cleanup": "explicit rollback and close; second writer committed",
+      "state": "empty schema, user_version 0, integrity ok",
+      "classification": "REPRODUCED_DEFECT_FIXED"
+    },
+    "service_demo_provision": {
+      "file": "src/agentic_intent_gate/adapters/service_demo.py",
+      "function": "provision_demo_store",
+      "pre_fix_repetitions": 2,
+      "injection": "resource insert executes, then controlled failure and rollback raises",
+      "pre_fix_result": "raw OperationalError; rollback attempted once; close skipped; transaction retained",
+      "second_writer": [
+        {"result": "BLOCKED", "seconds": 0.099493},
+        {"result": "BLOCKED", "seconds": 0.1120465}
+      ],
+      "diagnostic_cleanup": "explicit rollback and close; second writer committed",
+      "state": "no partial schema or resource row",
+      "classification": "REPRODUCED_DEFECT_FIXED"
+    },
+    "other_verified_findings": [
+      {
+        "target": "sqlite_schema.initialize_database",
+        "injection": "approval_decisions DDL failure followed by rollback failure",
+        "pre_fix": "rollback 1, close 1, writer PASS, but raw OperationalError masked DATABASE_UNAVAILABLE",
+        "post_fix": "DATABASE_UNAVAILABLE preserved, independent close, no partial v1 DDL",
+        "classification": "REPRODUCED_DEFECT_FIXED"
+      },
+      {
+        "target": "sqlite_run_repository.SQLiteRunRepository._transaction",
+        "injection": "stale approval version followed by rollback failure",
+        "pre_fix": "rollback 1, close 1, writer PASS, but OperationalError masked STALE_RUN_VERSION",
+        "post_fix": "STALE_RUN_VERSION preserved; Run remained AwaitingApproval",
+        "classification": "REPRODUCED_DEFECT_FIXED"
+      },
+      {
+        "target": "service_demo.DemoNoteExecutor.execute",
+        "injection": "failure after note insert, before receipt insert, plus rollback failure",
+        "pre_fix": "rollback 1, close 0, transaction retained, writer BLOCKED for 0.0982788 seconds; no committed note or receipt after diagnostic cleanup",
+        "post_fix": "close independently attempted; UNKNOWN_OUTCOME retained; writer PASS",
+        "classification": "REPRODUCED_DEFECT_FIXED"
+      },
+      {
+        "target": "sqlite_v2_schema.expected_objects",
+        "injection": "retained in-memory connection observed after owner return",
+        "pre_fix": "close attempts 0; retained in-memory connection remained usable",
+        "post_fix": "explicit close attempted; retained handle unusable",
+        "classification": "REPRODUCED_DEFECT_FIXED"
+      }
+    ]
+  },
+  "connection_inventory": {
+    "audited_paths": [
+      {"path": "sqlite_v2_schema.expected_objects", "owner": "function", "cleanup_status": "explicit close; no business data"},
+      {"path": "sqlite_v2_schema.initialize_database", "owner": "function", "cleanup_status": "fixed independent close and safe primary error"},
+      {"path": "sqlite_schema.initialize_database", "owner": "function", "cleanup_status": "fixed independent close and typed error precedence"},
+      {"path": "sqlite_schema.open_existing/configure_connection", "owner": "caller", "cleanup_status": "returns/configures caller-owned handle; no hidden persistent owner"},
+      {"path": "sqlite_run_repository.SQLiteRunRepository._transaction", "owner": "operation", "cleanup_status": "fixed independent close and domain error preservation"},
+      {"path": "sqlite_v2_runs.SQLiteV2RunRepository._transaction", "owner": "operation override", "cleanup_status": "existing independent cleanup retained; regression PASS"},
+      {"path": "sqlite_actions.SQLiteActionRepository._transaction", "owner": "operation", "cleanup_status": "existing rollback/close retained; regression PASS"},
+      {"path": "sqlite_v2_migration.migrate_v1_to_v2", "owner": "migration operation", "cleanup_status": "writer/reader/backup close paths retained; migration correction preserved"},
+      {"path": "service_demo.provision_demo_store", "owner": "provisioning function", "cleanup_status": "fixed independent close and safe ActionError"},
+      {"path": "service_demo.DemoNoteExecutor.execute", "owner": "execution attempt", "cleanup_status": "fixed independent close and conservative uncertainty"},
+      {"path": "SQLiteExecutionRepository", "owner": "inherited Action transaction", "cleanup_status": "covered by Action repository owner"},
+      {"path": "ledger reader/validator", "owner": "caller supplied", "cleanup_status": "no owned connection"}
+    ],
+    "source_audit": "Bounded search of SQLite connect/transaction/close/context-manager owners completed; no other repository-owned production sqlite3 connection owner found. single_owner.py closes a file stream, not SQLite.",
+    "remaining_risks": ["A deliberately nonfunctional underlying close can retain a physical lock; this is surfaced and not claimed released."]
+  },
+  "production_fixes": {
+    "changed_files": [
+      "src/agentic_intent_gate/adapters/sqlite_v2_schema.py",
+      "src/agentic_intent_gate/adapters/sqlite_schema.py",
+      "src/agentic_intent_gate/adapters/sqlite_run_repository.py",
+      "src/agentic_intent_gate/adapters/service_demo.py"
+    ],
+    "affected_functions": [
+      "sqlite_v2_schema.expected_objects",
+      "sqlite_v2_schema.initialize_database",
+      "sqlite_schema.initialize_database",
+      "SQLiteRunRepository._transaction",
+      "provision_demo_store",
+      "DemoNoteExecutor.execute"
+    ],
+    "defects_reproduced": 5,
+    "defects_resolved": 5,
+    "summary": "Nested independent close attempts; preserve primary safe/domain error; normalize SQLite/OSError storage failures; keep cleanup ambiguity conservative. No new dependency, DDL or transaction framework."
+  },
+  "fault_injection": {
+    "cases": [
+      {"id": "A", "scenario": "normal v2 schema initialization", "target": "initialize_database", "result": "PASS", "real_database": true},
+      {"id": "B", "scenario": "normal demo execution and durable receipt", "target": "DemoNoteExecutor.execute", "result": "PASS", "real_database": true},
+      {"id": "C", "scenario": "provision failure before BEGIN", "target": "provision_demo_store", "rollback_attempts": 0, "close_attempts": 1, "writer": "PASS", "result": "PASS"},
+      {"id": "D", "scenario": "DDL failure with successful rollback", "target": "v2 initialize", "rollback_attempts": 1, "close_attempts": 1, "partial_schema": 0, "writer": "PASS", "result": "PASS"},
+      {"id": "E", "scenario": "DDL failure with rollback exception", "target": "v2 initialize and demo provisioning", "rollback_attempts": 1, "close_attempts": 1, "partial_schema": 0, "writer": "PASS", "result": "PASS"},
+      {"id": "F", "scenario": "in_transaction inspection raises", "target": "v2 initialize", "rollback_attempts": 0, "close_attempts": 1, "transaction_before_close": true, "writer": "PASS", "result": "PASS"},
+      {"id": "G", "scenario": "rollback and close acknowledgement both raise after underlying close", "target": "v2 initialize", "rollback_attempts": 1, "close_attempts": 1, "physical_close": "underlying close completed", "writer": "PASS", "result": "PASS"},
+      {"id": "H", "scenario": "close acknowledgement lost after confirmed demo commit", "target": "DemoNoteExecutor.execute", "rollback_attempts": 0, "close_attempts": 1, "durable_note_receipt": "1 each", "outcome": "UNKNOWN_OUTCOME", "retry": 0, "result": "PASS"},
+      {"id": "I", "scenario": "COMMIT fails before confirmed durability", "target": "DemoNoteExecutor.execute", "rollback_attempts": 1, "close_attempts": 1, "durable_note_receipt": "0 each", "outcome": "UNKNOWN_OUTCOME", "retry": 0, "result": "PASS"},
+      {"id": "J", "scenario": "actual commit followed by lost acknowledgement", "target": "DemoNoteExecutor.execute", "rollback_attempts": 0, "close_attempts": 1, "durable_note_receipt": "1 each", "outcome": "UNKNOWN_OUTCOME", "explicit_replay": "same receipt, no duplicate", "result": "PASS"},
+      {"id": "K", "scenario": "underlying connection unavailable", "target": "DemoNoteExecutor.execute", "outcome": "UNKNOWN_OUTCOME", "automatic_retry": false, "result": "PASS"},
+      {"id": "L", "scenario": "independent second writer after recoverable cleanup failure", "target": "all five audited cleanup owners", "writer_commits": 5, "retained_locks": 0, "result": "PASS"},
+      {"id": "M", "scenario": "reopen after rolled-back initialization failure", "target": "v2 initialize", "reopen": "PASS", "subsequent_initialization": "PASS", "result": "PASS"},
+      {"id": "N", "scenario": "idempotent explicit initialization", "target": "v2 initialize", "strict_tables": 9, "schema_version": 2, "idempotent": true, "result": "PASS"},
+      {"id": "O", "scenario": "repeated demo provisioning preserves existing data", "target": "provision_demo_store", "result": "SAFE_NON_OVERWRITE_REFUSAL", "content_preserved": true},
+      {"id": "P", "scenario": "no partial schema after confirmed rollback", "target": "v1/v2/demo initialization", "partial_schema_count": 0, "integrity": "ok", "result": "PASS"},
+      {"id": "Q", "scenario": "downstream note committed but response lost", "target": "DemoNoteExecutor.execute", "durable_note_receipt": "1 each", "outcome": "UNKNOWN_OUTCOME", "result": "PASS"},
+      {"id": "R", "scenario": "duplicate effect-key replay", "target": "DemoNoteExecutor.execute", "replay": "same receipt", "duplicate_effects": 0, "automatic_retry": false, "result": "PASS"},
+      {"id": "S", "scenario": "same effect key with conflicting payload", "target": "DemoNoteExecutor.execute", "outcome": "CONFIRMED_FAILURE", "reason": "PAYLOAD_CONFLICT", "additional_effects": 0, "result": "PASS"},
+      {"id": "T", "scenario": "cancellation after commit / possible dispatch", "target": "DemoNoteExecutor.execute", "cancellation_propagated": true, "durable_note_receipt": "1 each", "explicit_replay": "same receipt, no duplicate", "automatic_retry": false, "result": "PASS"}
+    ],
+    "physical_close_behavior": "A deliberate close refusal retained the transaction and blocked a real second writer; the test reported no physical-release claim, then test-owned explicit cleanup released it.",
+    "real_sqlite_verification": true,
+    "focused_repeat_runs": [
+      {"run": 1, "tests": 25, "passed": 25, "failed": 0, "seconds": 5.434},
+      {"run": 2, "tests": 25, "passed": 25, "failed": 0, "seconds": 5.206},
+      {"run": 3, "tests": 25, "passed": 25, "failed": 0, "seconds": 5.517}
+    ]
+  },
+  "transaction_integrity": {
+    "schema_initialization": {"v1": "PASS; no partial DDL", "v2": "PASS; nine STRICT tables, indexes, schema version 2, idempotent reopen"},
+    "v1_compatibility": "PASS; v1 DDL and initialization contract unchanged; failure leaves no partial schema",
+    "v2_compatibility": "PASS; nine STRICT tables and indexes, user_version 2, idempotent initialization and reopen",
+    "demo_initialization": "PASS; atomic; safe repeated explicit provisioning refuses overwrite and preserves content",
+    "migration_compatibility": "PASS; pre-existing correction rerun by full current-worktree suite; migration source and schema version unchanged",
+    "historical_data": "PASS; legacy migration contracts and explicit content preservation tests passed",
+    "partial_persisted_facts": 0,
+    "commit_uncertainty": "Unknown on before-commit error, post-commit acknowledgement loss, close acknowledgement loss, and cancellation after commit; durable receipt replay returns same receipt without duplicate effect"
+  },
+  "execution_safety": {
+    "demo_effect_key": "stable existing effect key; same logical payload replay tested",
+    "downstream_receipt": "durable note and receipt are committed atomically; one of each on successful or commit-uncertain persisted path",
+    "duplicate_payload": "same payload returns same receipt; duplicate external notes 0",
+    "conflicting_payload": "PAYLOAD_CONFLICT; no added effect",
+    "unknown_outcome": "retained whenever dispatch/commit result is uncertain",
+    "automatic_retry": false,
+    "duplicate_effects": 0
+  },
+  "regression": {
+    "previous_baseline": {"unique_passed": 1153, "failed": 0, "errors": 0, "skipped": 0, "live_deselected": 5},
+    "new_unique_tests": 25,
+    "final_unique_passed": 1178,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "live_deselected": 5,
+    "browser_subset": {"passed": 126, "deselected": 2, "failed": 0, "errors": 0, "exit_code": 0, "seconds": 188.58},
+    "full_suite_duration_seconds": 995.02,
+    "full_suite_exit_code": 0,
+    "full_suite_junit": ".runtime/day3-sqlite-cleanup-consolidation/20261009T025505Z/final-full/junit.xml",
+    "focused_junit_directory": ".runtime/day3-sqlite-cleanup-consolidation/20261009T025505Z/focused-repeat-final-*"
+  },
+  "quality": {
+    "ruff": "PASS: uv run ruff check .",
+    "format": "PASS: uv run ruff format --check .; 145 files already formatted",
+    "diff": "PASS: git diff --check",
+    "dependency_lock": "PASS: uv lock --check; uv tree --locked --no-dev",
+    "wheel": {"result": "PASS", "offline": true, "members": 53},
+    "sdist": {"result": "PASS", "offline": true, "members": 184, "includes_report": true, "includes_evidence": true, "includes_new_test": true},
+    "isolated_install": "PASS: final rebuilt noneditable wheel reinstalled offline into isolated Python 3.13.9 environment; uv pip check and package_check.py passed from outside checkout",
+    "runtime_resources": 45,
+    "schema_resources": 4,
+    "secret_scan": "PASS: zero high-signal secret matches in nonignored source",
+    "artifact_scan": "PASS: zero tracked DBs; zero nonignored DB/WAL/SHM/private-key candidates; final wheel (53 members) and sdist (184 members) have zero prohibited database/key/runtime members",
+    "process_cleanup": "PASS: 71/71 owned child processes stopped; 71/71 readers joined; 71/71 listeners closed; 0 test-owned Python/browser workers remain",
+    "listener_cleanup": "PASS: 63 unique recorded ports; zero current collisions"
+  },
+  "historical_audit": {
+    "first_freeze_fail_preserved": true,
+    "first_p1_fix_preserved": true,
+    "second_freeze_fail_preserved": true,
+    "migration_p1_fix_preserved": true,
+    "hash_preservation": "PASS; exact hashes recorded above; no historical FAIL converted or overwritten"
+  },
+  "p0": [],
+  "p1": [],
+  "p2": ["A deliberately refusing physical close cannot guarantee lock release; the limitation is directly tested and reported. Production/repository paths have no unresolved reproduced P1."],
+  "final_gate": {
+    "DAY3_SQLITE_CLEANUP_CONSOLIDATION": "PASS",
+    "DAY3_SQLITE_CLEANUP_DYNAMIC_AUDIT": "PASS",
+    "DAY3_SQLITE_CLEANUP_REGRESSION": "PASS",
+    "DAY3_FINAL_FREEZE": "NOT_RERUN"
+  }
+}

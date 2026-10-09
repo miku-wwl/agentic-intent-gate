@@ -55,6 +55,7 @@ def migrate_v1_to_v2(path, backup_path, validator, *, owners_stopped=False):
     if path == backup_path or backup_path.exists() or not path.is_file():
         raise RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE)
     connection = reader = backup = None
+    primary_error = None
     try:
         connection = open_existing(path)
         configure_connection(connection)
@@ -92,16 +93,40 @@ def migrate_v1_to_v2(path, backup_path, validator, *, owners_stopped=False):
         validate_schema(connection)
         connection.commit()
         return backup_path
-    except RunStoreError:
+    except RunStoreError as error:
+        primary_error = error
         raise
     except Exception:
-        raise RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE) from None
+        primary_error = RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE)
+        raise primary_error from None
+    except BaseException as error:
+        primary_error = error
+        raise
     finally:
+        cleanup_error = None
         for item in (backup, reader, connection):
             if item is not None:
-                if item.in_transaction:
-                    item.rollback()
-                item.close()
+                try:
+                    try:
+                        if item.in_transaction:
+                            item.rollback()
+                    finally:
+                        item.close()
+                except BaseException as error:
+                    # One faulty handle must not skip close on any other acquired handle.
+                    if cleanup_error is None:
+                        cleanup_error = error
+        if cleanup_error is not None:
+            if primary_error is None:
+                primary_error = (
+                    RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE)
+                    if isinstance(cleanup_error, Exception)
+                    else cleanup_error
+                )
+                primary_error.add_note("Migration cleanup failed; inspect offline before retry.")
+                raise primary_error from None
+            # Preserve primary identity/category, without exposing raw SQL, paths or faults.
+            primary_error.add_note("Migration cleanup failed; inspect offline before retry.")
 
 
 def main():

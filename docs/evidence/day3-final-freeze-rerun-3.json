@@ -1,0 +1,1532 @@
+{
+  "task": "DAY3_FINAL_FREEZE_RERUN_3",
+  "attempt": 4,
+  "recorded_at_utc": "2026-10-09T11:05:23.524180+00:00",
+  "branch": "main",
+  "starting_head": "fa5080c25c4dc21e1cacc54dd2d3282fff79839e",
+  "origin_main": "fa5080c25c4dc21e1cacc54dd2d3282fff79839e",
+  "action_corrective_commit": "fa5080c25c4dc21e1cacc54dd2d3282fff79839e",
+  "day2_tag": {
+    "name": "day2-final-freeze",
+    "target": "c7d3e1ee051af40c69ec33d888ecf16475a2d789",
+    "unchanged": true
+  },
+  "baseline": {
+    "initial_worktree": "CLEAN",
+    "initial_index": "EMPTY",
+    "new_report_paths_preexisting": false,
+    "fetch_origin_main": "PASS",
+    "fresh_remote_sha": "fa5080c25c4dc21e1cacc54dd2d3282fff79839e",
+    "preceding_archive_commit": "a9ba823432f257c53e2bd43ab9f77cdaa4da2d63",
+    "preceding_two_commit_messages_and_file_sets": "PASS"
+  },
+  "historical_audit": {
+    "first_freeze_fail": "DAY3_FINAL_FREEZE=FAIL",
+    "second_freeze_fail": "DAY3_FINAL_FREEZE_RERUN=FAIL",
+    "third_freeze_fail": "DAY3_FINAL_FREEZE_RERUN_2=FAIL",
+    "previous_corrections": [
+      {
+        "task": "DAY3_P1_V2_RUN_CLEANUP_FIX",
+        "result": "PASS",
+        "final_freeze": "NOT_RERUN"
+      },
+      {
+        "task": "DAY3_P1_MIGRATION_CLEANUP_FIX",
+        "result": "PASS",
+        "final_freeze": "NOT_RERUN"
+      },
+      {
+        "task": "DAY3_SQLITE_CLEANUP_CONSOLIDATION",
+        "consolidation": "PASS",
+        "dynamic_audit": "PASS",
+        "regression": "PASS",
+        "final_freeze": "NOT_RERUN"
+      },
+      {
+        "task": "DAY3_P1_ACTION_CLEANUP_PRECEDENCE_FIX",
+        "fix": "PASS",
+        "regression": "PASS",
+        "final_freeze": "NOT_RERUN",
+        "commit": "fa5080c25c4dc21e1cacc54dd2d3282fff79839e"
+      }
+    ],
+    "sha256_integrity": {
+      "result": "PASS",
+      "files": [
+        {
+          "path": "docs/day3-p1-v2-run-cleanup-fix.md",
+          "before_sha256": "22b50bf8f1f8605f4d922b0b1e64374f86d477660dff74112b73f228d21f7d59",
+          "after_sha256": "22b50bf8f1f8605f4d922b0b1e64374f86d477660dff74112b73f228d21f7d59",
+          "committed_blob": "f528a3215d2efbd7a732b5f3fefe4e9c7855eeef",
+          "working_blob": "f528a3215d2efbd7a732b5f3fefe4e9c7855eeef",
+          "unchanged": true
+        },
+        {
+          "path": "docs/evidence/day3-sqlite-cleanup-consolidation.json",
+          "before_sha256": "50c6abda95c24ea9507e6db35e338447a93e7935e5e409bec98b263c56074870",
+          "after_sha256": "50c6abda95c24ea9507e6db35e338447a93e7935e5e409bec98b263c56074870",
+          "committed_blob": "45fb81c725941185449f7538a194400b071a66ac",
+          "working_blob": "45fb81c725941185449f7538a194400b071a66ac",
+          "unchanged": true
+        },
+        {
+          "path": "docs/evidence/day3-p1-v2-run-cleanup-fix.json",
+          "before_sha256": "cad600abf789e01e4de2a3fe73fa0e67973e1f89dce3dae3a6418a5f1ffd33cf",
+          "after_sha256": "cad600abf789e01e4de2a3fe73fa0e67973e1f89dce3dae3a6418a5f1ffd33cf",
+          "committed_blob": "26e3c0b4d50762d63de2da0049c8a7af5ca2d42f",
+          "working_blob": "26e3c0b4d50762d63de2da0049c8a7af5ca2d42f",
+          "unchanged": true
+        },
+        {
+          "path": "docs/evidence/day3-final-freeze.json",
+          "before_sha256": "7f1662ca9976668ce2d3ce9f6d362e163153db3a4cd553fdf223bf2536fbbfe5",
+          "after_sha256": "7f1662ca9976668ce2d3ce9f6d362e163153db3a4cd553fdf223bf2536fbbfe5",
+          "committed_blob": "7f06258c37080f433a9e5d9b17ca64ebd8d9cf5e",
+          "working_blob": "7f06258c37080f433a9e5d9b17ca64ebd8d9cf5e",
+          "unchanged": true
+        },
+        {
+          "path": "docs/evidence/day3-p1-migration-cleanup-fix.json",
+          "before_sha256": "b05c3a8d57741cfdced98f7e6e261ba8be1c8e699cee3dc2ca8fdb749a4b4f19",
+          "after_sha256": "b05c3a8d57741cfdced98f7e6e261ba8be1c8e699cee3dc2ca8fdb749a4b4f19",
+          "committed_blob": "a2f1fcd73b8367e759fc862771dea4e649c710e4",
+          "working_blob": "a2f1fcd73b8367e759fc862771dea4e649c710e4",
+          "unchanged": true
+        },
+        {
+          "path": "docs/evidence/day3-final-freeze-rerun.json",
+          "before_sha256": "f36787530e66a8e424e7f0e3a93bbc28e50f93a9bc68f3ac0c76470bbf64fa30",
+          "after_sha256": "f36787530e66a8e424e7f0e3a93bbc28e50f93a9bc68f3ac0c76470bbf64fa30",
+          "committed_blob": "63e742ae9a3df0a99e511d52bb786893bc606b61",
+          "working_blob": "63e742ae9a3df0a99e511d52bb786893bc606b61",
+          "unchanged": true
+        },
+        {
+          "path": "docs/evidence/day3-p1-action-cleanup-precedence-fix.json",
+          "before_sha256": "56ac4cc7fa14ea3cd069ac53cea7937b5f4391fbc3242b12d71fa6538ef23cdd",
+          "after_sha256": "56ac4cc7fa14ea3cd069ac53cea7937b5f4391fbc3242b12d71fa6538ef23cdd",
+          "committed_blob": "d3d1bbb3ba433d5ee8971c07ad8cc01c90ec5d53",
+          "working_blob": "d3d1bbb3ba433d5ee8971c07ad8cc01c90ec5d53",
+          "unchanged": true
+        },
+        {
+          "path": "docs/day3-sqlite-cleanup-consolidation.md",
+          "before_sha256": "8aab906d5fce379f1608f94859c9cff6a399aa7168404ce91d15b3eda88324f2",
+          "after_sha256": "8aab906d5fce379f1608f94859c9cff6a399aa7168404ce91d15b3eda88324f2",
+          "committed_blob": "5938fbb400f9844604695b0b2098189f2b54aa66",
+          "working_blob": "5938fbb400f9844604695b0b2098189f2b54aa66",
+          "unchanged": true
+        },
+        {
+          "path": "docs/day3-p1-action-cleanup-precedence-fix.md",
+          "before_sha256": "86554fee8718ed44ce123927b19a4cf77491015995fa7d881a2bd8d40a01efcf",
+          "after_sha256": "86554fee8718ed44ce123927b19a4cf77491015995fa7d881a2bd8d40a01efcf",
+          "committed_blob": "062f9183893bd288dd73927f0c60b369a2595272",
+          "working_blob": "062f9183893bd288dd73927f0c60b369a2595272",
+          "unchanged": true
+        },
+        {
+          "path": "docs/day3-final-freeze-rerun.md",
+          "before_sha256": "331b4f6dcec159bb7c67a831efb26137a3d5caa0970aff2550b11435a40a5257",
+          "after_sha256": "331b4f6dcec159bb7c67a831efb26137a3d5caa0970aff2550b11435a40a5257",
+          "committed_blob": "7f2b3adb24eedc073d737993e9086ba37c3dbe4d",
+          "working_blob": "7f2b3adb24eedc073d737993e9086ba37c3dbe4d",
+          "unchanged": true
+        },
+        {
+          "path": "docs/day3-p1-migration-cleanup-fix.md",
+          "before_sha256": "b0c3f51642a09a5f1a01e103295645f713e80142deebff4852d5aa091fc6072a",
+          "after_sha256": "b0c3f51642a09a5f1a01e103295645f713e80142deebff4852d5aa091fc6072a",
+          "committed_blob": "a2a86cb147815121acb0b1ac638876360b788a8a",
+          "working_blob": "a2a86cb147815121acb0b1ac638876360b788a8a",
+          "unchanged": true
+        },
+        {
+          "path": "docs/day3-final-freeze-rerun-2.md",
+          "before_sha256": "603b86dabb9d229a57b93e07d9e9503131527bf498a99205f457f1d55e329287",
+          "after_sha256": "603b86dabb9d229a57b93e07d9e9503131527bf498a99205f457f1d55e329287",
+          "committed_blob": "025aeb9fa26e46f90273a6daf440fc278bd9909c",
+          "working_blob": "025aeb9fa26e46f90273a6daf440fc278bd9909c",
+          "unchanged": true
+        },
+        {
+          "path": "docs/evidence/day3-final-freeze-rerun-2.json",
+          "before_sha256": "39406d5301976cf2950a543d23ad0e8ce0493ec22b161627cc1d954ff546bb26",
+          "after_sha256": "39406d5301976cf2950a543d23ad0e8ce0493ec22b161627cc1d954ff546bb26",
+          "committed_blob": "9628758ebdf410379dfdb3873be41f001a110a3e",
+          "working_blob": "9628758ebdf410379dfdb3873be41f001a110a3e",
+          "unchanged": true
+        },
+        {
+          "path": "docs/day3-final-freeze.md",
+          "before_sha256": "528dd6a65b45d65a4b91792f166a6a47bde107ef5ee0b7c327507da7507b4d98",
+          "after_sha256": "528dd6a65b45d65a4b91792f166a6a47bde107ef5ee0b7c327507da7507b4d98",
+          "committed_blob": "f28fe164ee24def474dcbdafaa47d263b2b8dafd",
+          "working_blob": "f28fe164ee24def474dcbdafaa47d263b2b8dafd",
+          "unchanged": true
+        }
+      ],
+      "json_files": 7,
+      "local_markdown_links": 25,
+      "local_links_resolve": true,
+      "history_rewritten": false
+    }
+  },
+  "action_p1": {
+    "focused_tests": {
+      "result": "PASS",
+      "passed": 68,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "junit_seconds": 43.049,
+      "console_seconds": 43.05,
+      "junit": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/action/junit.xml",
+      "facts": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/action/facts.jsonl"
+    },
+    "normal_stale": "PASS",
+    "rollback_failure": "PASS",
+    "inspection_failure": "PASS",
+    "close_failure": "PASS",
+    "multiple_cleanup_failure": "PASS",
+    "primary_error_preservation": "PASS: ActionError, BindingError, RunStoreError and primary control flow retain identity/category",
+    "safe_storage_error": "PASS: write/acquisition/commit/cleanup-only uncertainty never creates guessed success",
+    "commit_uncertainty": "PASS: before/after COMMIT and close acknowledgement faults; no permit on unconfirmed claim, zero dispatch",
+    "real_second_writer": {
+      "result": "PASS_FOR_RECOVERABLE_FAULTS",
+      "initial_actual_update_commits": 67,
+      "strong_references": 66,
+      "recoverable_owned_connections": 65,
+      "acquisition_without_handle": 2,
+      "rollback_attempts": 44,
+      "close_attempts": 66,
+      "no_gc_dependency": true,
+      "deliberate_physical_refusal": {
+        "initial_writer": "BLOCKED",
+        "physical_release_claimed": false,
+        "after_explicit_controller_release": "PASS_TEST_ASSERTION"
+      }
+    },
+    "http_409": [
+      {
+        "kind": "action-precedence",
+        "scenario": "real-http-normal",
+        "cleanup": "normal",
+        "expected_code": "STALE_ACTION_VERSION",
+        "observed_code": "STALE_ACTION_VERSION",
+        "strong_reference_held": true,
+        "writer": {
+          "result": "PASS",
+          "seconds": 0.003819800040218979
+        },
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "commit_attempts": 0,
+        "acquisitions": 1,
+        "action_state": "Pending",
+        "action_version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "notes": 0,
+        "receipts": 0,
+        "adapter_calls": 0,
+        "expected_status": 409,
+        "actual_status": 409,
+        "business_rows_unchanged": true
+      },
+      {
+        "kind": "action-precedence",
+        "scenario": "real-http-rollback",
+        "cleanup": "rollback",
+        "expected_code": "STALE_ACTION_VERSION",
+        "observed_code": "STALE_ACTION_VERSION",
+        "strong_reference_held": true,
+        "writer": {
+          "result": "PASS",
+          "seconds": 0.0034843000466935337
+        },
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "commit_attempts": 0,
+        "acquisitions": 1,
+        "action_state": "Pending",
+        "action_version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "notes": 0,
+        "receipts": 0,
+        "adapter_calls": 0,
+        "expected_status": 409,
+        "actual_status": 409,
+        "business_rows_unchanged": true
+      },
+      {
+        "kind": "action-precedence",
+        "scenario": "real-http-inspection",
+        "cleanup": "inspection",
+        "expected_code": "STALE_ACTION_VERSION",
+        "observed_code": "STALE_ACTION_VERSION",
+        "strong_reference_held": true,
+        "writer": {
+          "result": "PASS",
+          "seconds": 0.006334300036542118
+        },
+        "rollback_attempts": 0,
+        "close_attempts": 1,
+        "commit_attempts": 0,
+        "acquisitions": 1,
+        "action_state": "Pending",
+        "action_version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "notes": 0,
+        "receipts": 0,
+        "adapter_calls": 0,
+        "expected_status": 409,
+        "actual_status": 409,
+        "business_rows_unchanged": true
+      },
+      {
+        "kind": "action-precedence",
+        "scenario": "real-http-close",
+        "cleanup": "close",
+        "expected_code": "STALE_ACTION_VERSION",
+        "observed_code": "STALE_ACTION_VERSION",
+        "strong_reference_held": true,
+        "writer": {
+          "result": "PASS",
+          "seconds": 0.0027694999589584768
+        },
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "commit_attempts": 0,
+        "acquisitions": 1,
+        "action_state": "Pending",
+        "action_version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "notes": 0,
+        "receipts": 0,
+        "adapter_calls": 0,
+        "expected_status": 409,
+        "actual_status": 409,
+        "business_rows_unchanged": true
+      },
+      {
+        "kind": "action-precedence",
+        "scenario": "real-http-rollback-close",
+        "cleanup": "rollback-close",
+        "expected_code": "STALE_ACTION_VERSION",
+        "observed_code": "STALE_ACTION_VERSION",
+        "strong_reference_held": true,
+        "writer": {
+          "result": "PASS",
+          "seconds": 0.003466599970124662
+        },
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "commit_attempts": 0,
+        "acquisitions": 1,
+        "action_state": "Pending",
+        "action_version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "notes": 0,
+        "receipts": 0,
+        "adapter_calls": 0,
+        "expected_status": 409,
+        "actual_status": 409,
+        "business_rows_unchanged": true
+      }
+    ],
+    "http_503": [
+      {
+        "kind": "action-precedence",
+        "scenario": "real-http-write",
+        "cleanup": "normal",
+        "expected_code": "DATABASE_UNAVAILABLE",
+        "observed_code": "DATABASE_UNAVAILABLE",
+        "strong_reference_held": true,
+        "writer": {
+          "result": "PASS",
+          "seconds": 0.003778000012971461
+        },
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "commit_attempts": 0,
+        "acquisitions": 1,
+        "action_state": "Pending",
+        "action_version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "notes": 0,
+        "receipts": 0,
+        "adapter_calls": 0,
+        "expected_status": 503,
+        "actual_status": 503,
+        "business_rows_unchanged": true
+      },
+      {
+        "kind": "action-precedence",
+        "scenario": "real-http-acquire",
+        "cleanup": "acquire",
+        "expected_code": "DATABASE_UNAVAILABLE",
+        "observed_code": "DATABASE_UNAVAILABLE",
+        "strong_reference_held": false,
+        "writer": {
+          "result": "PASS",
+          "seconds": 0.004197900008875877
+        },
+        "rollback_attempts": 0,
+        "close_attempts": 0,
+        "commit_attempts": 0,
+        "acquisitions": 1,
+        "action_state": "Pending",
+        "action_version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "notes": 0,
+        "receipts": 0,
+        "adapter_calls": 0,
+        "expected_status": 503,
+        "actual_status": 503,
+        "business_rows_unchanged": true
+      }
+    ],
+    "unauthorized_effects": {
+      "adapter_calls": 0,
+      "notes": 0,
+      "receipts": 0,
+      "count_scope": "68 focused records; intentional committed grants/claim facts are not mislabeled unauthorized"
+    }
+  },
+  "sqlite": {
+    "audited_paths": [
+      "src/agentic_intent_gate/adapters/sqlite_run_repository.py",
+      "src/agentic_intent_gate/adapters/sqlite_v2_runs.py",
+      "src/agentic_intent_gate/adapters/sqlite_actions.py",
+      "src/agentic_intent_gate/adapters/sqlite_action_execution.py",
+      "src/agentic_intent_gate/adapters/sqlite_v2_migration.py",
+      "src/agentic_intent_gate/adapters/sqlite_schema.py",
+      "src/agentic_intent_gate/adapters/sqlite_v2_schema.py",
+      "src/agentic_intent_gate/adapters/service_demo.py"
+    ],
+    "v1_run": "PASS",
+    "v2_run": "PASS",
+    "action": "PASS",
+    "migration": "PASS",
+    "schema_v1": "PASS",
+    "schema_v2": "PASS",
+    "demo_provisioning": "PASS",
+    "demo_execution": "PASS_CONSERVATIVE_UNKNOWN",
+    "focused_regression": {
+      "passed": 182,
+      "exit_code": 0,
+      "junit_seconds": 76.673,
+      "console_seconds": 76.67,
+      "modules": {
+        "tests.test_sqlite_run_repository": 79,
+        "tests.test_v2_run_cleanup": 30,
+        "tests.test_migration_cleanup": 34,
+        "tests.test_sqlite_cleanup_consolidation": 25,
+        "tests.test_service_demo_adapter": 14
+      },
+      "junit": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/sqlite/junit.xml"
+    },
+    "retained_locks": {
+      "ordinary_recoverable_faults": 0,
+      "v2_run_writer_commits": 29,
+      "migration_writer_checks": 37,
+      "migration_writer_commits": 36,
+      "migration_expected_refusal": 1,
+      "deliberate_refusals": "BLOCKED until explicit controller/native release; not universal release guarantee",
+      "driver_limit_deferred": true
+    },
+    "transaction_owner_notes": "Execution repository inherits Action boundary; open_existing delegates ownership; reference schema connection uses closing; migration closes backup/reader/writer independently.",
+    "schema": {
+      "version": 2,
+      "strict_tables": [
+        "runs",
+        "approval_decisions",
+        "audit_events",
+        "approval_plan_bindings",
+        "actions",
+        "action_authorizations",
+        "action_attempts",
+        "action_command_receipts",
+        "action_events"
+      ],
+      "v1_compatible": true,
+      "explicit_migration": true,
+      "no_implicit_migration": true,
+      "legacy_proof_not_fabricated": true,
+      "future_version_rejected": true,
+      "atomic_rollback_and_reopen": "PASS"
+    }
+  },
+  "architecture": {
+    "run_states": [
+      "IntentReceived",
+      "PlanGenerating",
+      "PlanValidated",
+      "Ready",
+      "AwaitingApproval",
+      "Approved",
+      "Rejected",
+      "PlanRejected"
+    ],
+    "action_states": [
+      "Pending",
+      "Authorized",
+      "Executing",
+      "Succeeded",
+      "Failed",
+      "Unknown"
+    ],
+    "turn_required": false,
+    "approval_authorization_separation": "PASS",
+    "schema_version": 2,
+    "run_action_version_separation": "PASS",
+    "model_authority": false,
+    "get_reload_dispatch": false,
+    "approval_auto_execution": false,
+    "authorization_auto_dispatch": false,
+    "unknown_auto_retry": false,
+    "authority": [
+      "docs/adr/ADR-013-action-ledger-execution-boundary.md",
+      "docs/adr/ADR-014-approval-plan-binding.md"
+    ]
+  },
+  "approval": {
+    "exact_binding": "PASS: canonical-plan-v1 + approval-plan-v1, immutable BOUND_V1",
+    "legacy_unbound": "PASS: reads compatible, admission denied; no fabricated proof",
+    "tamper_rejection": "PASS: changed Plan/digest/missing binding/rejected or stale approval",
+    "atomicity": "PASS: decision/binding/audit all-or-none and safe storage faults"
+  },
+  "action": {
+    "admission": "PASS_EXPLICIT",
+    "immutable_spec": "PASS_RETAINED_AND_REVALIDATED",
+    "compiler": "PASS_TRUSTED_COMPLETE_SINGLE_STEP_PLAN",
+    "idempotency": "PASS_DURABLE_SCOPED_BODY_BOUND_RECEIPTS",
+    "cas": "PASS_INDEPENDENT_ACTION_VERSION"
+  },
+  "authorization": {
+    "capability": "PASS_VERIFIED_RANDOM_PRIVATE_LOCAL_CAPABILITY_DEFAULT_DENY",
+    "principal": "PASS_SERVER_DERIVED_ISSUER_BOUND_CONTEXT",
+    "scope": "PASS_EXACT_OPERATION_TARGET_BINDING_EXECUTION_SCOPE",
+    "action_binding": "PASS_EXACT_SPEC_SUBJECT_POLICY",
+    "cas": "PASS",
+    "local_user_authority": false,
+    "production_rbac": false
+  },
+  "execution": {
+    "trusted_registry": "PASS_STATIC_REVIEWED_DEMO_BINDING",
+    "durable_claim": "PASS_CONFIRM_COMMIT_BEFORE_PERMIT",
+    "attempts": 1,
+    "adapter_invocations": 1,
+    "count_scope": "Fresh positive case; winning claim/attempt is per isolated Action, not aggregate test sum",
+    "result_persistence": "PASS_ATTEMPT_SPECIFIC_CAS",
+    "unknown": "PASS_CONSERVATIVE_TERMINAL",
+    "automatic_retries": 0,
+    "automatic_reconciliation": false,
+    "control_writer_during_dispatch": 1,
+    "external_call_outside_gate_transaction": true
+  },
+  "recovery": {
+    "historical_crash_evidence": {
+      "source": "docs/evidence/day3-prompt5-execution-hardening.json",
+      "windows": "A-H",
+      "historical_result": "PASS",
+      "source_invariants_compatible": true,
+      "not_credited_as_new_execution": true
+    },
+    "fresh_smoke": {
+      "result": "PASS",
+      "passed": 3,
+      "exit_code": 0,
+      "console_seconds": 45.25,
+      "junit_seconds": 44.807,
+      "windows": [
+        {
+          "kind": "crash-window",
+          "window": "B",
+          "persisted_before": "Executing",
+          "recovered_state": "Unknown",
+          "calls": 0,
+          "notes": 0,
+          "receipts": 0,
+          "attempts": 1,
+          "events": 4,
+          "schema_unchanged": true,
+          "convergence_repetitions": [
+            1,
+            2,
+            10
+          ]
+        },
+        {
+          "kind": "crash-window",
+          "window": "D",
+          "persisted_before": "Executing",
+          "recovered_state": "Unknown",
+          "calls": 1,
+          "notes": 1,
+          "receipts": 1,
+          "attempts": 1,
+          "events": 4,
+          "schema_unchanged": true,
+          "convergence_repetitions": [
+            1,
+            2,
+            10
+          ]
+        }
+      ],
+      "junit": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/crash/junit.xml",
+      "facts": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/crash/facts.jsonl"
+    },
+    "active_owner": "PASS: competitor denied before recovery; owner killed by retained handle then recovery",
+    "convergence": {
+      "repetitions": [
+        1,
+        2,
+        10
+      ],
+      "second_interpreter_restart": true,
+      "new_versions_events_attempts_effects": 0
+    },
+    "downstream_replay_count": 0,
+    "full_crash_windows": [
+      {
+        "kind": "crash-window",
+        "window": "A",
+        "persisted_before": "Authorized",
+        "recovered_state": "Authorized",
+        "calls": 0,
+        "notes": 0,
+        "receipts": 0,
+        "attempts": 0,
+        "events": 2,
+        "schema_unchanged": true,
+        "convergence_repetitions": [
+          1,
+          2,
+          10
+        ]
+      },
+      {
+        "kind": "crash-window",
+        "window": "B",
+        "persisted_before": "Executing",
+        "recovered_state": "Unknown",
+        "calls": 0,
+        "notes": 0,
+        "receipts": 0,
+        "attempts": 1,
+        "events": 4,
+        "schema_unchanged": true,
+        "convergence_repetitions": [
+          1,
+          2,
+          10
+        ]
+      },
+      {
+        "kind": "crash-window",
+        "window": "C",
+        "persisted_before": "Executing",
+        "recovered_state": "Unknown",
+        "calls": 1,
+        "notes": 0,
+        "receipts": 0,
+        "attempts": 1,
+        "events": 4,
+        "schema_unchanged": true,
+        "convergence_repetitions": [
+          1,
+          2,
+          10
+        ]
+      },
+      {
+        "kind": "crash-window",
+        "window": "D",
+        "persisted_before": "Executing",
+        "recovered_state": "Unknown",
+        "calls": 1,
+        "notes": 1,
+        "receipts": 1,
+        "attempts": 1,
+        "events": 4,
+        "schema_unchanged": true,
+        "convergence_repetitions": [
+          1,
+          2,
+          10
+        ]
+      },
+      {
+        "kind": "crash-window",
+        "window": "E",
+        "persisted_before": "Executing",
+        "recovered_state": "Unknown",
+        "calls": 1,
+        "notes": 0,
+        "receipts": 0,
+        "attempts": 1,
+        "events": 4,
+        "schema_unchanged": true,
+        "convergence_repetitions": [
+          1,
+          2,
+          10
+        ]
+      },
+      {
+        "kind": "crash-window",
+        "window": "F",
+        "persisted_before": "Succeeded",
+        "recovered_state": "Succeeded",
+        "calls": 1,
+        "notes": 1,
+        "receipts": 1,
+        "attempts": 1,
+        "events": 4,
+        "schema_unchanged": true,
+        "convergence_repetitions": [
+          1,
+          2,
+          10
+        ]
+      },
+      {
+        "kind": "crash-window",
+        "window": "G",
+        "persisted_before": "Unknown",
+        "recovered_state": "Unknown",
+        "calls": 1,
+        "notes": 1,
+        "receipts": 1,
+        "attempts": 1,
+        "events": 4,
+        "schema_unchanged": true,
+        "convergence_repetitions": [
+          1,
+          2,
+          10
+        ]
+      }
+    ]
+  },
+  "positive_http": {
+    "real_http": true,
+    "control_database": "Fresh isolated SQLite v2",
+    "downstream_database": "Independent fresh provisioned SQLite demo store",
+    "plan_and_approval_via_http": true,
+    "action_count": 1,
+    "grant_count": 1,
+    "claim_count": 1,
+    "attempt_count": 1,
+    "adapter_call_count": 1,
+    "note_count": 1,
+    "receipt_count": 1,
+    "final_state": "Succeeded",
+    "restart_verified": "PASS",
+    "idempotency_verified": "PASS",
+    "command_receipts": 3,
+    "action_events": 4,
+    "deterministic_provider_calls": 1,
+    "live_model_calls": 0,
+    "additional_seeded_control_positive": "Separate helper positive is not combined into primary counts"
+  },
+  "negative_http": {
+    "executed_cases": 17,
+    "expected_results": [
+      {
+        "case": "A",
+        "scenario": "missing",
+        "expected": [
+          401,
+          "AUTHENTICATION_REQUIRED"
+        ]
+      },
+      {
+        "case": "B",
+        "scenario": "invalid",
+        "expected": [
+          401,
+          "AUTHENTICATION_REQUIRED"
+        ]
+      },
+      {
+        "case": "C",
+        "scenario": "permission",
+        "expected": [
+          403,
+          "ACTION_NOT_AUTHORIZED"
+        ]
+      },
+      {
+        "case": "D",
+        "scenario": "not-approved",
+        "expected": [
+          409,
+          "RUN_NOT_ACTION_ELIGIBLE"
+        ]
+      },
+      {
+        "case": "E",
+        "scenario": "legacy",
+        "expected": [
+          409,
+          "LEGACY_APPROVAL_UNBOUND"
+        ]
+      },
+      {
+        "case": "F",
+        "scenario": "plan-tamper",
+        "expected": [
+          409,
+          "APPROVAL_PLAN_MISMATCH"
+        ]
+      },
+      {
+        "case": "G",
+        "scenario": "spec-tamper",
+        "expected": [
+          503,
+          "DATABASE_UNAVAILABLE"
+        ]
+      },
+      {
+        "case": "H",
+        "scenario": "stale",
+        "expected": [
+          409,
+          "STALE_ACTION_VERSION"
+        ]
+      },
+      {
+        "case": "I",
+        "scenario": "succeeded",
+        "expected": [
+          409,
+          "EXECUTION_ALREADY_STARTED"
+        ]
+      },
+      {
+        "case": "J",
+        "scenario": "unknown",
+        "expected": [
+          409,
+          "EXECUTION_ALREADY_STARTED"
+        ]
+      },
+      {
+        "case": "K",
+        "scenario": "retired",
+        "expected": [
+          409,
+          "TOOL_NOT_BOUND"
+        ]
+      },
+      {
+        "case": "L",
+        "scenario": "storage",
+        "expected": [
+          503,
+          "DATABASE_UNAVAILABLE"
+        ]
+      },
+      {
+        "case": "M",
+        "scenario": "idempotency-conflict",
+        "expected": [
+          409,
+          "IDEMPOTENCY_CONFLICT"
+        ]
+      },
+      {
+        "case": "N",
+        "scenario": "untrusted-local-user-mutation",
+        "expected": [
+          401,
+          "AUTHENTICATION_REQUIRED"
+        ]
+      },
+      {
+        "case": "O",
+        "scenario": "stale-authorization-with-rollback-fault",
+        "expected": [
+          409,
+          "STALE_ACTION_VERSION"
+        ]
+      },
+      {
+        "case": "P",
+        "scenario": "stale-authorization-with-inspection-fault",
+        "expected": [
+          409,
+          "STALE_ACTION_VERSION"
+        ]
+      },
+      {
+        "case": "Q",
+        "scenario": "stale-authorization-with-close-fault",
+        "expected": [
+          409,
+          "STALE_ACTION_VERSION"
+        ]
+      }
+    ],
+    "actual_results": [
+      {
+        "case": "A",
+        "scenario": "missing",
+        "expected": [
+          401,
+          "AUTHENTICATION_REQUIRED"
+        ],
+        "actual": [
+          401,
+          "AUTHENTICATION_REQUIRED"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "B",
+        "scenario": "invalid",
+        "expected": [
+          401,
+          "AUTHENTICATION_REQUIRED"
+        ],
+        "actual": [
+          401,
+          "AUTHENTICATION_REQUIRED"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "C",
+        "scenario": "permission",
+        "expected": [
+          403,
+          "ACTION_NOT_AUTHORIZED"
+        ],
+        "actual": [
+          403,
+          "ACTION_NOT_AUTHORIZED"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "D",
+        "scenario": "not-approved",
+        "expected": [
+          409,
+          "RUN_NOT_ACTION_ELIGIBLE"
+        ],
+        "actual": [
+          409,
+          "RUN_NOT_ACTION_ELIGIBLE"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "E",
+        "scenario": "legacy",
+        "expected": [
+          409,
+          "LEGACY_APPROVAL_UNBOUND"
+        ],
+        "actual": [
+          409,
+          "LEGACY_APPROVAL_UNBOUND"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "F",
+        "scenario": "plan-tamper",
+        "expected": [
+          409,
+          "APPROVAL_PLAN_MISMATCH"
+        ],
+        "actual": [
+          409,
+          "APPROVAL_PLAN_MISMATCH"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "G",
+        "scenario": "spec-tamper",
+        "expected": [
+          503,
+          "DATABASE_UNAVAILABLE"
+        ],
+        "actual": [
+          503,
+          "DATABASE_UNAVAILABLE"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "H",
+        "scenario": "stale",
+        "expected": [
+          409,
+          "STALE_ACTION_VERSION"
+        ],
+        "actual": [
+          409,
+          "STALE_ACTION_VERSION"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "I",
+        "scenario": "succeeded",
+        "expected": [
+          409,
+          "EXECUTION_ALREADY_STARTED"
+        ],
+        "actual": [
+          409,
+          "EXECUTION_ALREADY_STARTED"
+        ],
+        "baseline_notes": 1,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "J",
+        "scenario": "unknown",
+        "expected": [
+          409,
+          "EXECUTION_ALREADY_STARTED"
+        ],
+        "actual": [
+          409,
+          "EXECUTION_ALREADY_STARTED"
+        ],
+        "baseline_notes": 1,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "K",
+        "scenario": "retired",
+        "expected": [
+          409,
+          "TOOL_NOT_BOUND"
+        ],
+        "actual": [
+          409,
+          "TOOL_NOT_BOUND"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "L",
+        "scenario": "storage",
+        "expected": [
+          503,
+          "DATABASE_UNAVAILABLE"
+        ],
+        "actual": [
+          503,
+          "DATABASE_UNAVAILABLE"
+        ],
+        "baseline_notes": 0,
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "M",
+        "scenario": "idempotency-conflict",
+        "expected": [
+          409,
+          "IDEMPOTENCY_CONFLICT"
+        ],
+        "actual": [
+          409,
+          "IDEMPOTENCY_CONFLICT"
+        ],
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "N",
+        "scenario": "untrusted-local-user-mutation",
+        "expected": [
+          401,
+          "AUTHENTICATION_REQUIRED"
+        ],
+        "actual": [
+          401,
+          "AUTHENTICATION_REQUIRED"
+        ],
+        "new_calls": 0,
+        "new_notes": 0,
+        "business_rows_unchanged": true,
+        "result": "PASS"
+      },
+      {
+        "case": "O",
+        "scenario": "stale-authorization-with-rollback-fault",
+        "expected": [
+          409,
+          "STALE_ACTION_VERSION"
+        ],
+        "actual": [
+          409,
+          "STALE_ACTION_VERSION"
+        ],
+        "new_calls": 0,
+        "new_notes": 0,
+        "new_receipts": 0,
+        "business_rows_unchanged": true,
+        "second_writer_commit": "PASS",
+        "result": "PASS"
+      },
+      {
+        "case": "P",
+        "scenario": "stale-authorization-with-inspection-fault",
+        "expected": [
+          409,
+          "STALE_ACTION_VERSION"
+        ],
+        "actual": [
+          409,
+          "STALE_ACTION_VERSION"
+        ],
+        "new_calls": 0,
+        "new_notes": 0,
+        "new_receipts": 0,
+        "business_rows_unchanged": true,
+        "second_writer_commit": "PASS",
+        "result": "PASS"
+      },
+      {
+        "case": "Q",
+        "scenario": "stale-authorization-with-close-fault",
+        "expected": [
+          409,
+          "STALE_ACTION_VERSION"
+        ],
+        "actual": [
+          409,
+          "STALE_ACTION_VERSION"
+        ],
+        "new_calls": 0,
+        "new_notes": 0,
+        "new_receipts": 0,
+        "business_rows_unchanged": true,
+        "second_writer_commit": "PASS",
+        "result": "PASS"
+      }
+    ],
+    "unauthorized_side_effects": 0,
+    "rejected_new_grants_attempts_notes_receipts": 0,
+    "count_scope": "Rejected-command delta; I/J deliberately have existing successful/uncertain baseline effect",
+    "all_expected_contracts_match": true,
+    "evidence": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/http/retry-1/verified-http.json"
+  },
+  "tests": {
+    "historical_baseline": {
+      "unique_passed": 1246,
+      "browser_subset": 126,
+      "live_deselected": 5,
+      "used_as_current_evidence": false
+    },
+    "current_collected": 1251,
+    "current_selected": 1246,
+    "current_unique_passed": 1246,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "live_deselected": 5,
+    "browser_subset": 126,
+    "duration": {
+      "console_seconds": 1018.53,
+      "junit_seconds": 1018.456
+    },
+    "exit_code": 0,
+    "python": "3.13.9",
+    "command": "uv run python -m pytest -q --junitxml '.runtime/day3-final-freeze-rerun-3/20261009T103627Z/full/junit.xml' --basetemp 'D:/Ollama/Temp/aig-freeze3-20261009T103627Z-full'",
+    "process_report_environment": "D:\\workshop\\oct\\agentic-intent-gate\\.runtime\\day3-final-freeze-rerun-3\\20261009T103627Z\\full\\facts.jsonl",
+    "focused_and_browser_counts_added_to_total": false,
+    "new_skip_added": false,
+    "collection": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/full/collection.log",
+    "junit": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/full/junit.xml",
+    "modules": {
+      "tests.browser.test_action_ui_e2e": 49,
+      "tests.browser.test_browser_e2e": 6,
+      "tests.browser.test_frontend": 19,
+      "tests.browser.test_run_frontend": 39,
+      "tests.browser.test_run_ui_e2e": 13,
+      "tests.test_action_authorization": 21,
+      "tests.test_action_binding_compatibility": 2,
+      "tests.test_action_capability": 10,
+      "tests.test_action_cleanup_precedence": 68,
+      "tests.test_action_execution": 34,
+      "tests.test_action_http": 59,
+      "tests.test_action_persistence": 98,
+      "tests.test_action_recovery": 12,
+      "tests.test_approval_plan_binding": 66,
+      "tests.test_configuration": 19,
+      "tests.test_execution_hardening": 38,
+      "tests.test_hardening": 20,
+      "tests.test_local_runtime_configuration": 19,
+      "tests.test_migration_cleanup": 34,
+      "tests.test_model_provider": 33,
+      "tests.test_ollama_json_mode": 20,
+      "tests.test_plan_validation": 68,
+      "tests.test_plans_api": 25,
+      "tests.test_preview_page": 1,
+      "tests.test_run_contracts": 169,
+      "tests.test_run_hardening": 52,
+      "tests.test_run_recovery": 17,
+      "tests.test_run_service": 26,
+      "tests.test_runs_api": 61,
+      "tests.test_service_demo_adapter": 14,
+      "tests.test_sqlite_cleanup_consolidation": 25,
+      "tests.test_sqlite_run_repository": 79,
+      "tests.test_v2_run_cleanup": 30
+    },
+    "inventory_comparison": {
+      "raw_exact_match": false,
+      "raw_old_only_count": 11,
+      "raw_new_only_count": 11,
+      "normalization": "Only UUID-shaped fixture values; six parametrized functions inspected for uuid4 inputs",
+      "actual_current_unique_ids": 1246
+    },
+    "inventory_unchanged_after_fixture_uuid_normalization": true
+  },
+  "package": {
+    "wheel": {
+      "path": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/package/dist/agentic_intent_gate-0.1.0-py3-none-any.whl",
+      "sha256": "de71d254d19f3f2e0aab942c9d2844f34b58a6b464273f11fd601a6654e2e3f6",
+      "member_count": 53,
+      "runtime_resources": 45,
+      "schema_resources": 4,
+      "byte_integrity": "PASS",
+      "artifact_alerts": [],
+      "secret_scan": {
+        "alerts": [],
+        "exact_negative_test_id_exclusions": []
+      },
+      "runtime_absolute_path_alerts": []
+    },
+    "sdist": {
+      "path": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/package/dist/agentic_intent_gate-0.1.0.tar.gz",
+      "sha256": "2867e65d3229c5f2cc6ad7a28f6f6c71408d914abb0e300e5e793277020bd124",
+      "member_count": 189,
+      "runtime_resources": 45,
+      "schema_resources": 4,
+      "byte_integrity": "PASS",
+      "artifact_alerts": [],
+      "secret_scan": {
+        "alerts": [],
+        "exact_negative_test_id_exclusions": []
+      },
+      "runtime_absolute_path_alerts": []
+    },
+    "isolated_install": {
+      "result": "PASS",
+      "noneditable": true,
+      "offline": true,
+      "requirements_hashes": true,
+      "dependencies": 22,
+      "compatible_installed_packages": 23,
+      "working_directory": "D:\\Ollama\\Temp\\aig-freeze3-20261009T103627Z-package",
+      "import_location": "D:\\Ollama\\Temp\\aig-freeze3-20261009T103627Z-package\\venv\\Lib\\site-packages\\agentic_intent_gate\\__init__.py"
+    },
+    "package_check": {
+      "result": "PASS",
+      "evidence": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/package/package-check.json",
+      "static_http_status": 200,
+      "plan_http_status": 200,
+      "controlled_execution": {
+        "capability": "PASS",
+        "authorization": "PASS",
+        "execution": "PASS",
+        "replay_reopen": "PASS",
+        "state": "Succeeded",
+        "version": 4,
+        "adapter_calls": 1,
+        "external_notes": 1,
+        "external_receipts": 1,
+        "separate_database": true,
+        "automatic_retry": false
+      },
+      "actual_browser": "NOT_RUN_PACKAGE_PROBE_IS_HTTP_ONLY"
+    },
+    "runtime_resources": 45,
+    "schema_resources": 4,
+    "installed_byte_integrity": "PASS",
+    "static_ui": "PASS_BYTE_IDENTICAL",
+    "dependency_lock": "PASS_UNCHANGED",
+    "ruff_check": "PASS",
+    "ruff_format_check": "PASS_150_FILES_AFTER_CLOSEOUT",
+    "git_diff_check": "PASS",
+    "archive_built_before_new_closeout": true,
+    "build_scope": "Fresh artifacts from starting fa5080c runtime; new verification-only closeout reports intentionally not in this earlier sdist",
+    "install_warning": "Cache-to-D-drive hardlink fallback used ordinary copying; installation and pip check passed"
+  },
+  "security": {
+    "secret_scan": {
+      "result": "PASS",
+      "verification_artifact_files": 33,
+      "high_signal_hits": 0,
+      "browser_exact_managed_scan": "PASS",
+      "browser_managed_credentials": 50,
+      "http_exact_minted_scan": "PASS",
+      "http_minted_values": 20,
+      "known_invalid_test_identifier_occurrences": 4,
+      "exclusion_rule": "Only test_missing_invalid_credentials identifiers with 64 zero or 65 a invalid input; not configured/generated authority",
+      "scope": "Bounded high-signal tracked files, explicit deliverables, fresh retained artifacts and archive scan, not exhaustive certification",
+      "tracked_source_files_before_closeout": 188,
+      "new_reports_scan": "PASS",
+      "final_tracked_plus_deliverables": 190,
+      "new_report_files": 2
+    },
+    "artifact_scan": "PASS: no DB/WAL/SHM, actual env/model/cache/private credentials or machine-specific runtime paths in wheel/sdist",
+    "owned_process_cleanup": {
+      "result": "PASS",
+      "records": 80,
+      "retained_handle_wait_reader_listener_checks": true,
+      "current_process_check": {
+        "LiveOwnedWorkers": [],
+        "ReusedPidNumbers": [],
+        "TaskPythonStillRunning": [],
+        "ObservedAtUtc": "2026-10-09T11:05:21.8803177Z",
+        "OwnedHandleRecords": 80,
+        "OnlyOwnedHandlesWereTerminated": true
+      },
+      "graceful_exit_universally_claimed": false
+    },
+    "browser_cleanup": {
+      "result": "PASS",
+      "instances": 5,
+      "contexts_closed_by_fixture": true,
+      "driver_contexts_exited": true,
+      "server_records": 127,
+      "business_directories_removed": true
+    },
+    "listener_cleanup": {
+      "result": "PASS",
+      "unique_ports_probed": 265,
+      "all_closed": true,
+      "includes_unaccepted_first_http_harness_attempt": true
+    },
+    "exhaustive_certification": false,
+    "unrelated_user_processes_killed": false,
+    "user_databases_touched": false,
+    "benign_external_artifacts_retained": true
+  },
+  "day4_readiness": {
+    "core_reusable": true,
+    "ready": true,
+    "frozen_interfaces": [
+      "RunService and repositories",
+      "exact ApprovalBinding + ActionCompiler/CompiledSpec",
+      "verified PrincipalContext + AuthorizationPort",
+      "ActionExecutionGateway + durable claim/attempt/result CAS",
+      "ToolExecutor/ExecutionSpec/AttemptContext/ToolOutcome",
+      "server-owned reviewed registry/binding",
+      "stable effect key + non-replaying recovery"
+    ],
+    "blockers": [],
+    "deferred_work": [
+      "Per adapter: target, argument schema, reviewed trusted binding, permission scope, stable idempotency key/payload, side-effect classification, timeout/quiescence, Unknown evidence, authorization and fault-injection tests.",
+      "Current compiler/policy/registry are deliberately demo-specific; new allowlist/binding wiring needs separate review. No generic plugin promise and no state-machine/claim/recovery redesign required for this readiness result."
+    ],
+    "future_adapter_safe_automatically": false,
+    "day4_started": false
+  },
+  "p0_findings": [],
+  "p1_findings": [],
+  "p2_deferred": [
+    "Single-machine local SQLite owner; no HA, distributed locks or production RBAC.",
+    "Local bearer capability is not authenticated human or distinct-approver consent; approval digests are integrity evidence, not a MAC.",
+    "Scoped downstream idempotency is not universal exactly-once semantics.",
+    "No automatic retry or reconciliation; Unknown deliberately prevents progress without new evidence.",
+    "Async deadlines are cooperative; synchronous SQLite and arbitrary external effects are not forcibly cancelled or undone.",
+    "Static reviewed demo binding only; no generic plugin registry or automatically safe future adapter.",
+    "No physical power-loss, hostile-host, live Ollama, cloud/MCP or real competition-adapter validation.",
+    "Driver refusal of physical close can retain locks despite close attempts; explicit controller release is required in that injected limit case.",
+    "Installed headless Edge is the only browser channel verified."
+  ],
+  "evidence_paths": {
+    "action_junit": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/action/junit.xml",
+    "action_facts": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/action/facts.jsonl",
+    "sqlite_junit": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/sqlite/junit.xml",
+    "sqlite_facts": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/sqlite/facts.jsonl",
+    "crash_junit": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/crash/junit.xml",
+    "crash_facts": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/crash/facts.jsonl",
+    "full_junit": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/full/junit.xml",
+    "full_log": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/full/pytest.log",
+    "full_facts": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/full/facts.jsonl",
+    "collection": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/full/collection.log",
+    "http": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/http/retry-1/verified-http.json",
+    "package_check": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/package/package-check.json",
+    "browser": ".runtime/browser-evidence/20261009T104500851661Z/results.json",
+    "aggregate_audit": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/final-audit.json",
+    "http_runner": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/scripts/http_verify.py",
+    "audit_runner": ".runtime/day3-final-freeze-rerun-3/20261009T103627Z/scripts/audit.py"
+  },
+  "verification_harness_notes": [
+    "First ignored HTTP wrapper completed backend cases but failed post-run port aggregation because the reviewed helper stores integer ports; only ignored wrapper corrected, then complete fresh 17-case rerun passed (22 servers). First attempt logs retained, not counted as accepted smoke.",
+    "First artifact audit scanner matched sk- inside a long risk test identifier; exact source context verified and token prefix word boundary corrected in ignored scanner only. No genuine credential exposed.",
+    "Only exact pre-existing negative pytest identifiers with 64 zero or 65 a bearer input are excluded; all other raw bearer literals rejected.",
+    "PID numbers can be reused by unrelated pwsh processes. Retained handle waits/nonce/worker-command verification govern ownership; no unrelated process is killed.",
+    "Cross-run raw JUnit IDs differed in 11 cases only because six existing parameter lists create uuid4 values (one uppercase). Only UUID-shaped fixture text normalized for inventory comparison; actual current 1246 unique IDs and all parameters retained unchanged."
+  ],
+  "scope": {
+    "only_new_repository_deliverables": [
+      "docs/day3-final-freeze-rerun-3.md",
+      "docs/evidence/day3-final-freeze-rerun-3.json"
+    ],
+    "production_tests_schemas_dependencies_ui_readme_adrs_modified": false,
+    "historical_evidence_modified": false,
+    "new_state_turn_auth_redesign": false,
+    "retry_reconciliation_new_adapter": false,
+    "live_ollama_cloud_mcp": false,
+    "day4_implementation": false,
+    "staged": false,
+    "commit_push_tag_release": false,
+    "expected_final_status": "Only two untracked reports; index and tracked diff empty; HEAD/origin/tag unchanged"
+  },
+  "final_gate": {
+    "DAY3_FINAL_FREEZE_RERUN_3": "PASS",
+    "DAY3_COMPETITION_ADAPTER_READINESS": "PASS",
+    "DAY3_FINAL_FREEZE_READY_FOR_CHECKPOINT": "PASS",
+    "ready_to_freeze": true,
+    "meaning": "Verification-only acceptance; no checkpoint commit, push, tag or release created"
+  },
+  "browser": {
+    "path": ".runtime/browser-evidence/20261009T104500851661Z/results.json",
+    "tests": 126,
+    "outcomes": {
+      "passed": 126
+    },
+    "modules": {
+      "tests/browser/test_action_ui_e2e.py": 49,
+      "tests/browser/test_browser_e2e.py": 6,
+      "tests/browser/test_frontend.py": 19,
+      "tests/browser/test_run_frontend.py": 39,
+      "tests/browser/test_run_ui_e2e.py": 13
+    },
+    "servers": 127,
+    "action_servers": 50,
+    "run_servers": 13,
+    "browsers": [
+      {
+        "channel": "msedge",
+        "version": "154.0.4258.62",
+        "headless": true,
+        "closed": true,
+        "driver_context_exited": true
+      },
+      {
+        "channel": "msedge",
+        "version": "154.0.4258.62",
+        "headless": true,
+        "closed": true,
+        "driver_context_exited": true
+      },
+      {
+        "channel": "msedge",
+        "version": "154.0.4258.62",
+        "headless": true,
+        "closed": true,
+        "driver_context_exited": true
+      },
+      {
+        "channel": "msedge",
+        "version": "154.0.4258.62",
+        "headless": true,
+        "closed": true,
+        "driver_context_exited": true
+      },
+      {
+        "channel": "msedge",
+        "version": "154.0.4258.62",
+        "headless": true,
+        "closed": true,
+        "driver_context_exited": true
+      }
+    ],
+    "credential_scan": "PASS",
+    "managed_credentials": 50,
+    "all_servers_stopped": true,
+    "all_business_directories_removed": true,
+    "lane_breakdown": {
+      "action_real_http_sqlite": 49,
+      "run_real_http_sqlite": 13,
+      "planning_real_http_controlled_provider": 6,
+      "controlled_response_frontend": 58
+    },
+    "not_added_to_full_count": true,
+    "visual_review": {
+      "screenshots": [
+        "action-pending.png",
+        "action-authorized.png",
+        "action-executing.png",
+        "action-happy-path.png",
+        "action-unknown.png"
+      ],
+      "fresh_screenshots": true,
+      "result": "PASS",
+      "unknown_execute_absent": true
+    },
+    "live_ollama": "NOT_RUN"
+  }
+}

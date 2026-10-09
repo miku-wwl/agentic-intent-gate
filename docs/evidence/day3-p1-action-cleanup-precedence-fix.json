@@ -1,0 +1,1344 @@
+{
+  "task": "DAY3_P1_ACTION_CLEANUP_PRECEDENCE_FIX",
+  "recorded_at_utc": "2026-10-09T09:57:52.2099885Z",
+  "branch": "main",
+  "starting_commit": "d573598d21fce905fe16d0b528d275795ebb98c0",
+  "origin_main": "d573598d21fce905fe16d0b528d275795ebb98c0",
+  "baseline": {
+    "index_empty": true,
+    "initial_tracked_diff_empty": true,
+    "initial_untracked": [
+      "docs/day3-final-freeze-rerun-2.md",
+      "docs/evidence/day3-final-freeze-rerun-2.json"
+    ],
+    "remote_main": "d573598d21fce905fe16d0b528d275795ebb98c0",
+    "day2_tag": "day2-final-freeze",
+    "day2_tag_target": "c7d3e1ee051af40c69ec33d888ecf16475a2d789",
+    "ending_refs_unchanged": true,
+    "final_index_empty": true
+  },
+  "original_finding": {
+    "id": "D3-FREEZE-RERUN2-P1-ACTION-CLEANUP-PRECEDENCE",
+    "affected_function": "SQLiteActionRepository._transaction",
+    "primary_error": "ActionError(STALE_ACTION_VERSION)",
+    "cleanup_fault": [
+      "rollback raises",
+      "in_transaction inspection raises",
+      "close physically releases then raises",
+      "rollback plus close raise"
+    ],
+    "expected_http": {
+      "status": 409,
+      "code": "STALE_ACTION_VERSION"
+    },
+    "actual_http_before_fix": {
+      "status": 503,
+      "code": "DATABASE_UNAVAILABLE",
+      "measurement_origin": "HISTORICAL_RERUN_2_ACTUAL_HTTP_NOT_NEW_PREPATCH_HTTP"
+    },
+    "independent_repository_reproduction": {
+      "before_production_patch": true,
+      "real_sqlite_databases": 10,
+      "repetitions_per_mode": 2,
+      "modes": [
+        "normal",
+        "rollback",
+        "inspection",
+        "close",
+        "rollback-close"
+      ],
+      "normal_cases": 2,
+      "normal_code": "STALE_ACTION_VERSION",
+      "fault_cases": 8,
+      "observed_fault_code": "DATABASE_UNAVAILABLE",
+      "initial_writer_commits": 10,
+      "strong_reference_held": true,
+      "rollback_attempts": 8,
+      "close_attempts": 10,
+      "state": "Pending",
+      "version": 1,
+      "grants": 0,
+      "attempts": 0,
+      "adapter_calls": 0,
+      "notes": 0,
+      "receipts": 0,
+      "expected_test_failures": 8,
+      "passed": 2,
+      "errors": 0,
+      "skipped": 0,
+      "exit_code": 1,
+      "duration_seconds": 5.75,
+      "junit_seconds": 5.402,
+      "junit": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/reproduction/junit.xml",
+      "junit_sha256": "b90ce4d111cb905f81f22d8cfd41aff151305c0c5d128c7b6d90cb926fd0284f",
+      "facts": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/reproduction/facts.jsonl",
+      "log": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/reproduction/pytest.log"
+    }
+  },
+  "patch": {
+    "changed_file": "src/agentic_intent_gate/adapters/sqlite_actions.py",
+    "changed_function": "SQLiteActionRepository._transaction",
+    "sha256": "62977d7fdf55bf10f2d8f2b00b39cfd6b7d7a8221329e603e798cdbfd8cdb0a5",
+    "inserted_lines": 13,
+    "deleted_lines": 5,
+    "exception_precedence": "Capture and rethrow established ActionError, BindingError, RunStoreError identities; ordinary cleanup failures add only a fixed safe note. Untyped ordinary failures retain DATABASE_UNAVAILABLE; cleanup-only failure remains fail-closed.",
+    "rollback_behavior": "Attempt rollback when in_transaction is true. Inspection failure does not fabricate rollback; rollback failure cannot prevent close.",
+    "close_behavior": "Existing inner finally independently attempts close. Preserving a primary error is not a universal physical-release guarantee.",
+    "safe_cleanup_note": "Action transaction cleanup failed.",
+    "commit_uncertainty": "No false success or rollback claim; COMMIT or close-acknowledgment uncertainty returns safe storage unavailability. No automatic retry; durable unconfirmed claim returns no dispatch permission.",
+    "control_flow": "BaseException is captured solely to immediately rethrow the same primary control-flow object. Ordinary cleanup faults cannot reclassify it; new cleanup control-flow signals propagate.",
+    "changed_transaction_boundaries": false,
+    "retries_added": false,
+    "schema_changed": false,
+    "states_changed": false,
+    "auth_policy_changed": false,
+    "http_mapping_changed": false
+  },
+  "fault_injection": {
+    "new_test_module": "tests/test_action_cleanup_precedence.py",
+    "test_module_sha256": "1495b01531bb28f3a8eb2d333a28db46f48e755311d8c1f480235a045e6cc098",
+    "scenarios": [
+      {
+        "scenario": "acquisition",
+        "count": 1,
+        "observed_codes": [
+          "DATABASE_UNAVAILABLE"
+        ],
+        "rollback_attempts": 0,
+        "close_attempts": 0,
+        "writer_pass": 1,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "authorization",
+        "count": 3,
+        "observed_codes": [
+          "ACTION_NOT_AUTHORIZED"
+        ],
+        "rollback_attempts": 2,
+        "close_attempts": 3,
+        "writer_pass": 3,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "authorization-commit-after",
+        "count": 1,
+        "observed_codes": [
+          "DATABASE_UNAVAILABLE"
+        ],
+        "rollback_attempts": 0,
+        "close_attempts": 1,
+        "writer_pass": 1,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "authorization-commit-before",
+        "count": 1,
+        "observed_codes": [
+          "DATABASE_UNAVAILABLE"
+        ],
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "writer_pass": 1,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "authorization-commit-close",
+        "count": 1,
+        "observed_codes": [
+          "DATABASE_UNAVAILABLE"
+        ],
+        "rollback_attempts": 0,
+        "close_attempts": 1,
+        "writer_pass": 1,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "binding-missing",
+        "count": 3,
+        "observed_codes": [
+          "APPROVAL_PLAN_BINDING_MISSING"
+        ],
+        "rollback_attempts": 2,
+        "close_attempts": 3,
+        "writer_pass": 3,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "claim-commit-after",
+        "count": 1,
+        "observed_codes": [
+          "DATABASE_UNAVAILABLE"
+        ],
+        "rollback_attempts": 0,
+        "close_attempts": 1,
+        "writer_pass": 1,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "claim-commit-before",
+        "count": 1,
+        "observed_codes": [
+          "DATABASE_UNAVAILABLE"
+        ],
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "writer_pass": 1,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "claim-commit-close",
+        "count": 1,
+        "observed_codes": [
+          "DATABASE_UNAVAILABLE"
+        ],
+        "rollback_attempts": 0,
+        "close_attempts": 1,
+        "writer_pass": 1,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "claim-stale",
+        "count": 3,
+        "observed_codes": [
+          "STALE_ACTION_VERSION"
+        ],
+        "rollback_attempts": 2,
+        "close_attempts": 3,
+        "writer_pass": 3,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "claim-started",
+        "count": 3,
+        "observed_codes": [
+          "EXECUTION_ALREADY_STARTED"
+        ],
+        "rollback_attempts": 2,
+        "close_attempts": 3,
+        "writer_pass": 3,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "cleanup-control-flow",
+        "count": 3,
+        "observed_codes": [
+          "CancelledError",
+          "KeyboardInterrupt",
+          "SystemExit"
+        ],
+        "rollback_attempts": 0,
+        "close_attempts": 3,
+        "writer_pass": 3,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "control-flow-CancelledError",
+        "count": 4,
+        "observed_codes": [
+          "CancelledError"
+        ],
+        "rollback_attempts": 3,
+        "close_attempts": 4,
+        "writer_pass": 4,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "control-flow-KeyboardInterrupt",
+        "count": 4,
+        "observed_codes": [
+          "KeyboardInterrupt"
+        ],
+        "rollback_attempts": 3,
+        "close_attempts": 4,
+        "writer_pass": 4,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "control-flow-SystemExit",
+        "count": 4,
+        "observed_codes": [
+          "SystemExit"
+        ],
+        "rollback_attempts": 3,
+        "close_attempts": 4,
+        "writer_pass": 4,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "idempotency",
+        "count": 3,
+        "observed_codes": [
+          "IDEMPOTENCY_CONFLICT"
+        ],
+        "rollback_attempts": 2,
+        "close_attempts": 3,
+        "writer_pass": 3,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "physical-close-refusal",
+        "count": 1,
+        "observed_codes": [
+          "STALE_ACTION_VERSION"
+        ],
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "writer_pass": 0,
+        "writer_expected_blocked": 1
+      },
+      {
+        "scenario": "real-http-acquire",
+        "count": 1,
+        "observed_codes": [
+          "DATABASE_UNAVAILABLE"
+        ],
+        "rollback_attempts": 0,
+        "close_attempts": 0,
+        "writer_pass": 1,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "real-http-close",
+        "count": 1,
+        "observed_codes": [
+          "STALE_ACTION_VERSION"
+        ],
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "writer_pass": 1,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "real-http-inspection",
+        "count": 1,
+        "observed_codes": [
+          "STALE_ACTION_VERSION"
+        ],
+        "rollback_attempts": 0,
+        "close_attempts": 1,
+        "writer_pass": 1,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "real-http-normal",
+        "count": 1,
+        "observed_codes": [
+          "STALE_ACTION_VERSION"
+        ],
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "writer_pass": 1,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "real-http-rollback",
+        "count": 1,
+        "observed_codes": [
+          "STALE_ACTION_VERSION"
+        ],
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "writer_pass": 1,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "real-http-rollback-close",
+        "count": 1,
+        "observed_codes": [
+          "STALE_ACTION_VERSION"
+        ],
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "writer_pass": 1,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "real-http-write",
+        "count": 1,
+        "observed_codes": [
+          "DATABASE_UNAVAILABLE"
+        ],
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "writer_pass": 1,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "result-attempt",
+        "count": 3,
+        "observed_codes": [
+          "ACTION_NOT_EXECUTABLE"
+        ],
+        "rollback_attempts": 2,
+        "close_attempts": 3,
+        "writer_pass": 3,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "run-missing",
+        "count": 3,
+        "observed_codes": [
+          "RUN_NOT_FOUND"
+        ],
+        "rollback_attempts": 2,
+        "close_attempts": 3,
+        "writer_pass": 3,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "run-stale",
+        "count": 3,
+        "observed_codes": [
+          "STALE_RUN_VERSION"
+        ],
+        "rollback_attempts": 2,
+        "close_attempts": 3,
+        "writer_pass": 3,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "stale-authorization",
+        "count": 10,
+        "observed_codes": [
+          "STALE_ACTION_VERSION"
+        ],
+        "rollback_attempts": 8,
+        "close_attempts": 10,
+        "writer_pass": 10,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "success",
+        "count": 1,
+        "observed_codes": [
+          "SUCCESS"
+        ],
+        "rollback_attempts": 0,
+        "close_attempts": 1,
+        "writer_pass": 1,
+        "writer_expected_blocked": 0
+      },
+      {
+        "scenario": "write-failure",
+        "count": 3,
+        "observed_codes": [
+          "DATABASE_UNAVAILABLE"
+        ],
+        "rollback_attempts": 3,
+        "close_attempts": 3,
+        "writer_pass": 3,
+        "writer_expected_blocked": 0
+      }
+    ],
+    "expected_codes": [
+      "ACTION_NOT_AUTHORIZED",
+      "ACTION_NOT_EXECUTABLE",
+      "APPROVAL_PLAN_BINDING_MISSING",
+      "CancelledError",
+      "DATABASE_UNAVAILABLE",
+      "EXECUTION_ALREADY_STARTED",
+      "IDEMPOTENCY_CONFLICT",
+      "KeyboardInterrupt",
+      "RUN_NOT_FOUND",
+      "STALE_ACTION_VERSION",
+      "STALE_RUN_VERSION",
+      "SUCCESS",
+      "SystemExit"
+    ],
+    "observed_codes": [
+      {
+        "code": "ACTION_NOT_AUTHORIZED",
+        "count": 3
+      },
+      {
+        "code": "ACTION_NOT_EXECUTABLE",
+        "count": 3
+      },
+      {
+        "code": "APPROVAL_PLAN_BINDING_MISSING",
+        "count": 3
+      },
+      {
+        "code": "CancelledError",
+        "count": 5
+      },
+      {
+        "code": "DATABASE_UNAVAILABLE",
+        "count": 12
+      },
+      {
+        "code": "EXECUTION_ALREADY_STARTED",
+        "count": 3
+      },
+      {
+        "code": "IDEMPOTENCY_CONFLICT",
+        "count": 3
+      },
+      {
+        "code": "KeyboardInterrupt",
+        "count": 5
+      },
+      {
+        "code": "RUN_NOT_FOUND",
+        "count": 3
+      },
+      {
+        "code": "STALE_ACTION_VERSION",
+        "count": 19
+      },
+      {
+        "code": "STALE_RUN_VERSION",
+        "count": 3
+      },
+      {
+        "code": "SUCCESS",
+        "count": 1
+      },
+      {
+        "code": "SystemExit",
+        "count": 5
+      }
+    ],
+    "code_matches": 68,
+    "rollback_attempts": {
+      "focused": 44,
+      "full": 44,
+      "per_scenario_in": "scenarios"
+    },
+    "close_attempts": {
+      "focused": 66,
+      "full": 66,
+      "acquisition_failures_without_handle": 2,
+      "per_scenario_in": "scenarios"
+    },
+    "durable_state_checks": {
+      "real_row_snapshots": true,
+      "ledger_tables": 6,
+      "run_approval_tables": 3,
+      "separate_downstream_store": true,
+      "rejected_operations_preserve_before_snapshot": true,
+      "unauthorized_effects": 0
+    },
+    "required_matrix_evidence": {
+      "1_normal_success": "test_acknowledged_success_preserves_authorization_replay",
+      "2_to_6_stale_and_cleanup_combinations": "test_stale_authorization_keeps_primary_and_releases_lock",
+      "7_idempotency_conflict": "test_real_business_errors_cross_shared_boundary[idempotency]",
+      "8_authorization_conflict": "test_real_business_errors_cross_shared_boundary[authorization]",
+      "9_to_10_partial_write_fault": "test_primary_write_failure_translates_and_rolls_back",
+      "11_to_13_close_and_commit_uncertainty": [
+        "test_authorization_commit_uncertainty_never_fabricates_success",
+        "test_unconfirmed_claim_never_dispatches_or_retries"
+      ],
+      "14_acquisition_failure": "test_acquisition_failure_has_no_owned_connection_or_mutation",
+      "15_independent_writer": "writer_commit in every new case, plus deliberate refusal before and after explicit release",
+      "16_shared_execution": "test_real_business_errors_cross_shared_boundary claim/result cases and test_unconfirmed_claim_never_dispatches_or_retries",
+      "17_admission": "test_real_business_errors_cross_shared_boundary run-stale/run-missing/binding-missing",
+      "18_authorization_cas": "test_stale_authorization_keeps_primary_and_releases_lock plus existing authorization concurrency tests",
+      "19_claim_cas": "test_real_business_errors_cross_shared_boundary claim-stale/claim-started and existing twenty-contender claim tests",
+      "20_no_unauthorized_effect": "snapshot/state assertions in all new cases, existing gateway/recovery/adapter regressions"
+    },
+    "facts": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/focused-pass/facts.jsonl",
+    "full_facts": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/full/facts.jsonl"
+  },
+  "real_sqlite": {
+    "databases": {
+      "independent_reproduction": 10,
+      "focused_postfix": 68,
+      "full_postfix_reexecutions": 68,
+      "file_backed": true,
+      "fixtures_are_fresh_per_case": true,
+      "run_database": "gate.sqlite3",
+      "separate_downstream_database": "downstream.sqlite3"
+    },
+    "strong_reference_held": {
+      "owned_connections": 66,
+      "until_initial_writer_check": true,
+      "no_gc_proof": true,
+      "no_controller_release_before_recoverable_writer_probe": true
+    },
+    "writer_busy_timeout_seconds": 0.05,
+    "second_writer_commits": {
+      "focused_initial": 67,
+      "full_initial": 67,
+      "stale_repetitions": 10,
+      "actual_single_row_update_changes": 1,
+      "deliberate_refusal_after_explicit_release": "PASS_ASSERTED_IN_PASSING_TEST"
+    },
+    "remaining_locks": {
+      "recoverable_cases": 0,
+      "deliberate_physical_refusal_initial": "EXPECTED_LOCK_HELD",
+      "after_explicit_controller_release": 0
+    },
+    "deliberate_physical_refusal": {
+      "primary_code": "STALE_ACTION_VERSION",
+      "rollback_attempts": 1,
+      "close_attempts": 1,
+      "initial_writer": "BLOCKED",
+      "physical_release_claimed": false,
+      "subsequent_native_fixture_release_and_writer": "PASS"
+    }
+  },
+  "real_http": {
+    "tested_cases": [
+      {
+        "case": "normal",
+        "expected_status": 409,
+        "actual_status": 409,
+        "response_error_code": "STALE_ACTION_VERSION",
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "business_rows_unchanged": true,
+        "state": "Pending",
+        "version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "adapter_calls": 0,
+        "notes": 0,
+        "receipts": 0,
+        "second_writer": "PASS"
+      },
+      {
+        "case": "rollback",
+        "expected_status": 409,
+        "actual_status": 409,
+        "response_error_code": "STALE_ACTION_VERSION",
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "business_rows_unchanged": true,
+        "state": "Pending",
+        "version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "adapter_calls": 0,
+        "notes": 0,
+        "receipts": 0,
+        "second_writer": "PASS"
+      },
+      {
+        "case": "inspection",
+        "expected_status": 409,
+        "actual_status": 409,
+        "response_error_code": "STALE_ACTION_VERSION",
+        "rollback_attempts": 0,
+        "close_attempts": 1,
+        "business_rows_unchanged": true,
+        "state": "Pending",
+        "version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "adapter_calls": 0,
+        "notes": 0,
+        "receipts": 0,
+        "second_writer": "PASS"
+      },
+      {
+        "case": "close",
+        "expected_status": 409,
+        "actual_status": 409,
+        "response_error_code": "STALE_ACTION_VERSION",
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "business_rows_unchanged": true,
+        "state": "Pending",
+        "version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "adapter_calls": 0,
+        "notes": 0,
+        "receipts": 0,
+        "second_writer": "PASS"
+      },
+      {
+        "case": "rollback-close",
+        "expected_status": 409,
+        "actual_status": 409,
+        "response_error_code": "STALE_ACTION_VERSION",
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "business_rows_unchanged": true,
+        "state": "Pending",
+        "version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "adapter_calls": 0,
+        "notes": 0,
+        "receipts": 0,
+        "second_writer": "PASS"
+      },
+      {
+        "case": "write",
+        "expected_status": 503,
+        "actual_status": 503,
+        "response_error_code": "DATABASE_UNAVAILABLE",
+        "rollback_attempts": 1,
+        "close_attempts": 1,
+        "business_rows_unchanged": true,
+        "state": "Pending",
+        "version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "adapter_calls": 0,
+        "notes": 0,
+        "receipts": 0,
+        "second_writer": "PASS"
+      },
+      {
+        "case": "acquire",
+        "expected_status": 503,
+        "actual_status": 503,
+        "response_error_code": "DATABASE_UNAVAILABLE",
+        "rollback_attempts": 0,
+        "close_attempts": 0,
+        "business_rows_unchanged": true,
+        "state": "Pending",
+        "version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "adapter_calls": 0,
+        "notes": 0,
+        "receipts": 0,
+        "second_writer": "PASS"
+      }
+    ],
+    "expected_status": [
+      409,
+      409,
+      409,
+      409,
+      409,
+      503,
+      503
+    ],
+    "actual_status": [
+      409,
+      409,
+      409,
+      409,
+      409,
+      503,
+      503
+    ],
+    "response_error_code": [
+      "STALE_ACTION_VERSION",
+      "STALE_ACTION_VERSION",
+      "STALE_ACTION_VERSION",
+      "STALE_ACTION_VERSION",
+      "STALE_ACTION_VERSION",
+      "DATABASE_UNAVAILABLE",
+      "DATABASE_UNAVAILABLE"
+    ],
+    "unauthorized_effect_count": 0,
+    "loopback_real_uvicorn": true,
+    "real_sqlite": true,
+    "mocked_final_response": false,
+    "response_sanitization": "PASS: fixed public code/message; no injected detail, traceback, SQLite class, capability or database path",
+    "subsequent_explicit_healthy_requests": {
+      "cases": 7,
+      "actual_status": 200,
+      "state": "Authorized",
+      "version": 2,
+      "grants": 1,
+      "attempts": 0,
+      "downstream_effects": 0,
+      "automatic_retry": false
+    },
+    "server_cleanup": {
+      "servers": 7,
+      "threads_stopped": true,
+      "listeners_released": true,
+      "provider_calls": 0
+    },
+    "repeated_in_full_suite": true
+  },
+  "action_integrity": {
+    "state": "Pending after stale/storage authorization rejection",
+    "version": 1,
+    "grants": 0,
+    "attempts": 0,
+    "downstream_effects": 0,
+    "scope": "Pending/v1 rejection cases; preexisting authorized/executing fixtures preserve their legitimate grant/attempt facts rather than claiming all fixtures have zero",
+    "all_new_cases": {
+      "count": 68,
+      "adapter_calls": 0,
+      "notes": 0,
+      "receipts": 0
+    },
+    "cas_atomicity": "PASS: complete before/after ledger, Run/approval and downstream snapshots",
+    "idempotency": "PASS: conflicting receipts preserve category and rows; acknowledged/lost-ack authorization replay has one grant; existing claim/effect replay/concurrency remains green"
+  },
+  "execution_regression": {
+    "claim_cas": "PASS: stale/started claim plus cleanup; 20 contenders one winning durable claim and attempt",
+    "result_cas": "PASS: wrong attempt/late duplicate cannot overwrite terminal or recovered state",
+    "unknown": "PASS: unconfirmed durable claim recovered explicitly to Unknown; ambiguous effects remain conservative",
+    "no_retry": true,
+    "duplicate_effects": 0,
+    "dispatch_before_claim_acknowledged": false,
+    "transaction_held_across_dispatch": false,
+    "shared_helper_changed_only": true,
+    "gateway_code_changed": false,
+    "existing_execution_cases": 34,
+    "existing_execution_hardening_cases": 38,
+    "existing_recovery_cases": 12,
+    "existing_adapter_cases": 14,
+    "crash_windows": {
+      "A": {
+        "before": "Authorized",
+        "after": "Authorized",
+        "calls": 0,
+        "notes": 0,
+        "receipts": 0,
+        "attempts": 0
+      },
+      "B": {
+        "before": "Executing",
+        "after": "Unknown",
+        "calls": 0,
+        "notes": 0,
+        "receipts": 0,
+        "attempts": 1
+      },
+      "C": {
+        "before": "Executing",
+        "after": "Unknown",
+        "calls": 1,
+        "notes": 0,
+        "receipts": 0,
+        "attempts": 1
+      },
+      "D": {
+        "before": "Executing",
+        "after": "Unknown",
+        "calls": 1,
+        "notes": 1,
+        "receipts": 1,
+        "attempts": 1
+      },
+      "E": {
+        "before": "Executing",
+        "after": "Unknown",
+        "calls": 1,
+        "notes": 0,
+        "receipts": 0,
+        "attempts": 1
+      },
+      "F": {
+        "before": "Succeeded",
+        "after": "Succeeded",
+        "calls": 1,
+        "notes": 1,
+        "receipts": 1,
+        "attempts": 1
+      },
+      "G": {
+        "before": "Unknown",
+        "after": "Unknown",
+        "calls": 1,
+        "notes": 1,
+        "receipts": 1,
+        "attempts": 1
+      }
+    },
+    "commit_uncertainty": [
+      {
+        "operation": "authorization",
+        "fault": "before_commit",
+        "caller": "DATABASE_UNAVAILABLE",
+        "state": "Pending",
+        "version": 1,
+        "grants": 0,
+        "attempts": 0,
+        "rollback_attempts": 1,
+        "dispatch": 0
+      },
+      {
+        "operation": "authorization",
+        "fault": "after_commit_lost_ack",
+        "caller": "DATABASE_UNAVAILABLE",
+        "state": "Authorized",
+        "version": 2,
+        "grants": 1,
+        "attempts": 0,
+        "rollback_attempts": 0,
+        "dispatch": 0
+      },
+      {
+        "operation": "authorization",
+        "fault": "close_ack",
+        "caller": "DATABASE_UNAVAILABLE",
+        "state": "Authorized",
+        "version": 2,
+        "grants": 1,
+        "attempts": 0,
+        "rollback_attempts": 0,
+        "dispatch": 0
+      },
+      {
+        "operation": "claim",
+        "fault": "before_commit",
+        "caller": "DATABASE_UNAVAILABLE",
+        "state": "Authorized",
+        "version": 2,
+        "grants": 1,
+        "attempts": 0,
+        "rollback_attempts": 1,
+        "dispatch": 0
+      },
+      {
+        "operation": "claim",
+        "fault": "after_commit_lost_ack",
+        "caller": "DATABASE_UNAVAILABLE",
+        "state": "Executing",
+        "version": 3,
+        "grants": 1,
+        "attempts": 1,
+        "rollback_attempts": 0,
+        "dispatch": 0,
+        "after_recovery": "Unknown"
+      },
+      {
+        "operation": "claim",
+        "fault": "close_ack",
+        "caller": "DATABASE_UNAVAILABLE",
+        "state": "Executing",
+        "version": 3,
+        "grants": 1,
+        "attempts": 1,
+        "rollback_attempts": 0,
+        "dispatch": 0,
+        "after_recovery": "Unknown"
+      }
+    ]
+  },
+  "tests": {
+    "prior_baseline": {
+      "unique_passed": 1178,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "live_deselected": 5,
+      "browser_subset": 126,
+      "scope": "HISTORICAL_REPORTED_NOT_REUSED_AS_CURRENT_EXECUTION"
+    },
+    "newly_added": 68,
+    "total_collected": 1251,
+    "selected": 1246,
+    "unique_passed": 1246,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "live_deselected": 5,
+    "browser_subset": 126,
+    "duration": 1013.55,
+    "junit_duration": 1013.436,
+    "parent_elapsed": 1021.5274051,
+    "exit_code": 0,
+    "command": "uv run python -m pytest -q --junitxml \".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/full/junit.xml\" --basetemp \"D:/Ollama/Temp/aig-action-precedence-20261009T092857Z-full\"",
+    "facts_environment": {
+      "P5_TEST_PROCESS_REPORT": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/full/facts.jsonl"
+    },
+    "selection": "Unchanged pyproject addopts -ra -m 'not live'; no new exclusion or skip",
+    "collection_check": {
+      "command": "uv run python -m pytest --collect-only -q",
+      "result": "1246/1251 tests collected (5 deselected) in 1.33s",
+      "exit_code": 0,
+      "path": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/collection.log"
+    },
+    "junit": {
+      "path": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/full/junit.xml",
+      "sha256": "85b2d2cb79b6e66dd3f07d7247d7497d4f869d31a94a1fb46f97bd1803929217",
+      "total": 1246,
+      "unique": 1246,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1013.436,
+      "groups": {
+        "tests.browser.test_action_ui_e2e": 49,
+        "tests.browser.test_browser_e2e": 6,
+        "tests.browser.test_frontend": 19,
+        "tests.browser.test_run_frontend": 39,
+        "tests.browser.test_run_ui_e2e": 13,
+        "tests.test_action_authorization": 21,
+        "tests.test_action_binding_compatibility": 2,
+        "tests.test_action_capability": 10,
+        "tests.test_action_cleanup_precedence": 68,
+        "tests.test_action_execution": 34,
+        "tests.test_action_http": 59,
+        "tests.test_action_persistence": 98,
+        "tests.test_action_recovery": 12,
+        "tests.test_approval_plan_binding": 66,
+        "tests.test_configuration": 19,
+        "tests.test_execution_hardening": 38,
+        "tests.test_hardening": 20,
+        "tests.test_local_runtime_configuration": 19,
+        "tests.test_migration_cleanup": 34,
+        "tests.test_model_provider": 33,
+        "tests.test_ollama_json_mode": 20,
+        "tests.test_plan_validation": 68,
+        "tests.test_plans_api": 25,
+        "tests.test_preview_page": 1,
+        "tests.test_run_contracts": 169,
+        "tests.test_run_hardening": 52,
+        "tests.test_run_recovery": 17,
+        "tests.test_run_service": 26,
+        "tests.test_runs_api": 61,
+        "tests.test_service_demo_adapter": 14,
+        "tests.test_sqlite_cleanup_consolidation": 25,
+        "tests.test_sqlite_run_repository": 79,
+        "tests.test_v2_run_cleanup": 30
+      }
+    },
+    "prior_module_counts_unchanged": true,
+    "focused": {
+      "unique_passed": 68,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration": 46.17,
+      "junit_duration": 46.129,
+      "exit_code": 0,
+      "junit": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/focused-pass/junit.xml",
+      "sha256": "1eca88808086b456eb5e18d34183c94739d3b21566b9ebeade47b1ecb559c35d"
+    },
+    "adjacent": {
+      "unique_passed": 474,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration": 169.86,
+      "junit_duration": 169.835,
+      "exit_code": 0,
+      "junit": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/adjacent/junit.xml",
+      "sha256": "01aa04b93d1dda47193007e6dbd9fc4605f2ebb31ca6bebb444563723095c254",
+      "groups": {
+        "tests.test_action_authorization": 21,
+        "tests.test_action_binding_compatibility": 2,
+        "tests.test_action_execution": 34,
+        "tests.test_action_http": 59,
+        "tests.test_action_persistence": 98,
+        "tests.test_action_recovery": 12,
+        "tests.test_approval_plan_binding": 66,
+        "tests.test_migration_cleanup": 34,
+        "tests.test_service_demo_adapter": 14,
+        "tests.test_sqlite_cleanup_consolidation": 25,
+        "tests.test_sqlite_run_repository": 79,
+        "tests.test_v2_run_cleanup": 30
+      }
+    },
+    "development_harness_run": {
+      "passed": 35,
+      "failed": 33,
+      "errors": 0,
+      "skipped": 0,
+      "duration": 43.24,
+      "exit_code": 1,
+      "reason": "27 incomplete downstream snapshot expectations plus 6 cross-thread diagnostic fixture accesses; corrected only new module; production patch unchanged",
+      "junit": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/focused/junit.xml",
+      "log": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/focused/pytest.log",
+      "classification": "RETAINED_TEST_HARNESS_DEVELOPMENT_NOT_FINAL_REGRESSION"
+    },
+    "overlapping_counts_not_added": [
+      68,
+      474,
+      126
+    ],
+    "browser": {
+      "result": "PASS",
+      "path": ".runtime/browser-evidence/20261009T093832282927Z/results.json",
+      "count": 126,
+      "unique_passed": 126,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "real_http_sqlite_action_cases": 49,
+      "real_http_sqlite_run_cases": 13,
+      "real_http_planning_cases": 6,
+      "controlled_response_ui_cases": 58,
+      "actual_browser_for_all": true,
+      "live_model_inference": "NOT_RUN",
+      "instances": [
+        {
+          "channel": "msedge",
+          "version": "154.0.4258.62",
+          "headless": true,
+          "closed": true,
+          "driver_context_exited": true
+        },
+        {
+          "channel": "msedge",
+          "version": "154.0.4258.62",
+          "headless": true,
+          "closed": true,
+          "driver_context_exited": true
+        },
+        {
+          "channel": "msedge",
+          "version": "154.0.4258.62",
+          "headless": true,
+          "closed": true,
+          "driver_context_exited": true
+        },
+        {
+          "channel": "msedge",
+          "version": "154.0.4258.62",
+          "headless": true,
+          "closed": true,
+          "driver_context_exited": true
+        },
+        {
+          "channel": "msedge",
+          "version": "154.0.4258.62",
+          "headless": true,
+          "closed": true,
+          "driver_context_exited": true
+        }
+      ],
+      "servers": 127,
+      "action_servers": 50,
+      "run_servers": 13,
+      "business_directories_removed": true,
+      "managed_credential_count": 50,
+      "managed_artifact_scan": "PASS",
+      "behaviors": [
+        "admission",
+        "separate authorization",
+        "explicit Execute",
+        "stale CAS refresh",
+        "masked memory-only capability",
+        "reload/GET purity",
+        "Unknown disables Execute",
+        "no automatic dispatch",
+        "no duplicate effects"
+      ],
+      "screenshots_visually_inspected": [
+        ".runtime/browser-evidence/20261009T093832282927Z/action-happy-path.png",
+        ".runtime/browser-evidence/20261009T093832282927Z/action-unknown.png"
+      ]
+    }
+  },
+  "quality": {
+    "ruff": {
+      "result": "PASS",
+      "command": "uv run ruff check .",
+      "exit_code": 0
+    },
+    "format": {
+      "result": "PASS",
+      "command": "uv run ruff format --check .",
+      "formatted_files": 149,
+      "exit_code": 0
+    },
+    "diff": {
+      "result": "PASS",
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    "wheel": {
+      "result": "PASS",
+      "path": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/package/dist/agentic_intent_gate-0.1.0-py3-none-any.whl",
+      "sha256": "de71d254d19f3f2e0aab942c9d2844f34b58a6b464273f11fd601a6654e2e3f6",
+      "member_count": 53,
+      "runtime_count": 45,
+      "schema_count": 4,
+      "runtime_matches_install": true,
+      "schemas_match_install": true,
+      "forbidden_members": [],
+      "secret_hits": [],
+      "machine_paths_in_runtime": [],
+      "focused_tests_in_sdist": false
+    },
+    "sdist": {
+      "result": "PASS",
+      "path": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/package/dist/agentic_intent_gate-0.1.0.tar.gz",
+      "sha256": "8363131a7c31f712a5687d5cd79db63f705661db8a943d5d7738072300f0127b",
+      "member_count": 187,
+      "runtime_count": 45,
+      "schema_count": 4,
+      "runtime_matches_install": true,
+      "schemas_match_install": true,
+      "forbidden_members": [],
+      "secret_hits": [],
+      "machine_paths_in_runtime": [],
+      "focused_tests_in_sdist": true
+    },
+    "build": {
+      "command": "uv build --offline --wheel --sdist -o \".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/package/dist\"",
+      "exit_code": 0,
+      "code_and_new_tests_included": true,
+      "created_before_new_closeout_reports": true,
+      "reports_not_claimed_in_archive": true
+    },
+    "isolated_install": {
+      "result": "PASS",
+      "noneditable": true,
+      "offline": true,
+      "outside_source": true,
+      "venv": "D:/Ollama/Temp/aig-action-precedence-20261009T092857Z-package/venv",
+      "python": "3.13.9",
+      "package_check": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/package/package-check.json",
+      "package_probe_browser": "NOT_RUN_HTTP_ASGI_ONLY",
+      "runtime_and_static_resources_match": true
+    },
+    "dependencies": {
+      "result": "PASS",
+      "lock_command": "uv lock --check",
+      "locked_packages": 34,
+      "pip_check_compatible_packages": 23,
+      "new_dependencies": 0,
+      "lock_or_pyproject_modified": false,
+      "runtime_requirements": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/package/runtime-requirements.txt"
+    },
+    "resource_integrity": {
+      "result": "PASS",
+      "runtime": 45,
+      "schema": 4,
+      "wheel_sdist_installed_source_byte_identical": true,
+      "schemas_modified": false,
+      "static_ui_modified": false
+    },
+    "secret_scan": {
+      "result": "PASS",
+      "source_files_before_closeout": 186,
+      "task_log_files_before_closeout": 17,
+      "patterns": [
+        "private_key",
+        "aws_access",
+        "github_token",
+        "provider_key",
+        "raw_bearer",
+        "literal_credential"
+      ],
+      "high_signal_hits": 0,
+      "browser_exact_managed_token_scan": "PASS",
+      "managed_browser_credentials": 50,
+      "closeout_files": "PASS",
+      "final_source_files_scanned": 188,
+      "final_task_text_files_scanned": 21,
+      "known_invalid_parameter_occurrences": 4,
+      "known_invalid_parameter_rule": "Only exact test_missing_invalid_credentials identifiers for 64 zero characters or 65 a characters; verified existing negative inputs, not configured or generated authority",
+      "scan_review": "Initial broad Bearer scan flagged those existing negative test identifiers in collection.log and full/junit.xml. Exact source/context verification and narrow allowlist resolved the false positives; all original artifacts remained unchanged.",
+      "scope": "Tracked source plus explicit new/untracked deliverables, task text logs and fresh archives. Not universal secret-free assurance."
+    },
+    "artifact_scan": {
+      "result": "PASS",
+      "forbidden_members": 0,
+      "secret_hits": 0,
+      "machine_specific_runtime_paths": 0,
+      "sqlite_db_wal_shm_in_archives": false,
+      "real_env_or_model_or_cache_in_archives": false
+    },
+    "process_cleanup": {
+      "result": "PASS",
+      "recorded_workers": 71,
+      "all_stopped_readers_joined_no_token_exposure": true,
+      "alive_worker_ids": [],
+      "matching_task_processes": [],
+      "browser_instances_closed": 5,
+      "drivers_exited": 5,
+      "auxiliary_http_records": 37,
+      "all_auxiliary_http_stopped": true,
+      "facts": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/cleanup.json"
+    },
+    "listener_cleanup": {
+      "result": "PASS",
+      "unique_recorded_ports_probed": 226,
+      "open_loopback_ports": 0,
+      "matching_tcp_listeners": 0,
+      "browser_http_servers_stopped": 127
+    },
+    "retained_artifacts": {
+      "ignored_repository_runtime": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z",
+      "external_pytest_base_prefix": "D:/Ollama/Temp/aig-action-precedence-20261009T092857Z-",
+      "external_install_retained": true,
+      "unrelated_processes_or_user_data_removed": false
+    }
+  },
+  "historical_audit": {
+    "third_failed_freeze_preserved": true,
+    "historical_gate": "DAY3_FINAL_FREEZE_RERUN_2=FAIL",
+    "protected_files": 12,
+    "older_tracked_files_matching_head_blobs": 10,
+    "sha256_before": {
+      "docs/day3-final-freeze.md": "528dd6a65b45d65a4b91792f166a6a47bde107ef5ee0b7c327507da7507b4d98",
+      "docs/evidence/day3-final-freeze.json": "7f1662ca9976668ce2d3ce9f6d362e163153db3a4cd553fdf223bf2536fbbfe5",
+      "docs/day3-p1-v2-run-cleanup-fix.md": "22b50bf8f1f8605f4d922b0b1e64374f86d477660dff74112b73f228d21f7d59",
+      "docs/evidence/day3-p1-v2-run-cleanup-fix.json": "cad600abf789e01e4de2a3fe73fa0e67973e1f89dce3dae3a6418a5f1ffd33cf",
+      "docs/day3-final-freeze-rerun.md": "331b4f6dcec159bb7c67a831efb26137a3d5caa0970aff2550b11435a40a5257",
+      "docs/evidence/day3-final-freeze-rerun.json": "f36787530e66a8e424e7f0e3a93bbc28e50f93a9bc68f3ac0c76470bbf64fa30",
+      "docs/day3-p1-migration-cleanup-fix.md": "b0c3f51642a09a5f1a01e103295645f713e80142deebff4852d5aa091fc6072a",
+      "docs/evidence/day3-p1-migration-cleanup-fix.json": "b05c3a8d57741cfdced98f7e6e261ba8be1c8e699cee3dc2ca8fdb749a4b4f19",
+      "docs/day3-sqlite-cleanup-consolidation.md": "8aab906d5fce379f1608f94859c9cff6a399aa7168404ce91d15b3eda88324f2",
+      "docs/evidence/day3-sqlite-cleanup-consolidation.json": "50c6abda95c24ea9507e6db35e338447a93e7935e5e409bec98b263c56074870",
+      "docs/day3-final-freeze-rerun-2.md": "603b86dabb9d229a57b93e07d9e9503131527bf498a99205f457f1d55e329287",
+      "docs/evidence/day3-final-freeze-rerun-2.json": "39406d5301976cf2950a543d23ad0e8ce0493ec22b161627cc1d954ff546bb26"
+    },
+    "sha256_after": {
+      "docs/day3-final-freeze.md": "528dd6a65b45d65a4b91792f166a6a47bde107ef5ee0b7c327507da7507b4d98",
+      "docs/evidence/day3-final-freeze.json": "7f1662ca9976668ce2d3ce9f6d362e163153db3a4cd553fdf223bf2536fbbfe5",
+      "docs/day3-p1-v2-run-cleanup-fix.md": "22b50bf8f1f8605f4d922b0b1e64374f86d477660dff74112b73f228d21f7d59",
+      "docs/evidence/day3-p1-v2-run-cleanup-fix.json": "cad600abf789e01e4de2a3fe73fa0e67973e1f89dce3dae3a6418a5f1ffd33cf",
+      "docs/day3-final-freeze-rerun.md": "331b4f6dcec159bb7c67a831efb26137a3d5caa0970aff2550b11435a40a5257",
+      "docs/evidence/day3-final-freeze-rerun.json": "f36787530e66a8e424e7f0e3a93bbc28e50f93a9bc68f3ac0c76470bbf64fa30",
+      "docs/day3-p1-migration-cleanup-fix.md": "b0c3f51642a09a5f1a01e103295645f713e80142deebff4852d5aa091fc6072a",
+      "docs/evidence/day3-p1-migration-cleanup-fix.json": "b05c3a8d57741cfdced98f7e6e261ba8be1c8e699cee3dc2ca8fdb749a4b4f19",
+      "docs/day3-sqlite-cleanup-consolidation.md": "8aab906d5fce379f1608f94859c9cff6a399aa7168404ce91d15b3eda88324f2",
+      "docs/evidence/day3-sqlite-cleanup-consolidation.json": "50c6abda95c24ea9507e6db35e338447a93e7935e5e409bec98b263c56074870",
+      "docs/day3-final-freeze-rerun-2.md": "603b86dabb9d229a57b93e07d9e9503131527bf498a99205f457f1d55e329287",
+      "docs/evidence/day3-final-freeze-rerun-2.json": "39406d5301976cf2950a543d23ad0e8ce0493ec22b161627cc1d954ff546bb26"
+    },
+    "all_equal": true,
+    "two_original_untracked_reports_still_untracked": true
+  },
+  "p0": {
+    "open": 0,
+    "findings": []
+  },
+  "p1": {
+    "open": 0,
+    "resolved": [
+      {
+        "id": "D3-FREEZE-RERUN2-P1-ACTION-CLEANUP-PRECEDENCE",
+        "status": "FIXED_CORRECTIVE_REGRESSION_VERIFIED_NOT_FINAL_FREEZE"
+      }
+    ]
+  },
+  "p2": [
+    "Physically refusing SQLite driver can retain a lock until explicit native release; no universal physical-release guarantee",
+    "Local capabilities are not enterprise RBAC or production authentication",
+    "Single-owner local SQLite is not production HA",
+    "Synchronous SQLite time budgets are soft, not preemptive",
+    "Unknown has no automatic reconciliation or retry",
+    "No universal downstream exactly-once guarantee"
+  ],
+  "scope": {
+    "corrective_deliverables": [
+      "src/agentic_intent_gate/adapters/sqlite_actions.py",
+      "tests/test_action_cleanup_precedence.py",
+      "docs/day3-p1-action-cleanup-precedence-fix.md",
+      "docs/evidence/day3-p1-action-cleanup-precedence-fix.json"
+    ],
+    "historical_untracked_preserved": [
+      "docs/day3-final-freeze-rerun-2.md",
+      "docs/evidence/day3-final-freeze-rerun-2.json"
+    ],
+    "no_additional_tracked_changes": true,
+    "staged_files": 0,
+    "commit": false,
+    "push": false,
+    "tag": false,
+    "release": false,
+    "final_freeze_rerun": false,
+    "day4": false,
+    "cloud_mcp_live_model_calls": false
+  },
+  "evidence_root": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z",
+  "aggregate_audit": ".runtime/day3-p1-action-cleanup-precedence-fix/20261009T092857Z/audit.json",
+  "final_gate": {
+    "DAY3_P1_ACTION_CLEANUP_PRECEDENCE_FIX": "PASS",
+    "DAY3_P1_ACTION_PRECEDENCE_REGRESSION": "PASS",
+    "DAY3_FINAL_FREEZE": "NOT_RERUN",
+    "historical_DAY3_FINAL_FREEZE_RERUN_2": "FAIL"
+  }
+}

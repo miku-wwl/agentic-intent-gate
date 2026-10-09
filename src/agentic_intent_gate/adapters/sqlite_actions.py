@@ -105,6 +105,7 @@ class SQLiteActionRepository:
     @contextmanager
     def _transaction(self, *, write=False):
         connection = None
+        primary_error = None
         try:
             connection = open_existing(self.path)
             configure_connection(connection)
@@ -112,11 +113,17 @@ class SQLiteActionRepository:
             validate_schema(connection)
             yield connection
             connection.commit()
-        except (ActionError, BindingError, RunStoreError):
+        except (ActionError, BindingError, RunStoreError) as error:
+            primary_error = error
             raise
         except Exception:
             # No guessed successful receipt after uncertain commit; caller can explicitly look up.
-            raise ActionError(ActionCode.DATABASE_UNAVAILABLE) from None
+            primary_error = ActionError(ActionCode.DATABASE_UNAVAILABLE)
+            raise primary_error from None
+        except BaseException as error:
+            # Re-raise cancellation/control flow; ordinary cleanup faults must not replace it.
+            primary_error = error
+            raise
         finally:
             if connection is not None:
                 try:
@@ -126,9 +133,10 @@ class SQLiteActionRepository:
                     finally:
                         connection.close()
                 except Exception:
-                    # A disconnected/failed cleanup must not mask the safe store error
-                    # or imply that an unconfirmed outcome became durable.
-                    raise ActionError(ActionCode.DATABASE_UNAVAILABLE) from None
+                    # Preserve established safe errors; cleanup-only uncertainty is not success.
+                    if primary_error is None:
+                        raise ActionError(ActionCode.DATABASE_UNAVAILABLE) from None
+                    primary_error.add_note("Action transaction cleanup failed.")
 
     def validate_all(self):
         with self._transaction() as connection:

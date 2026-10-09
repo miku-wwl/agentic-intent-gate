@@ -1,0 +1,212 @@
+{
+  "task": "DAY3_P1_V2_RUN_TRANSACTION_CLEANUP_FIX",
+  "recorded_at_utc": "2026-10-08T22:53:10Z",
+  "baseline": {
+    "branch": "main",
+    "head": "cfa371cd27ef833bac93edbf8d743f73851f7222",
+    "origin_main": "cfa371cd27ef833bac93edbf8d743f73851f7222",
+    "direct_github_main_equal": true,
+    "day2_tag": "day2-final-freeze",
+    "day2_tag_target": "c7d3e1ee051af40c69ec33d888ecf16475a2d789",
+    "index_empty": true,
+    "preexisting_untracked": ["docs/day3-final-freeze.md", "docs/evidence/day3-final-freeze.json"]
+  },
+  "files_changed": [
+    "src/agentic_intent_gate/adapters/sqlite_v2_runs.py",
+    "tests/test_v2_run_cleanup.py",
+    "docs/day3-p1-v2-run-cleanup-fix.md",
+    "docs/evidence/day3-p1-v2-run-cleanup-fix.json"
+  ],
+  "production": {
+    "function": "SQLiteV2RunRepository._transaction",
+    "sha256": "a0869816b1a275c4a44c70299ab0c1efdb55d14213e38f21cbdaa779eb64f3c0",
+    "root_cause": "Unprotected finally inspection/rollback/close replaced normalized primary errors; rollback failure skipped close, retained a write lock, and mapped to HTTP 500.",
+    "prepatch_minimal_reproduction": {
+      "escaped_type": "OperationalError", "close_attempted": false,
+      "still_in_transaction": true, "independent_writer_blocked": true
+    },
+    "prepatch_new_tests": {"failed": 2, "errors": 0, "intentional_defect_evidence": true},
+    "primary_exception_identity_preserved": ["RunStoreError", "BindingError", "CancelledError"],
+    "close_independent_of_inspection_and_rollback": true,
+    "safe_storage_category": "DATABASE_UNAVAILABLE",
+    "safe_http_status": 503,
+    "cleanup_failure_without_primary_never_success": true,
+    "uncertain_commit_never_claimed_rolled_back": true,
+    "automatic_approval_retry": false,
+    "action_repository_gateway_changed": false
+  },
+  "fault_injection_matrix": [
+    {"case": 1, "fault": "none", "result": "PASS", "rollback_attempts": 0, "close_attempts": 1, "state": "Approved", "version": 5},
+    {"case": 2, "fault": "SQLite final-audit write error", "result": "PASS", "safe_code": "DATABASE_UNAVAILABLE", "rollback_attempts": 1, "close_attempts": 1, "state": "AwaitingApproval", "version": 4},
+    {"case": 3, "fault": "primary storage error", "result": "PASS", "primary_identity_preserved": true, "rollback_attempts": 1, "close_attempts": 1, "state": "AwaitingApproval", "version": 4},
+    {"case": 4, "fault": "primary storage plus rollback error", "result": "PASS", "primary_identity_preserved": true, "rollback_attempts": 1, "close_attempts": 1, "second_writer": "PASS", "state": "AwaitingApproval", "version": 4},
+    {"case": 5, "fault": "in_transaction inspection error after commit", "result": "PASS", "safe_code": "DATABASE_UNAVAILABLE", "rollback_attempts": 0, "close_attempts": 1, "state": "Approved", "version": 5},
+    {"case": 6, "fault": "primary storage plus rollback and close acknowledgement errors", "result": "PASS", "primary_identity_preserved": true, "rollback_attempts": 1, "close_attempts": 1, "state": "AwaitingApproval", "version": 4},
+    {"case": 7, "fault": "close acknowledgement error after committed work", "result": "PASS", "safe_code": "DATABASE_UNAVAILABLE", "rollback_attempts": 0, "close_attempts": 1, "state": "Approved", "version": 5},
+    {"case": 8, "fault": "COMMIT before actual commit", "result": "PASS", "safe_code": "DATABASE_UNAVAILABLE", "rollback_attempts": 1, "close_attempts": 1, "state": "AwaitingApproval", "version": 4},
+    {"case": 9, "fault": "actual COMMIT then physical close then lost acknowledgement", "result": "PASS", "safe_code": "DATABASE_UNAVAILABLE", "rollback_attempts": 0, "close_attempts": 1, "state": "Approved", "version": 5, "automatic_retry": false},
+    {"case": 10, "fault": "acquisition fails before handle returned", "result": "PASS", "safe_code": "DATABASE_UNAVAILABLE", "acquired_handles": 0, "rollback_attempts": 0, "close_attempts": 0, "state": "AwaitingApproval", "version": 4}
+  ],
+  "fixture_limit": "Close-error injection releases the real handle before raising acknowledgement failure; it does not prove recovery when OS/driver physical close itself is refused.",
+  "exception_precedence": {
+    "unique_cases": 12,
+    "primaries": ["RunStoreError(STALE_RUN_VERSION)", "BindingError(MISMATCH)", "CancelledError"],
+    "cleanup_paths": ["normal", "inspection", "rollback", "close"],
+    "same_exception_object": true,
+    "result": "PASS"
+  },
+  "real_sqlite_lock": {
+    "result": "PASS", "isolated_disk_v2": true, "strong_reference_retained": true,
+    "garbage_collection_relied_on": false,
+    "rollback_fault_transaction_before_close": true,
+    "rollback_fault_rollback_attempts": 1, "rollback_fault_close_attempts": 1,
+    "closed_handle_select_raises": "ProgrammingError",
+    "second_writer": "independent sqlite3 BEGIN IMMEDIATE / UPDATE runs SET intent=intent / COMMIT",
+    "second_writer_busy_timeout_seconds": 0.05,
+    "full_suite_observations": 29, "residual_lock": false,
+    "largest_measured_writer_seconds": 0.0041945999837480485,
+    "universal_bounded_latency_claim": false
+  },
+  "real_http": {
+    "transport": "actual loopback Uvicorn/FastAPI/RunService/SQLite v2 with HTTPX network client",
+    "model_calls": 0,
+    "result": "PASS",
+    "scenarios": [
+      {"scenario": "normal", "expected": 200, "actual": 200, "safe_code": null, "state": "Approved", "version": 5, "healthy_next_command": 200},
+      {"scenario": "rollback", "expected": 503, "actual": 503, "safe_code": "DATABASE_UNAVAILABLE", "state": "AwaitingApproval", "version": 4, "healthy_next_command": 200},
+      {"scenario": "inspection", "expected": 503, "actual": 503, "safe_code": "DATABASE_UNAVAILABLE", "state": "Approved", "version": 5, "healthy_next_command": 200},
+      {"scenario": "close", "expected": 503, "actual": 503, "safe_code": "DATABASE_UNAVAILABLE", "state": "Approved", "version": 5, "healthy_next_command": 200},
+      {"scenario": "commit-before", "expected": 503, "actual": 503, "safe_code": "DATABASE_UNAVAILABLE", "state": "AwaitingApproval", "version": 4, "healthy_next_command": 200},
+      {"scenario": "commit-after", "expected": 503, "actual": 503, "safe_code": "DATABASE_UNAVAILABLE", "state": "Approved", "version": 5, "healthy_next_command": 200},
+      {"scenario": "commit-after-close", "expected": 503, "actual": 503, "safe_code": "DATABASE_UNAVAILABLE", "state": "Approved", "version": 5, "healthy_next_command": 200},
+      {"scenario": "domain-conflict-rollback", "expected": 409, "actual": 409, "safe_code": "STALE_RUN_VERSION", "state": "AwaitingApproval", "version": 4}
+    ],
+    "all_error_envelopes_exact_safe_messages": true,
+    "raw_sql_path_trace_exposure": false,
+    "all_faulted_connections_allow_independent_writer": true,
+    "committed_run_old_version_replay": 409,
+    "automatic_retry": false
+  },
+  "approval_atomicity": {
+    "result": "PASS", "snapshot_tables": 9,
+    "precommit": {"state": "AwaitingApproval", "version": 4, "decisions": 0, "bindings": 0, "audits": 4, "all_rows_unchanged": true},
+    "committed": {"state": "Approved", "version": 5, "decisions": 1, "bound_v1": 1, "audits": 5, "reopened_exact_history_valid": true},
+    "orphan_rows": 0, "integrity_check": "ok", "foreign_key_violations": 0,
+    "action_grant_attempt_receipt_event_rows": 0,
+    "repeated_expected_version_4": "STALE_RUN_VERSION",
+    "repeated_expected_version_5": "INVALID_RUN_TRANSITION",
+    "replays_add_no_decision": true
+  },
+  "security_regression": {
+    "exact_bound_approval": "PASS", "legacy_unbound_denial": "PASS",
+    "plan_binding_tamper_denial": "PASS", "capability_verification": "PASS",
+    "action_authorization": "PASS", "protected_execution": "PASS",
+    "digests_and_trust_contracts_changed": false
+  },
+  "action_compatibility": {
+    "result": "PASS", "production_changes": false,
+    "existing_cleanup_cases": 3, "current_execution_hardening_cases": 38,
+    "selected_and_full_both_pass": true,
+    "crash_windows_A_G_and_active_owner_H": "PASS",
+    "unknown_preservation_recovery_no_replay": "PASS"
+  },
+  "tests": {
+    "historical_baseline": 1089, "new_unique": 30, "final_unique": 1119,
+    "failed": 0, "errors": 0, "internal_errors": 0, "skipped": 0, "live_deselected": 5,
+    "junit_named_unique_testcases": 1119, "browser_subset": 126,
+    "subsets_added_to_final_count": false,
+    "focused": {"passed": 30, "junit_seconds": 26.905, "console_seconds": 26.91},
+    "selected_existing": {"passed": 331, "junit_seconds": 665.272, "console_seconds": 665.57},
+    "full": {"passed": 1119, "exit_code": 0, "junit_seconds": 924.120, "console_seconds": 924.19, "parent_wall_seconds": 931.747},
+    "full_command": ".venv/Scripts/python.exe -u -m pytest -q --tb=short --color=no --capture=fd --basetemp=D:/Ollama/Temp/aig-p1-full-20261008T222318Z --junitxml=.runtime/day3-p1-v2-run-cleanup-fix/20261008T222318Z/full.xml *> .runtime/day3-p1-v2-run-cleanup-fix/20261008T222318Z/full.log",
+    "environment": {"PYTHONIOENCODING": "utf-8", "P5_TEST_PROCESS_REPORT": ".runtime/day3-p1-v2-run-cleanup-fix/20261008T222318Z/full-processes.jsonl"},
+    "python": "3.13.9", "pytest": "9.1.1",
+    "test_source_sha256": "211532ef7ee98968338dbc194ac82f14c804cbd6cab234805736bc1ac6ed8593"
+  },
+  "previous_pytest_internal_error": {
+    "historical_trace": "pytest terminalwriter.flush: OSError Errno 22 during aborted incomplete freeze run",
+    "separate_from_production_cleanup_P1": true,
+    "current_complete_run_reproduced": false,
+    "current_subprocess_cleanup_included": true,
+    "mitigation": "Supported fd capture, UTF-8/no-color, file-backed PowerShell stdout/stderr",
+    "assessment": "Evidence supports environmental/output-channel explanation; exact old OS handle cause not independently isolated; subprocess cleanup causation not established.",
+    "test_infrastructure_refactor": false
+  },
+  "browser": {
+    "result": "PASS", "passed": 126, "failed": 0, "live": false,
+    "lane_boundary": "Controlled-response frontend cases and actual HTTP/SQLite backend E2E; not all 126 are real-backend cases",
+    "browser": "msedge", "version": "154.0.4258.53",
+    "closed_browser_driver_contexts": 5, "stopped_http_servers": 127,
+    "managed_memory_only_credentials": 50, "artifact_credential_scan": "PASS",
+    "run_business_directories_removed": 13, "action_business_directories_removed": 50,
+    "results": ".runtime/browser-evidence/20261008T223644040269Z/results.json",
+    "sha256": "39cdd0cd2e6bd29879afe0006004380e7cd7074faf956eb11fdae5e44106ae58"
+  },
+  "quality": {
+    "ruff_check": "PASS", "ruff_format": "PASS", "git_diff_check": "PASS",
+    "offline_lock_check": "PASS", "source_dependency_check": "PASS",
+    "offline_wheel_build": "PASS", "offline_sdist_build": "PASS",
+    "isolated_hashed_locked_install": "PASS", "installed_dependency_check": "PASS",
+    "package_check": "PASS", "runtime_resources_byte_identical": 45,
+    "schema_resources_byte_identical": 4,
+    "package_probe_actual_browser": "NOT_RUN_HTTP_ONLY_USE_FULL_SUITE_BROWSER_EVIDENCE",
+    "package_probe_protected_execution_effects": 1,
+    "package_probe_protected_execution_receipts": 1,
+    "package_probe_adapter_calls_with_replay_reopen": 1,
+    "final_archive_refresh_after_new_docs": true,
+    "final_candidate_files_scanned": 175, "wheel_files_scanned": 53, "sdist_files_scanned": 176,
+    "archive_runtime_schema_resources_each": 49,
+    "high_signal_secret_matches": 0, "prohibited_artifact_paths": 0,
+    "public_env_example_inspected_allowed": true,
+    "current_junit_log_child_artifacts_scanned": 13,
+    "nonuniform_64hex_authority_values": 0, "uniform_invalid_fixture_values": 1,
+    "secret_scan_scope_not_universal": true,
+    "final_archive_digests_location": ".runtime/day3-p1-v2-run-cleanup-fix/20261008T222318Z/audit.json"
+  },
+  "cleanup": {
+    "result": "PASS", "selected_and_full_action_child_records": 142,
+    "all_recorded_children_stopped_readers_joined_listeners_closed": true,
+    "focused_new_http_servers_stopped": 8, "full_new_http_servers_stopped": 8,
+    "distinct_recorded_ports_rechecked": 264, "remaining_listeners": 0,
+    "final_task_worker_browser_process_matches": 0,
+    "browser_business_directories_removed": true,
+    "package_probe_business_directory_removed": true,
+    "synthetic_pytest_datasets_isolated_retained": true,
+    "isolated_install_and_ignored_evidence_retained": true,
+    "unrelated_processes_or_ollama_touched": false
+  },
+  "previous_freeze_reports": {
+    "exact_bytes_preserved": true, "historical_fail_preserved": true,
+    "still_untracked_unstaged_original_paths": true,
+    "sha256": {
+      "docs/day3-final-freeze.md": "528dd6a65b45d65a4b91792f166a6a47bde107ef5ee0b7c327507da7507b4d98",
+      "docs/evidence/day3-final-freeze.json": "7f1662ca9976668ce2d3ce9f6d362e163153db3a4cd553fdf223bf2536fbbfe5"
+    }
+  },
+  "raw_evidence": {
+    "root": ".runtime/day3-p1-v2-run-cleanup-fix/20261008T222318Z",
+    "sha256": {
+      "prepatch.xml": "8490a2a5ad9948014926e4ae7aecf6570caf69a5dcaea428bf17402f4a91433b",
+      "focused.xml": "677758f4ac4c4d4ceb6b98d81a47ad8801d55d9d6ec687eea0fa6df33df81e14",
+      "selected.xml": "a4ba90c36657a27ad7594402ad95385214d70a18719565d2f35a163e2ea75041",
+      "full.xml": "5292e8d844d5995e763d87a7464477a6905f502bfde7abc4ba43fbacc3ffc4b5",
+      "full.log": "81d1a84c8f4ecb4bc99bdeb8b3906d131a1ad08ef190735891279c93209adf2f",
+      "focused-processes.jsonl": "1d23ee265466f5430ab5f2f4d000d7d6041326b156ac57cb8aa0c8416725797b",
+      "selected-processes.jsonl": "7556f556b12af6ed74200ee1dd811d5e3e64f0c16dae43a415900765d7fe4235",
+      "full-processes.jsonl": "33952822faeb2dd8eed42c37ef7d35ede74f3d70a65074b36a72dab6e228616f"
+    }
+  },
+  "findings": {"new_P0": 0, "original_P1_fixed": 1, "unresolved_P1": 0},
+  "P2_deferred": ["cooperative synchronous SQLite/effect soft timeouts", "production identity/RBAC/HA", "physical power-loss proof", "distributed durability", "universal exactly-once effects", "multi-step execution", "external competition/cloud/MCP adapters", "no universal recovery if OS/driver refuses physical close"],
+  "scope": {
+    "schema_migration_states_digests_compiler_registry_effects_authorization_ui_dependencies_changed": false,
+    "new_runtime_resource": false, "live_ollama_cloud": false, "automatic_retry": false,
+    "day4": false, "stage_commit_push_tag_release": false,
+    "head_tracking_remote_day2_tag_unchanged": true
+  },
+  "gates": {
+    "DAY3_P1_V2_RUN_CLEANUP_FIX": "PASS",
+    "DAY3_P1_REGRESSION": "PASS",
+    "DAY3_FINAL_FREEZE": "NOT_RERUN"
+  }
+}

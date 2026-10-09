@@ -52,6 +52,7 @@ class SQLiteV2RunRepository(SQLiteRunRepository):
     @contextmanager
     def _transaction(self, *, write=False, run_id=None):
         connection = None
+        primary_error = None
         try:
             connection = open_existing(self.path)
             configure_connection(connection)
@@ -59,18 +60,29 @@ class SQLiteV2RunRepository(SQLiteRunRepository):
             validate_schema(connection)
             yield connection
             connection.commit()
-        except BindingError:
+        except (BindingError, RunStoreError) as error:
             # Admission consumes this typed failure; generic Run reads translate below.
-            raise
-        except RunStoreError:
+            primary_error = error
             raise
         except Exception:
-            raise RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE, run_id) from None
+            primary_error = RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE, run_id)
+            raise primary_error from None
+        except BaseException as error:
+            # Cancellation/control flow must also survive a secondary cleanup failure.
+            primary_error = error
+            raise
         finally:
             if connection is not None:
-                if connection.in_transaction:
-                    connection.rollback()
-                connection.close()
+                try:
+                    try:
+                        if connection.in_transaction:
+                            connection.rollback()
+                    finally:
+                        connection.close()
+                except Exception:
+                    # Never replace a primary domain/storage error or acknowledge failed cleanup.
+                    if primary_error is None:
+                        raise RunStoreError(RunErrorCode.DATABASE_UNAVAILABLE, run_id) from None
 
     def _validate_history(self, connection, run):
         decision = linked_decision(connection, run)

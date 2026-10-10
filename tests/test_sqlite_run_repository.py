@@ -29,10 +29,9 @@ def independent_connection(repository):
 
 
 def test_frozen_ddl_exact_structure_and_per_connection_pragmas(run_repository):
-    document = (
-        Path(__file__).resolve().parents[1] / "docs/day2-state-architecture-freeze.md"
-    ).read_text(encoding="utf-8")
-    ddl = document.split("```sql\n")[1].split("```", 1)[0]
+    ddl = (Path(__file__).resolve().parent / "fixtures/sqlite_run_v1.sql").read_text(
+        encoding="utf-8"
+    )
     assert [sqlite_schema.normalize_ddl(part) for part in ddl.split(";") if part.strip()] == [
         sqlite_schema.normalize_ddl(value) for value in sqlite_schema.TABLES.values()
     ]

@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "agentic-intent-gate"
 version = "0.1.0"
-description = "Local, strictly validated planning previews"
+description = "Reliable, approval-gated local AI agent runtime"
 requires-python = ">=3.13,<3.14"
 dependencies = [
   "fastapi>=0.115,<1",

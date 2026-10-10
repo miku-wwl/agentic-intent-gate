@@ -5,8 +5,8 @@ import time
 import httpx
 import pytest
 
-from agentic_intent_gate.adapters.models.local_openai import LocalOpenAIProvider
 from agentic_intent_gate.domain.contracts import ErrorCode, Intent
+from agentic_intent_gate.infrastructure.llm.local_openai import LocalOpenAIProvider
 from agentic_intent_gate.ports.model_provider import ModelProviderError
 
 

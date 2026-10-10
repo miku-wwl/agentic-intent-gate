@@ -11,20 +11,23 @@ import pytest
 from execution_process_helpers import record_fact
 from run_helpers import advance
 
-from agentic_intent_gate.adapters import sqlite_v2_migration as migration
-from agentic_intent_gate.adapters.sqlite_actions import SQLiteActionRepository
-from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
-from agentic_intent_gate.adapters.sqlite_v2_runs import (
-    SQLiteV2RunRepository,
-    binding_for,
-    linked_decision,
-)
-from agentic_intent_gate.adapters.sqlite_v2_schema import ADDITIONS, validate_schema
+import agentic_intent_gate.infrastructure.persistence.sqlite_v2_migration as migration
 from agentic_intent_gate.application.action_compiler import ActionCompiler, ToolBinding
 from agentic_intent_gate.domain.approval import ApprovalChoice, ApprovalDecisionRequest
 from agentic_intent_gate.domain.approval_binding import BindingCode, BindingError
 from agentic_intent_gate.domain.contracts import Risk
 from agentic_intent_gate.domain.run import RUN_MESSAGES, RunErrorCode, RunState, RunStoreError
+from agentic_intent_gate.infrastructure.persistence.sqlite_actions import SQLiteActionRepository
+from agentic_intent_gate.infrastructure.persistence.sqlite_run_repository import SQLiteRunRepository
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_runs import (
+    SQLiteV2RunRepository,
+    binding_for,
+    linked_decision,
+)
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_schema import (
+    ADDITIONS,
+    validate_schema,
+)
 from agentic_intent_gate.ports.action_repository import AdmissionCommand
 
 

@@ -7,12 +7,15 @@ import pytest
 from action_helpers import cmd
 from test_service_demo_adapter import downstream
 
-from agentic_intent_gate.adapters.local_capability import CapabilityVerifier, LocalDemoAuthorization
-from agentic_intent_gate.adapters.local_http import create_app
+from agentic_intent_gate.api.local_http import create_app
 from agentic_intent_gate.application.action_execution import ActionExecutionGateway
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.runs import RunService
 from agentic_intent_gate.domain.run_validation import canonical_json
+from agentic_intent_gate.infrastructure.security.local_capability import (
+    CapabilityVerifier,
+    LocalDemoAuthorization,
+)
 
 
 @pytest.fixture

@@ -8,8 +8,8 @@ import httpx
 import pytest
 from run_helpers import advance, database_rows, plan_for
 
-from agentic_intent_gate.adapters import local_http
-from agentic_intent_gate.adapters.local_http import create_app
+import agentic_intent_gate.api.local_http as local_http
+from agentic_intent_gate.api.local_http import create_app
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.runs import RunService
 from agentic_intent_gate.domain.contracts import ErrorCode, Risk

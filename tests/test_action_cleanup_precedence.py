@@ -18,9 +18,8 @@ from execution_process_helpers import record_fact
 from run_helpers import database_rows
 from test_service_demo_adapter import downstream
 
-from agentic_intent_gate.adapters import sqlite_action_execution, sqlite_actions
-from agentic_intent_gate.adapters.local_http import create_app
-from agentic_intent_gate.adapters.single_owner import single_owner
+import agentic_intent_gate.infrastructure.persistence.sqlite_actions as sqlite_actions
+from agentic_intent_gate.api.local_http import create_app
 from agentic_intent_gate.application.action_execution import ActionExecutionGateway
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.recover_actions import recover_actions
@@ -28,6 +27,8 @@ from agentic_intent_gate.application.runs import RunService
 from agentic_intent_gate.domain.action import ActionCode, ActionError, ActionState, safe_result
 from agentic_intent_gate.domain.approval_binding import BindingCode, BindingError
 from agentic_intent_gate.domain.run import RunErrorCode, RunStoreError
+from agentic_intent_gate.infrastructure.persistence import sqlite_action_execution
+from agentic_intent_gate.infrastructure.security.single_owner import single_owner
 from agentic_intent_gate.ports.action_repository import AdmissionCommand
 
 MODES = ("normal", "rollback", "inspection", "close", "rollback-close")

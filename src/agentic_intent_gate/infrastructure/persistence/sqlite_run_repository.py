@@ -7,13 +7,7 @@ from dataclasses import replace
 from pathlib import Path
 from uuid import uuid4
 
-from agentic_intent_gate.adapters.configuration import resolve_database_path
-from agentic_intent_gate.adapters.sqlite_schema import (
-    configure_connection,
-    initialize_database,
-    open_existing,
-    validate_schema,
-)
+from agentic_intent_gate.config.configuration import resolve_database_path
 from agentic_intent_gate.domain.approval import (
     ApprovalChoice,
     ApprovalDecision,
@@ -35,6 +29,12 @@ from agentic_intent_gate.domain.run_validation import (
     utc_now,
 )
 from agentic_intent_gate.domain.validation import PLAN_BYTES, PlanValidator, fail, strict_object
+from agentic_intent_gate.infrastructure.persistence.sqlite_schema import (
+    configure_connection,
+    initialize_database,
+    open_existing,
+    validate_schema,
+)
 
 EVENT_EDGES = {
     "PLAN_GENERATION_STARTED": {(RunState.IntentReceived, RunState.PlanGenerating)},

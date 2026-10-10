@@ -2,8 +2,8 @@ import json
 
 import pytest
 
-from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
-from agentic_intent_gate.adapters.tool_catalog import build_validator
+from agentic_intent_gate.infrastructure.persistence.sqlite_run_repository import SQLiteRunRepository
+from agentic_intent_gate.infrastructure.tools.tool_catalog import build_validator
 
 pytest_plugins = ("action_helpers",)
 

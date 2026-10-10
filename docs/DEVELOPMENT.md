@@ -10,8 +10,15 @@ uv sync --locked
 
 This installs the existing FastAPI/HTTPX/jsonschema/Uvicorn runtime and the pytest,
 Ruff, and Playwright development group. Do not add dependencies for documentation work.
-The packaged UI is `src/agentic_intent_gate/adapters/static/index.html`; no Node install,
+The packaged UI is `src/agentic_intent_gate/api/static/index.html`; no Node install,
 `frontend/` build, or separate frontend server is required.
+
+Internal directories use PEP 420 implicit namespace packages: only
+`src/agentic_intent_gate/__init__.py` is a package marker. Import from the concrete module,
+not package-root re-exports. `api/` owns HTTP/assets, `config/` owns settings, and
+`infrastructure/` contains persistence, LLM, security, and tools; Application/Domain/Ports
+retain their existing boundaries. UI resources resolve from the top-level package via
+`files("agentic_intent_gate").joinpath("api", "static", "index.html")`.
 
 ## Local LLM
 
@@ -73,10 +80,10 @@ $provisionDemo = @'
 import os
 from pathlib import Path
 
-from agentic_intent_gate.adapters.local_capability import provision_capability
-from agentic_intent_gate.adapters.service_demo import provision_demo_store
-from agentic_intent_gate.adapters.sqlite_v2_runs import SQLiteV2RunRepository
-from agentic_intent_gate.adapters.tool_catalog import build_validator
+from agentic_intent_gate.infrastructure.security.local_capability import provision_capability
+from agentic_intent_gate.infrastructure.tools.service_demo import provision_demo_store
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_runs import SQLiteV2RunRepository
+from agentic_intent_gate.infrastructure.tools.tool_catalog import build_validator
 
 paths = [Path(os.environ[key]) for key in
          ("AIG_DB_PATH", "AIG_DEMO_DB_PATH", "AIG_CAPABILITY_FILE")]

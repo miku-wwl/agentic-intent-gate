@@ -12,14 +12,14 @@ from uuid import uuid4
 import pytest
 from run_helpers import advance, database_rows, plan_for
 
-from agentic_intent_gate.adapters import sqlite_run_repository as adapter
-from agentic_intent_gate.adapters import sqlite_schema
-from agentic_intent_gate.adapters.configuration import ConfigurationError, Settings
-from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
+import agentic_intent_gate.infrastructure.persistence.sqlite_run_repository as adapter
+import agentic_intent_gate.infrastructure.persistence.sqlite_schema as sqlite_schema
+from agentic_intent_gate.config.configuration import ConfigurationError, Settings
 from agentic_intent_gate.domain.approval import ApprovalChoice, ApprovalDecisionRequest
 from agentic_intent_gate.domain.contracts import Intent, Risk
 from agentic_intent_gate.domain.run import RunErrorCode, RunState, RunStoreError
 from agentic_intent_gate.domain.run_validation import canonical_json, utc_now
+from agentic_intent_gate.infrastructure.persistence.sqlite_run_repository import SQLiteRunRepository
 
 
 def independent_connection(repository):

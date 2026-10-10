@@ -5,16 +5,16 @@ from contextlib import closing
 from functools import lru_cache
 from pathlib import Path
 
-from agentic_intent_gate.adapters.sqlite_schema import (
+from agentic_intent_gate.domain.run import RunErrorCode, RunStoreError
+from agentic_intent_gate.infrastructure.persistence.sqlite_schema import (
     BUSY_TIMEOUT_MS,
     configure_connection,
     normalize_ddl,
     open_existing,
 )
-from agentic_intent_gate.adapters.sqlite_schema import (
+from agentic_intent_gate.infrastructure.persistence.sqlite_schema import (
     TABLES as V1_TABLES,
 )
-from agentic_intent_gate.domain.run import RunErrorCode, RunStoreError
 
 HEX = "length({0}) = 64 AND {0} NOT GLOB '*[^0-9a-f]*'"
 DIGEST = HEX.format("approval_plan_digest")

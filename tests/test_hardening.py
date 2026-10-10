@@ -9,12 +9,12 @@ from collections import Counter
 import httpx
 import pytest
 
-from agentic_intent_gate.adapters import local_http
-from agentic_intent_gate.adapters.local_http import create_app
-from agentic_intent_gate.adapters.models.local_openai import LocalOpenAIProvider
+import agentic_intent_gate.api.local_http as local_http
+from agentic_intent_gate.api.local_http import create_app
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.domain.contracts import ErrorCode, Intent
 from agentic_intent_gate.domain.validation import ValidationFailure
+from agentic_intent_gate.infrastructure.llm.local_openai import LocalOpenAIProvider
 from agentic_intent_gate.ports.model_provider import ModelProviderError
 
 

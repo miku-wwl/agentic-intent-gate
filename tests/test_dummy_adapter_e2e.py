@@ -25,13 +25,13 @@ from test_dummy_adapter_contract import (
     spec_for,
 )
 
-from agentic_intent_gate.adapters.dummy_executor import (
-    DeterministicDummyExecutor,
-    StoreApplyStatus,
-)
 from agentic_intent_gate.application.action_execution import classify
 from agentic_intent_gate.domain.action import ActionState, safe_result
 from agentic_intent_gate.domain.run_validation import valid_uuid
+from agentic_intent_gate.infrastructure.tools.dummy_executor import (
+    DeterministicDummyExecutor,
+    StoreApplyStatus,
+)
 from agentic_intent_gate.ports.tool_executor import ToolExecutor
 
 

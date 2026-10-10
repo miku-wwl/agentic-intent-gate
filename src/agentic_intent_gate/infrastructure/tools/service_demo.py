@@ -3,16 +3,16 @@
 import sqlite3
 from uuid import uuid4
 
-from agentic_intent_gate.adapters.configuration import resolve_database_path
-from agentic_intent_gate.adapters.sqlite_schema import (
+from agentic_intent_gate.application.action_compiler import ToolBinding
+from agentic_intent_gate.config.configuration import resolve_database_path
+from agentic_intent_gate.domain.action import ActionCode, ActionError
+from agentic_intent_gate.domain.run_validation import canonical_json, valid_uuid
+from agentic_intent_gate.infrastructure.persistence.sqlite_schema import (
     configure_connection,
     normalize_ddl,
     open_existing,
 )
-from agentic_intent_gate.adapters.sqlite_v2_migration import private_backup_file
-from agentic_intent_gate.application.action_compiler import ToolBinding
-from agentic_intent_gate.domain.action import ActionCode, ActionError
-from agentic_intent_gate.domain.run_validation import canonical_json, valid_uuid
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_migration import private_backup_file
 from agentic_intent_gate.ports.tool_executor import Outcome, ToolOutcome
 
 ADAPTER_ID = "demo-note-adapter"

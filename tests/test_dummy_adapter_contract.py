@@ -14,7 +14,10 @@ from uuid import uuid4
 
 import pytest
 
-from agentic_intent_gate.adapters.dummy_executor import (
+from agentic_intent_gate.application.action_execution import classify
+from agentic_intent_gate.domain.action import ActionError, ActionState, safe_result
+from agentic_intent_gate.domain.run_validation import valid_uuid
+from agentic_intent_gate.infrastructure.tools.dummy_executor import (
     ADAPTER_ID,
     BINDING_REVISION,
     TARGET,
@@ -25,10 +28,7 @@ from agentic_intent_gate.adapters.dummy_executor import (
     StoreApplyResult,
     StoreApplyStatus,
 )
-from agentic_intent_gate.adapters.executable_registry import ExecutableRegistry
-from agentic_intent_gate.application.action_execution import classify
-from agentic_intent_gate.domain.action import ActionError, ActionState, safe_result
-from agentic_intent_gate.domain.run_validation import valid_uuid
+from agentic_intent_gate.infrastructure.tools.executable_registry import ExecutableRegistry
 from agentic_intent_gate.ports.tool_executor import (
     AttemptContext,
     ExecutionSpec,

@@ -58,7 +58,7 @@ unclaimed dispatch. There is no implemented automatic Unknown reconciliation/ret
 
 ## Day 4 Dummy reference
 
-[DeterministicDummyExecutor](../src/agentic_intent_gate/adapters/dummy_executor.py)
+[DeterministicDummyExecutor](../src/agentic_intent_gate/infrastructure/tools/dummy_executor.py)
 implements `dummy_record/1` for `test-local-dummy`, adapter `day4-dummy`, revision
 `dummy-v1`, and a trusted canonical UUIDv4 scope.
 
@@ -84,7 +84,7 @@ the injected Python store and host are trusted.
 
 ## Minimal Hackathon workflow
 
-1. Place isolated provider code under `src/agentic_intent_gate/adapters/` in a clearly
+1. Place isolated tool/provider code under `src/agentic_intent_gate/infrastructure/tools/` in a clearly
    competition-specific module; keep provider credentials/policies out of domain and
    application code. Define a small allowed capability, stable identity/revision, trusted
    targets/scope, and bounded argument contract.

@@ -32,7 +32,7 @@ def edge_payload(before, after, version, grant=None, attempt=None, result=None, 
 
 
 def validate_history(connection, action):
-    from agentic_intent_gate.adapters.sqlite_actions import creation_payload
+    from agentic_intent_gate.infrastructure.persistence.sqlite_actions import creation_payload
 
     grants = connection.execute(
         "SELECT * FROM action_authorizations WHERE action_id=?", (action.action_id,)

@@ -12,15 +12,20 @@ from run_helpers import advance
 from test_action_capability import capability
 from test_action_persistence import ledger
 
-from agentic_intent_gate.adapters import sqlite_actions
-from agentic_intent_gate.adapters.executable_registry import ExecutableRegistry
-from agentic_intent_gate.adapters.service_demo import DemoNoteExecutor, provision_demo_store
-from agentic_intent_gate.adapters.sqlite_action_execution import SQLiteExecutionRepository
-from agentic_intent_gate.adapters.sqlite_v2_runs import SQLiteV2RunRepository
+import agentic_intent_gate.infrastructure.persistence.sqlite_actions as sqlite_actions
 from agentic_intent_gate.application.action_compiler import ActionCompiler
 from agentic_intent_gate.application.action_execution import ActionExecutionGateway
 from agentic_intent_gate.domain.contracts import Risk
 from agentic_intent_gate.domain.run import RunState
+from agentic_intent_gate.infrastructure.persistence.sqlite_action_execution import (
+    SQLiteExecutionRepository,
+)
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_runs import SQLiteV2RunRepository
+from agentic_intent_gate.infrastructure.tools.executable_registry import ExecutableRegistry
+from agentic_intent_gate.infrastructure.tools.service_demo import (
+    DemoNoteExecutor,
+    provision_demo_store,
+)
 from agentic_intent_gate.ports.action_repository import ActionCommand, AdmissionCommand
 
 

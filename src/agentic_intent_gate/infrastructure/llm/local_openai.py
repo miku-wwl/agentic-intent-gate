@@ -6,7 +6,7 @@ from collections.abc import Mapping, Sequence
 
 import httpx
 
-from agentic_intent_gate.adapters.configuration import validate_endpoint
+from agentic_intent_gate.config.configuration import validate_endpoint
 from agentic_intent_gate.domain.contracts import ErrorCode, Intent, Tool, thaw_json
 from agentic_intent_gate.domain.validation import PLAN_BYTES
 from agentic_intent_gate.ports.model_provider import ModelProviderError

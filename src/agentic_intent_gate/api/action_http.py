@@ -6,14 +6,14 @@ from urllib.parse import urlsplit
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
-from agentic_intent_gate.adapters.configuration import loopback_host
-from agentic_intent_gate.adapters.local_capability import CapabilityVerifier
+from agentic_intent_gate.config.configuration import loopback_host
 from agentic_intent_gate.domain.action import ActionCode, ActionError, ActionState
 from agentic_intent_gate.domain.approval_binding import BindingError
 from agentic_intent_gate.domain.contracts import HTTP_STATUSES
 from agentic_intent_gate.domain.run import RUN_MESSAGES, RunErrorCode, RunStoreError
 from agentic_intent_gate.domain.run_validation import valid_uuid
 from agentic_intent_gate.domain.validation import ValidationFailure
+from agentic_intent_gate.infrastructure.security.local_capability import CapabilityVerifier
 from agentic_intent_gate.ports.action_repository import ActionCommand, AdmissionCommand
 
 STATUSES = {
@@ -73,7 +73,7 @@ def add_action_routes(app, gateway, verifier=None):
                 raise ActionError(ActionCode.KEY_REQUIRED)
             if len(keys) != 1 or not valid_uuid(keys[0]):
                 raise ActionError(ActionCode.INVALID_REQUEST)
-            from agentic_intent_gate.adapters.local_http import _run_body
+            from agentic_intent_gate.api.local_http import _run_body
 
             body = await _run_body(request, deadline, RunErrorCode.INVALID_APPROVAL)
             if operation == "admit":

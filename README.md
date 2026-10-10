@@ -34,6 +34,8 @@ claim → ToolExecutor → persistent outcome.
 
 Approval alone never executes a tool. The default entry point stops at Runs/approval;
 the explicitly configured v2 entry point enables the local execution demo.
+Source is separated into API, Application, Domain, Ports, Infrastructure, and Configuration
+layers; this package reorganization adds no runtime capabilities.
 See [Architecture](docs/ARCHITECTURE.md) for the two execution paths and actual APIs.
 
 ## Quick start: planning and approval

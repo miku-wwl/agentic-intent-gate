@@ -14,15 +14,15 @@ import uvicorn
 from execution_process_helpers import record_fact
 from run_helpers import advance
 
-from agentic_intent_gate.adapters import sqlite_v2_runs
-from agentic_intent_gate.adapters.local_http import create_app
-from agentic_intent_gate.adapters.sqlite_v2_schema import TABLES
+import agentic_intent_gate.infrastructure.persistence.sqlite_v2_runs as sqlite_v2_runs
+from agentic_intent_gate.api.local_http import create_app
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.runs import RunService
 from agentic_intent_gate.domain.approval import ApprovalChoice, ApprovalDecisionRequest
 from agentic_intent_gate.domain.approval_binding import BindingCode, BindingError
 from agentic_intent_gate.domain.contracts import Risk
 from agentic_intent_gate.domain.run import RUN_MESSAGES, RunErrorCode, RunState, RunStoreError
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_schema import TABLES
 
 
 @dataclass

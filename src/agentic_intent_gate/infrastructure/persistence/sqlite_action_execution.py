@@ -2,8 +2,6 @@
 
 from uuid import uuid4
 
-from agentic_intent_gate.adapters.sqlite_action_ledger import edge_payload
-from agentic_intent_gate.adapters.sqlite_actions import SQLiteActionRepository
 from agentic_intent_gate.application.action_compiler import ToolBinding
 from agentic_intent_gate.domain.action import (
     ActionCode,
@@ -14,6 +12,8 @@ from agentic_intent_gate.domain.action import (
 )
 from agentic_intent_gate.domain.approval_binding import digest
 from agentic_intent_gate.domain.run_validation import canonical_json, parse_timestamp, valid_uuid
+from agentic_intent_gate.infrastructure.persistence.sqlite_action_ledger import edge_payload
+from agentic_intent_gate.infrastructure.persistence.sqlite_actions import SQLiteActionRepository
 from agentic_intent_gate.ports.action_repository import ActionCommand, ClaimResult, CommandResult
 
 

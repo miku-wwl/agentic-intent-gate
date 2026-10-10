@@ -7,16 +7,18 @@ import pytest
 from action_helpers import cmd
 from test_service_demo_adapter import downstream, invoke
 
-from agentic_intent_gate.adapters.configuration import Settings
-from agentic_intent_gate.adapters.local_capability import provision_capability
-from agentic_intent_gate.adapters.single_owner import single_owner
-from agentic_intent_gate.adapters.sqlite_action_execution import SQLiteExecutionRepository
-from agentic_intent_gate.adapters.sqlite_v2_runs import SQLiteV2RunRepository
 from agentic_intent_gate.application.action_execution import ActionExecutionGateway
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.recover_actions import recover_actions
+from agentic_intent_gate.config.configuration import Settings
 from agentic_intent_gate.domain.action import ActionError, ActionState
 from agentic_intent_gate.execution_main import compose
+from agentic_intent_gate.infrastructure.persistence.sqlite_action_execution import (
+    SQLiteExecutionRepository,
+)
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_runs import SQLiteV2RunRepository
+from agentic_intent_gate.infrastructure.security.local_capability import provision_capability
+from agentic_intent_gate.infrastructure.security.single_owner import single_owner
 from agentic_intent_gate.ports.tool_executor import Outcome
 
 

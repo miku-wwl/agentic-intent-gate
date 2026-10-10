@@ -9,11 +9,16 @@ import pytest
 from action_helpers import cmd, inject_fault
 from run_helpers import database_rows
 
-from agentic_intent_gate.adapters.local_capability import CapabilityVerifier, LocalDemoAuthorization
-from agentic_intent_gate.adapters.sqlite_action_execution import SQLiteExecutionRepository
-from agentic_intent_gate.adapters.sqlite_v2_runs import SQLiteV2RunRepository
 from agentic_intent_gate.application.action_compiler import ActionCompiler
 from agentic_intent_gate.domain.action import ActionCode, ActionError, ActionState
+from agentic_intent_gate.infrastructure.persistence.sqlite_action_execution import (
+    SQLiteExecutionRepository,
+)
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_runs import SQLiteV2RunRepository
+from agentic_intent_gate.infrastructure.security.local_capability import (
+    CapabilityVerifier,
+    LocalDemoAuthorization,
+)
 
 
 def test_authorization_separate_exact_grant_replay_no_run_churn(auth_env):

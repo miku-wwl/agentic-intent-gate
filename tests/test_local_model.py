@@ -10,10 +10,10 @@ from pathlib import Path
 import pytest
 from live_helpers import ObservedTransport, validate_and_record
 
-from agentic_intent_gate.adapters.configuration import Settings
-from agentic_intent_gate.adapters.models.local_openai import PROMPT_VERSION, LocalOpenAIProvider
+from agentic_intent_gate.config.configuration import Settings
 from agentic_intent_gate.domain.contracts import Intent
 from agentic_intent_gate.domain.validation import ValidationFailure
+from agentic_intent_gate.infrastructure.llm.local_openai import PROMPT_VERSION, LocalOpenAIProvider
 from agentic_intent_gate.ports.model_provider import ModelProviderError
 
 pytestmark = pytest.mark.live

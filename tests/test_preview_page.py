@@ -1,6 +1,6 @@
 import httpx
 
-from agentic_intent_gate.adapters.local_http import create_app
+from agentic_intent_gate.api.local_http import create_app
 from agentic_intent_gate.application.generate_plan import PlanningService
 
 

@@ -7,20 +7,23 @@ import sqlite3
 import subprocess
 from pathlib import Path
 
-from agentic_intent_gate.adapters.configuration import resolve_database_path
-from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
-from agentic_intent_gate.adapters.sqlite_schema import (
+from agentic_intent_gate.config.configuration import resolve_database_path
+from agentic_intent_gate.domain.run import RunErrorCode, RunStoreError
+from agentic_intent_gate.domain.validation import fail
+from agentic_intent_gate.infrastructure.persistence.sqlite_run_repository import SQLiteRunRepository
+from agentic_intent_gate.infrastructure.persistence.sqlite_schema import (
     configure_connection,
     open_existing,
 )
-from agentic_intent_gate.adapters.sqlite_schema import (
+from agentic_intent_gate.infrastructure.persistence.sqlite_schema import (
     validate_schema as validate_v1,
 )
-from agentic_intent_gate.adapters.sqlite_v2_runs import SQLiteV2RunRepository
-from agentic_intent_gate.adapters.sqlite_v2_schema import ADDITIONS, validate_schema
-from agentic_intent_gate.adapters.tool_catalog import build_validator
-from agentic_intent_gate.domain.run import RunErrorCode, RunStoreError
-from agentic_intent_gate.domain.validation import fail
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_runs import SQLiteV2RunRepository
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_schema import (
+    ADDITIONS,
+    validate_schema,
+)
+from agentic_intent_gate.infrastructure.tools.tool_catalog import build_validator
 
 
 def private_backup_file(path):

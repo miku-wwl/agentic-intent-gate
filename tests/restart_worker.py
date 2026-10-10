@@ -10,13 +10,13 @@ from pathlib import Path
 
 from run_helpers import database_rows, plan_for
 
-from agentic_intent_gate.adapters import sqlite_run_repository as adapter
-from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
-from agentic_intent_gate.adapters.tool_catalog import build_validator
+import agentic_intent_gate.infrastructure.persistence.sqlite_run_repository as adapter
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.runs import RunService
 from agentic_intent_gate.domain.approval import ApprovalChoice, ApprovalDecisionRequest
 from agentic_intent_gate.domain.contracts import Intent, Risk
+from agentic_intent_gate.infrastructure.persistence.sqlite_run_repository import SQLiteRunRepository
+from agentic_intent_gate.infrastructure.tools.tool_catalog import build_validator
 
 
 def emit(value):

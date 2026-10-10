@@ -9,13 +9,13 @@ import pytest
 import test_ollama_api_smoke as api_smoke
 from live_helpers import ObservedTransport, validate_and_record
 
-from agentic_intent_gate.adapters.configuration import Settings
-from agentic_intent_gate.adapters.local_http import create_app
-from agentic_intent_gate.adapters.models.local_openai import LocalOpenAIProvider
+from agentic_intent_gate.api.local_http import create_app
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.runs import RunService
+from agentic_intent_gate.config.configuration import Settings
 from agentic_intent_gate.domain.contracts import ErrorCode, Intent, PlanningState, Risk
 from agentic_intent_gate.domain.validation import ValidationFailure
+from agentic_intent_gate.infrastructure.llm.local_openai import LocalOpenAIProvider
 
 
 def observed_provider(validator, envelope, raw):

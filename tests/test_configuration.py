@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from agentic_intent_gate.adapters.configuration import ConfigurationError, Settings
-from agentic_intent_gate.adapters.tool_catalog import build_validator
+from agentic_intent_gate.config.configuration import ConfigurationError, Settings
+from agentic_intent_gate.infrastructure.tools.tool_catalog import build_validator
 
 
 @pytest.mark.parametrize(

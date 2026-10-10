@@ -6,9 +6,9 @@ import re
 import secrets
 from pathlib import Path
 
-from agentic_intent_gate.adapters.sqlite_v2_migration import private_backup_file
 from agentic_intent_gate.application.action_compiler import ToolBinding
 from agentic_intent_gate.domain.action import ActionCode, ActionError, identifier
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_migration import private_backup_file
 from agentic_intent_gate.ports.authorization import OPERATIONS, PrincipalContext
 
 

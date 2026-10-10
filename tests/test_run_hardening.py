@@ -15,17 +15,20 @@ import httpx
 import pytest
 from run_helpers import advance, database_rows, plan_for
 
-from agentic_intent_gate.adapters import sqlite_run_repository as adapter
-from agentic_intent_gate.adapters.local_http import create_app
-from agentic_intent_gate.adapters.models.local_openai import ENVELOPE_BYTES, LocalOpenAIProvider
-from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
-from agentic_intent_gate.adapters.sqlite_schema import configure_connection, open_existing
+import agentic_intent_gate.infrastructure.persistence.sqlite_run_repository as adapter
+from agentic_intent_gate.api.local_http import create_app
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.recover_runs import recover_runs
 from agentic_intent_gate.application.runs import RunService
 from agentic_intent_gate.domain.contracts import ErrorCode, Risk
 from agentic_intent_gate.domain.run import RUN_MESSAGES, RunErrorCode, RunState, RunStoreError
 from agentic_intent_gate.domain.run_validation import canonical_json
+from agentic_intent_gate.infrastructure.llm.local_openai import ENVELOPE_BYTES, LocalOpenAIProvider
+from agentic_intent_gate.infrastructure.persistence.sqlite_run_repository import SQLiteRunRepository
+from agentic_intent_gate.infrastructure.persistence.sqlite_schema import (
+    configure_connection,
+    open_existing,
+)
 
 EVIDENCE_DIR = (
     Path(__file__).resolve().parents[1]

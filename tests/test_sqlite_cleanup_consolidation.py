@@ -13,18 +13,16 @@ from execution_process_helpers import record_fact
 from run_helpers import advance
 from test_service_demo_adapter import downstream, invoke
 
-from agentic_intent_gate.adapters import (
-    service_demo,
-    sqlite_run_repository,
-    sqlite_schema,
-    sqlite_v2_schema,
-)
-from agentic_intent_gate.adapters.service_demo import provision_demo_store
-from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
+import agentic_intent_gate.infrastructure.persistence.sqlite_run_repository as sqlite_run_repository
+import agentic_intent_gate.infrastructure.persistence.sqlite_schema as sqlite_schema
+import agentic_intent_gate.infrastructure.persistence.sqlite_v2_schema as sqlite_v2_schema
+import agentic_intent_gate.infrastructure.tools.service_demo as service_demo
 from agentic_intent_gate.domain.action import ActionCode, ActionError
 from agentic_intent_gate.domain.approval import ApprovalChoice, ApprovalDecisionRequest
 from agentic_intent_gate.domain.contracts import Risk
 from agentic_intent_gate.domain.run import RunErrorCode, RunState, RunStoreError
+from agentic_intent_gate.infrastructure.persistence.sqlite_run_repository import SQLiteRunRepository
+from agentic_intent_gate.infrastructure.tools.service_demo import provision_demo_store
 from agentic_intent_gate.ports.tool_executor import ExecutionSpec, Outcome
 
 

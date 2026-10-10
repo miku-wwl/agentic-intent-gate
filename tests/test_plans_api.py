@@ -4,7 +4,7 @@ import json
 import httpx
 import pytest
 
-from agentic_intent_gate.adapters.local_http import create_app
+from agentic_intent_gate.api.local_http import create_app
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.domain.contracts import ErrorCode, Intent, PlanningState
 from agentic_intent_gate.ports.model_provider import ModelProviderError

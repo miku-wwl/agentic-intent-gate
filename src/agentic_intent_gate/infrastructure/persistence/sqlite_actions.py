@@ -3,9 +3,6 @@
 from contextlib import contextmanager
 from uuid import uuid4
 
-from agentic_intent_gate.adapters.sqlite_schema import configure_connection, open_existing
-from agentic_intent_gate.adapters.sqlite_v2_runs import binding_for, linked_decision
-from agentic_intent_gate.adapters.sqlite_v2_schema import validate_schema
 from agentic_intent_gate.application.action_compiler import ActionCompiler, ToolBinding
 from agentic_intent_gate.domain.action import (
     Action,
@@ -24,6 +21,15 @@ from agentic_intent_gate.domain.run_validation import (
     valid_uuid,
 )
 from agentic_intent_gate.domain.validation import fail, strict_object
+from agentic_intent_gate.infrastructure.persistence.sqlite_schema import (
+    configure_connection,
+    open_existing,
+)
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_runs import (
+    binding_for,
+    linked_decision,
+)
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_schema import validate_schema
 from agentic_intent_gate.ports.action_repository import AdmissionCommand, AdmissionResult
 
 
@@ -83,7 +89,7 @@ def validated_action(connection, runs, row, compiler=None):
     compiler.validate_spec(action.spec, run, decision, binding)
     if action.created_at < run.updated_at:
         fail("ACTION_SPEC_LINK")
-    from agentic_intent_gate.adapters.sqlite_action_ledger import validate_history
+    from agentic_intent_gate.infrastructure.persistence.sqlite_action_ledger import validate_history
 
     return validate_history(connection, action)
 

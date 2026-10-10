@@ -26,22 +26,30 @@ from run_helpers import plan_for
 from test_action_capability import capability
 from test_action_persistence import ledger
 
-from agentic_intent_gate.adapters.configuration import Settings
-from agentic_intent_gate.adapters.executable_registry import ExecutableRegistry
-from agentic_intent_gate.adapters.local_capability import CapabilityVerifier, LocalDemoAuthorization
-from agentic_intent_gate.adapters.local_http import create_app
-from agentic_intent_gate.adapters.service_demo import DemoNoteExecutor, provision_demo_store
-from agentic_intent_gate.adapters.sqlite_action_execution import SQLiteExecutionRepository
-from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
-from agentic_intent_gate.adapters.sqlite_v2_migration import migrate_v1_to_v2
-from agentic_intent_gate.adapters.sqlite_v2_runs import SQLiteV2RunRepository
+from agentic_intent_gate.api.local_http import create_app
 from agentic_intent_gate.application.action_compiler import ActionCompiler
 from agentic_intent_gate.application.action_execution import ActionExecutionGateway
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.runs import RunService
+from agentic_intent_gate.config.configuration import Settings
 from agentic_intent_gate.domain.approval import ApprovalChoice, ApprovalDecisionRequest
 from agentic_intent_gate.domain.contracts import Intent, Risk
 from agentic_intent_gate.domain.run import RunState
+from agentic_intent_gate.infrastructure.persistence.sqlite_action_execution import (
+    SQLiteExecutionRepository,
+)
+from agentic_intent_gate.infrastructure.persistence.sqlite_run_repository import SQLiteRunRepository
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_migration import migrate_v1_to_v2
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_runs import SQLiteV2RunRepository
+from agentic_intent_gate.infrastructure.security.local_capability import (
+    CapabilityVerifier,
+    LocalDemoAuthorization,
+)
+from agentic_intent_gate.infrastructure.tools.executable_registry import ExecutableRegistry
+from agentic_intent_gate.infrastructure.tools.service_demo import (
+    DemoNoteExecutor,
+    provision_demo_store,
+)
 from agentic_intent_gate.ports.action_repository import AdmissionCommand
 from agentic_intent_gate.ports.tool_executor import Outcome, ToolOutcome
 

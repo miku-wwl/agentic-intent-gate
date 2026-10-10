@@ -6,10 +6,10 @@ from uuid import uuid4
 
 import pytest
 
-from agentic_intent_gate.adapters import service_demo
-from agentic_intent_gate.adapters.executable_registry import ExecutableRegistry
-from agentic_intent_gate.adapters.service_demo import DemoNoteExecutor
+import agentic_intent_gate.infrastructure.tools.service_demo as service_demo
 from agentic_intent_gate.domain.action import ActionError
+from agentic_intent_gate.infrastructure.tools.executable_registry import ExecutableRegistry
+from agentic_intent_gate.infrastructure.tools.service_demo import DemoNoteExecutor
 from agentic_intent_gate.ports.tool_executor import AttemptContext, ExecutionSpec, Outcome
 
 

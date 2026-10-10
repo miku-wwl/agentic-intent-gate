@@ -42,9 +42,9 @@ def create_app(
     capability_verifier=None,
 ) -> FastAPI:
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, debug=False)
-    page = files("agentic_intent_gate.adapters").joinpath("static", "index.html").read_text("utf-8")
+    page = files("agentic_intent_gate").joinpath("api", "static", "index.html").read_text("utf-8")
     if action_gateway is not None:
-        from agentic_intent_gate.adapters.local_capability import CapabilityVerifier
+        from agentic_intent_gate.infrastructure.security.local_capability import CapabilityVerifier
 
         # Public UI hints for the single server-configured principal. They grant no authority;
         # the page first verifies visibility with GET and every command retains its own check.
@@ -100,7 +100,7 @@ def create_app(
     if run_service is not None:
         _add_run_routes(app, run_service)
     if action_gateway is not None:
-        from agentic_intent_gate.adapters.action_http import add_action_routes
+        from agentic_intent_gate.api.action_http import add_action_routes
 
         add_action_routes(app, action_gateway, capability_verifier)
     return app

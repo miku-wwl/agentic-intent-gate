@@ -19,12 +19,12 @@ import pytest
 import uvicorn
 from live_helpers import ObservedTransport, validate_and_record
 
-from agentic_intent_gate.adapters.configuration import Settings
-from agentic_intent_gate.adapters.local_http import create_app
-from agentic_intent_gate.adapters.models.local_openai import LocalOpenAIProvider
-from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
+from agentic_intent_gate.api.local_http import create_app
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.runs import RunService
+from agentic_intent_gate.config.configuration import Settings
+from agentic_intent_gate.infrastructure.llm.local_openai import LocalOpenAIProvider
+from agentic_intent_gate.infrastructure.persistence.sqlite_run_repository import SQLiteRunRepository
 
 pytestmark = pytest.mark.live
 

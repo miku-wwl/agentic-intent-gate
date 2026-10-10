@@ -1,7 +1,7 @@
 """Static reviewed executable binding, separate from metadata. No plugin/import routing."""
 
-from agentic_intent_gate.adapters.service_demo import DemoNoteExecutor
 from agentic_intent_gate.domain.action import ActionCode, ActionError
+from agentic_intent_gate.infrastructure.tools.service_demo import DemoNoteExecutor
 
 
 class ExecutableRegistry:

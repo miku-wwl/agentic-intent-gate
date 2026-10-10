@@ -17,22 +17,30 @@ from uuid import uuid4
 import httpx
 
 import agentic_intent_gate
-from agentic_intent_gate.adapters.executable_registry import ExecutableRegistry
-from agentic_intent_gate.adapters.local_capability import CapabilityVerifier, LocalDemoAuthorization
-from agentic_intent_gate.adapters.local_http import create_app
-from agentic_intent_gate.adapters.service_demo import DemoNoteExecutor, provision_demo_store
-from agentic_intent_gate.adapters.sqlite_action_execution import SQLiteExecutionRepository
-from agentic_intent_gate.adapters.sqlite_actions import SQLiteActionRepository
-from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
-from agentic_intent_gate.adapters.sqlite_v2_migration import migrate_v1_to_v2
-from agentic_intent_gate.adapters.sqlite_v2_runs import SQLiteV2RunRepository
-from agentic_intent_gate.adapters.tool_catalog import build_validator
+from agentic_intent_gate.api.local_http import create_app
 from agentic_intent_gate.application.action_compiler import ActionCompiler, ToolBinding
 from agentic_intent_gate.application.action_execution import ActionExecutionGateway
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.runs import RunService
 from agentic_intent_gate.domain.approval_binding import BindingCode, BindingError
 from agentic_intent_gate.domain.run_validation import contract_validator
+from agentic_intent_gate.infrastructure.persistence.sqlite_action_execution import (
+    SQLiteExecutionRepository,
+)
+from agentic_intent_gate.infrastructure.persistence.sqlite_actions import SQLiteActionRepository
+from agentic_intent_gate.infrastructure.persistence.sqlite_run_repository import SQLiteRunRepository
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_migration import migrate_v1_to_v2
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_runs import SQLiteV2RunRepository
+from agentic_intent_gate.infrastructure.security.local_capability import (
+    CapabilityVerifier,
+    LocalDemoAuthorization,
+)
+from agentic_intent_gate.infrastructure.tools.executable_registry import ExecutableRegistry
+from agentic_intent_gate.infrastructure.tools.service_demo import (
+    DemoNoteExecutor,
+    provision_demo_store,
+)
+from agentic_intent_gate.infrastructure.tools.tool_catalog import build_validator
 from agentic_intent_gate.ports.action_repository import AdmissionCommand
 
 
@@ -54,12 +62,8 @@ def verify(source, output):
             packaged = files("agentic_intent_gate").joinpath(relative).read_bytes()
             assert packaged == path.read_bytes()
             runtime_hashes[relative] = hashlib.sha256(packaged).hexdigest()
-    static_page = (
-        files("agentic_intent_gate.adapters").joinpath("static", "index.html").read_bytes()
-    )
-    assert (
-        static_page == (source / "src/agentic_intent_gate/adapters/static/index.html").read_bytes()
-    )
+    static_page = files("agentic_intent_gate").joinpath("api", "static", "index.html").read_bytes()
+    assert static_page == (source / "src/agentic_intent_gate/api/static/index.html").read_bytes()
     plan = {
         "goal": "Read service-demo from the installed wheel",
         "target": "service-demo",

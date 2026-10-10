@@ -13,10 +13,10 @@ from pathlib import Path
 import pytest
 from run_helpers import advance, database_rows
 
-from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
 from agentic_intent_gate.application.recover_runs import recover_runs
 from agentic_intent_gate.domain.contracts import Risk
 from agentic_intent_gate.domain.run import RunState
+from agentic_intent_gate.infrastructure.persistence.sqlite_run_repository import SQLiteRunRepository
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKER = ROOT / "tests/restart_worker.py"

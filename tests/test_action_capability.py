@@ -4,13 +4,13 @@ from uuid import uuid4
 
 import pytest
 
-from agentic_intent_gate.adapters.local_capability import (
+from agentic_intent_gate.application.action_compiler import ToolBinding
+from agentic_intent_gate.domain.action import ActionCode, ActionError
+from agentic_intent_gate.infrastructure.security.local_capability import (
     CapabilityVerifier,
     LocalDemoAuthorization,
     provision_capability,
 )
-from agentic_intent_gate.application.action_compiler import ToolBinding
-from agentic_intent_gate.domain.action import ActionCode, ActionError
 from agentic_intent_gate.ports.authorization import DenyAuthorization, PrincipalContext
 
 

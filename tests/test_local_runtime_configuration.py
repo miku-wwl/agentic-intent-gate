@@ -5,12 +5,12 @@ import json
 import httpx
 import pytest
 
-from agentic_intent_gate.adapters.configuration import ConfigurationError, Settings
-from agentic_intent_gate.adapters.local_http import create_app
-from agentic_intent_gate.adapters.models.local_openai import LocalOpenAIProvider
+from agentic_intent_gate.api.local_http import create_app
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.runs import RunService
+from agentic_intent_gate.config.configuration import ConfigurationError, Settings
 from agentic_intent_gate.domain.contracts import Intent
+from agentic_intent_gate.infrastructure.llm.local_openai import LocalOpenAIProvider
 
 
 @pytest.mark.parametrize(

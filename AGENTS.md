@@ -4,6 +4,9 @@ Read this file, then only task-relevant code, tests, and documentation. Prefer t
 searches over indiscriminate repository-wide reading. Inspect existing implementations
 before designing or coding; distinguish implemented behavior from proposed integration.
 
+Use explicit module imports. Internal subpackages use PEP 420; do not add package markers
+or root re-exports without a verified need. Tool implementations belong in `infrastructure/tools/`.
+
 Preserve the Day 1–4 runtime invariants: strict Plan validation, deterministic risk,
 durable Run/approval binding, trusted Action compilation, verified authorization,
 CAS, durable execution claims/results, stable effect identities, and fail-closed Unknown

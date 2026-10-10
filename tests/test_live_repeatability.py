@@ -12,14 +12,14 @@ from pathlib import Path
 import httpx
 import pytest
 
-from agentic_intent_gate.adapters.configuration import Settings
-from agentic_intent_gate.adapters.local_http import create_app
-from agentic_intent_gate.adapters.models.local_openai import (
+from agentic_intent_gate.api.local_http import create_app
+from agentic_intent_gate.application.generate_plan import REQUEST_TIMEOUT_SECONDS, PlanningService
+from agentic_intent_gate.config.configuration import Settings
+from agentic_intent_gate.infrastructure.llm.local_openai import (
     PROMPT_VERSION,
     LocalOpenAIProvider,
     planning_prompt,
 )
-from agentic_intent_gate.application.generate_plan import REQUEST_TIMEOUT_SECONDS, PlanningService
 
 pytestmark = pytest.mark.live
 ROOT = Path(__file__).resolve().parents[1]

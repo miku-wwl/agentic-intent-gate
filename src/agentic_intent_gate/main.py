@@ -4,15 +4,15 @@ import logging
 
 import uvicorn
 
-from agentic_intent_gate.adapters.configuration import ConfigurationError, Settings
-from agentic_intent_gate.adapters.local_http import create_app
-from agentic_intent_gate.adapters.models.local_openai import LocalOpenAIProvider
-from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
-from agentic_intent_gate.adapters.tool_catalog import build_validator
+from agentic_intent_gate.api.local_http import create_app
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.recover_runs import recover_runs
 from agentic_intent_gate.application.runs import RunService
+from agentic_intent_gate.config.configuration import ConfigurationError, Settings
 from agentic_intent_gate.domain.run import RunStoreError
+from agentic_intent_gate.infrastructure.llm.local_openai import LocalOpenAIProvider
+from agentic_intent_gate.infrastructure.persistence.sqlite_run_repository import SQLiteRunRepository
+from agentic_intent_gate.infrastructure.tools.tool_catalog import build_validator
 
 
 def main() -> None:

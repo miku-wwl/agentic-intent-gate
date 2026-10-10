@@ -16,7 +16,7 @@ from execution_process_helpers import OwnedWorker, record_fact
 from run_helpers import advance, database_rows
 from test_service_demo_adapter import downstream, invoke
 
-from agentic_intent_gate.adapters import sqlite_actions
+import agentic_intent_gate.infrastructure.persistence.sqlite_actions as sqlite_actions
 from agentic_intent_gate.domain.action import ActionCode, ActionError, ActionState, safe_result
 from agentic_intent_gate.domain.run import RunState
 

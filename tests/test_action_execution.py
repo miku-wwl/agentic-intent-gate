@@ -9,9 +9,9 @@ import pytest
 from action_helpers import cmd, inject_fault
 from test_service_demo_adapter import downstream
 
-from agentic_intent_gate.adapters import service_demo
-from agentic_intent_gate.adapters.sqlite_action_execution import safe_result
+import agentic_intent_gate.infrastructure.tools.service_demo as service_demo
 from agentic_intent_gate.domain.action import ActionCode, ActionError, ActionState
+from agentic_intent_gate.infrastructure.persistence.sqlite_action_execution import safe_result
 from agentic_intent_gate.ports.tool_executor import Outcome, ToolOutcome
 
 

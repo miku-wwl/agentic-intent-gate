@@ -3,6 +3,24 @@
 The implemented system is a local, approval-gated runtime with two entry points and an
 independent adapter-test lane. Source lives under `src/agentic_intent_gate/`.
 
+## Source layers
+
+| Directory | Responsibility |
+| --- | --- |
+| `api/` | HTTP routes, transport parsing, and `static/index.html` serving |
+| `application/` | Planning, Run/approval, Action compilation/execution, and recovery use cases |
+| `domain/` | Immutable contracts, state graphs, exact binding, and validation invariants |
+| `ports/` | Repository, model, authorization, and executor Protocols/contracts |
+| `infrastructure/persistence/` | SQLite repositories, ledger, schemas, and explicit migration |
+| `infrastructure/llm/` | Concrete local OpenAI-compatible provider |
+| `infrastructure/security/` | Local capability verification/policy and single-owner lock |
+| `infrastructure/tools/` | Demo executor, isolated Dummy, proposal catalog, and concrete registry |
+| `config/` | Environment loading and loopback/model/database settings validation |
+
+`main.py` and `execution_main.py` remain composition/CLI entry points. Only the top-level
+package has `__init__.py`; internal directories use PEP 420 namespaces. No plugin discovery,
+new API, database migration, or security behavior is introduced by this source layout.
+
 ~~~mermaid
 flowchart TD
     I[Natural-language Intent] --> P[Local LLM / PlanningService]

@@ -6,12 +6,12 @@ import pytest
 from run_helpers import advance
 from test_action_persistence import command, ledger
 
-from agentic_intent_gate.adapters.sqlite_actions import SQLiteActionRepository
-from agentic_intent_gate.adapters.sqlite_v2_runs import SQLiteV2RunRepository
 from agentic_intent_gate.application.action_compiler import ActionCompiler
 from agentic_intent_gate.domain.action import ActionError
 from agentic_intent_gate.domain.contracts import Risk
 from agentic_intent_gate.domain.run import RunState
+from agentic_intent_gate.infrastructure.persistence.sqlite_actions import SQLiteActionRepository
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_runs import SQLiteV2RunRepository
 
 
 @pytest.mark.parametrize("replacement", ["revised", "empty"])

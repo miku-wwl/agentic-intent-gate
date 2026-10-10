@@ -2,18 +2,24 @@
 
 from contextlib import contextmanager
 
-from agentic_intent_gate.adapters.configuration import resolve_database_path
-from agentic_intent_gate.adapters.sqlite_run_repository import (
-    EVENT_EDGES,
-    SQLiteRunRepository,
-)
-from agentic_intent_gate.adapters.sqlite_schema import configure_connection, open_existing
-from agentic_intent_gate.adapters.sqlite_v2_schema import initialize_database, validate_schema
+from agentic_intent_gate.config.configuration import resolve_database_path
 from agentic_intent_gate.domain.approval import ApprovalChoice, ApprovalDecision
 from agentic_intent_gate.domain.approval_binding import ApprovalBinding, BindingCode, BindingError
 from agentic_intent_gate.domain.run import RunErrorCode, RunState, RunStoreError
 from agentic_intent_gate.domain.run_validation import canonical_json, parse_timestamp, utc_now
 from agentic_intent_gate.domain.validation import fail, strict_object
+from agentic_intent_gate.infrastructure.persistence.sqlite_run_repository import (
+    EVENT_EDGES,
+    SQLiteRunRepository,
+)
+from agentic_intent_gate.infrastructure.persistence.sqlite_schema import (
+    configure_connection,
+    open_existing,
+)
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_schema import (
+    initialize_database,
+    validate_schema,
+)
 
 
 def linked_decision(connection, run):
@@ -145,7 +151,9 @@ class SQLiteV2RunRepository(SQLiteRunRepository):
         try:
             super().validate_all()
             # Validate all v2 facts before recovery/serving, even when only Run APIs are wired.
-            from agentic_intent_gate.adapters.sqlite_actions import validate_ledger
+            from agentic_intent_gate.infrastructure.persistence.sqlite_actions import (
+                validate_ledger,
+            )
 
             with self._transaction() as connection:
                 validate_ledger(connection, self)

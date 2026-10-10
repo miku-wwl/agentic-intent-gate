@@ -10,14 +10,8 @@ from pathlib import Path
 import pytest
 from run_helpers import advance, database_rows, plan_for
 
-from agentic_intent_gate.adapters import sqlite_v2_migration, sqlite_v2_runs
-from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
-from agentic_intent_gate.adapters.sqlite_v2_migration import migrate_v1_to_v2
-from agentic_intent_gate.adapters.sqlite_v2_runs import (
-    SQLiteV2RunRepository,
-    binding_for,
-    linked_decision,
-)
+import agentic_intent_gate.infrastructure.persistence.sqlite_v2_migration as sqlite_v2_migration
+import agentic_intent_gate.infrastructure.persistence.sqlite_v2_runs as sqlite_v2_runs
 from agentic_intent_gate.domain.approval import ApprovalChoice, ApprovalDecisionRequest
 from agentic_intent_gate.domain.approval_binding import (
     ApprovalBinding,
@@ -30,6 +24,13 @@ from agentic_intent_gate.domain.contracts import Risk
 from agentic_intent_gate.domain.run import RunState, RunStoreError
 from agentic_intent_gate.domain.run_validation import canonical_json
 from agentic_intent_gate.domain.validation import ValidationFailure
+from agentic_intent_gate.infrastructure.persistence.sqlite_run_repository import SQLiteRunRepository
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_migration import migrate_v1_to_v2
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_runs import (
+    SQLiteV2RunRepository,
+    binding_for,
+    linked_decision,
+)
 
 
 @pytest.fixture
@@ -495,7 +496,7 @@ async def test_v2_approval_http_unchanged_and_no_action_routes(
 ):
     import httpx
 
-    from agentic_intent_gate.adapters.local_http import create_app
+    from agentic_intent_gate.api.local_http import create_app
     from agentic_intent_gate.application.generate_plan import PlanningService
     from agentic_intent_gate.application.runs import RunService
 

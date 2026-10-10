@@ -7,24 +7,29 @@ from pathlib import Path
 
 import uvicorn
 
-from agentic_intent_gate.adapters.configuration import ConfigurationError, Settings
-from agentic_intent_gate.adapters.executable_registry import ExecutableRegistry
-from agentic_intent_gate.adapters.local_capability import CapabilityVerifier, LocalDemoAuthorization
-from agentic_intent_gate.adapters.local_http import create_app
-from agentic_intent_gate.adapters.models.local_openai import LocalOpenAIProvider
-from agentic_intent_gate.adapters.service_demo import DemoNoteExecutor
-from agentic_intent_gate.adapters.single_owner import single_owner
-from agentic_intent_gate.adapters.sqlite_action_execution import SQLiteExecutionRepository
-from agentic_intent_gate.adapters.sqlite_v2_runs import SQLiteV2RunRepository
-from agentic_intent_gate.adapters.tool_catalog import build_validator
+from agentic_intent_gate.api.local_http import create_app
 from agentic_intent_gate.application.action_compiler import ActionCompiler
 from agentic_intent_gate.application.action_execution import ActionExecutionGateway
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.recover_actions import recover_actions
 from agentic_intent_gate.application.recover_runs import recover_runs
 from agentic_intent_gate.application.runs import RunService
+from agentic_intent_gate.config.configuration import ConfigurationError, Settings
 from agentic_intent_gate.domain.action import ActionCode, ActionError
 from agentic_intent_gate.domain.run import RunStoreError
+from agentic_intent_gate.infrastructure.llm.local_openai import LocalOpenAIProvider
+from agentic_intent_gate.infrastructure.persistence.sqlite_action_execution import (
+    SQLiteExecutionRepository,
+)
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_runs import SQLiteV2RunRepository
+from agentic_intent_gate.infrastructure.security.local_capability import (
+    CapabilityVerifier,
+    LocalDemoAuthorization,
+)
+from agentic_intent_gate.infrastructure.security.single_owner import single_owner
+from agentic_intent_gate.infrastructure.tools.executable_registry import ExecutableRegistry
+from agentic_intent_gate.infrastructure.tools.service_demo import DemoNoteExecutor
+from agentic_intent_gate.infrastructure.tools.tool_catalog import build_validator
 
 
 def compose(settings, environment, planning, *, predecessor_stopped=False):

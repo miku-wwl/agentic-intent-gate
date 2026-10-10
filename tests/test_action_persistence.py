@@ -11,15 +11,7 @@ from uuid import uuid4
 import pytest
 from run_helpers import advance, database_rows, plan_for
 
-from agentic_intent_gate.adapters import sqlite_actions
-from agentic_intent_gate.adapters.sqlite_actions import SQLiteActionRepository
-from agentic_intent_gate.adapters.sqlite_run_repository import SQLiteRunRepository
-from agentic_intent_gate.adapters.sqlite_v2_migration import migrate_v1_to_v2
-from agentic_intent_gate.adapters.sqlite_v2_runs import (
-    SQLiteV2RunRepository,
-    binding_for,
-    linked_decision,
-)
+import agentic_intent_gate.infrastructure.persistence.sqlite_actions as sqlite_actions
 from agentic_intent_gate.application.action_compiler import ActionCompiler, ToolBinding
 from agentic_intent_gate.application.actions import ActionService
 from agentic_intent_gate.domain.action import (
@@ -36,6 +28,14 @@ from agentic_intent_gate.domain.contracts import Intent, Risk
 from agentic_intent_gate.domain.run import RunState, RunStoreError
 from agentic_intent_gate.domain.run_validation import canonical_json, utc_now
 from agentic_intent_gate.domain.validation import ValidationFailure
+from agentic_intent_gate.infrastructure.persistence.sqlite_actions import SQLiteActionRepository
+from agentic_intent_gate.infrastructure.persistence.sqlite_run_repository import SQLiteRunRepository
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_migration import migrate_v1_to_v2
+from agentic_intent_gate.infrastructure.persistence.sqlite_v2_runs import (
+    SQLiteV2RunRepository,
+    binding_for,
+    linked_decision,
+)
 from agentic_intent_gate.ports.action_repository import AdmissionCommand
 
 

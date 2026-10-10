@@ -116,8 +116,9 @@ effect store; the package provides existing Run/approval/Action persistence and 
 [examples/consumer/app.py](examples/consumer/app.py) demonstrates deterministic
 `append_audit_entry/1` against `consumer-demo`, without Ollama or paid APIs. Its scripted
 approval is test/example consent, not authenticated human approval. Build a local wheel
-and run it outside the checkout using [Development](docs/DEVELOPMENT.md). This working-tree
-API has not been published; no hosted package release is implied.
+and run it outside the checkout using [Development](docs/DEVELOPMENT.md). The shared
+runtime is released as the annotated `v0.1.0` Git tag; reproducible consumers should pin
+its verified peeled commit as shown there. This Git release does not imply PyPI publication.
 
 ## Documentation
 

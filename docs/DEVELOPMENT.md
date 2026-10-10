@@ -177,15 +177,13 @@ just to test installation. The current package version remains `0.1.0`.
 For Git-based installation, pin a reviewed **full commit SHA**, never a moving branch:
 
 ~~~powershell
-uv pip install 'agentic-intent-gate @ git+https://github.com/miku-wwl/agentic-intent-gate.git@d9f5a5c91b2e5cf73914642ac28411c36f5978ff'
+uv pip install 'agentic-intent-gate @ git+https://github.com/miku-wwl/agentic-intent-gate.git@fd742b783058a53400c465b4ab59c6e80715895a'
 ~~~
 
-The SHA above identifies a verified Runtime candidate containing
-`src/agentic_intent_gate/runtime.py`; it is not a formal release tag. Future Hackathon
-consumers should pin the exact verified release commit after publication, rather than
-assuming this candidate has already been released. Private Git access requires separate
-authentication. Never embed credentials in Git URLs, source, or documentation. No GitHub
-release or PyPI publication is implied.
+The SHA above is the peeled commit of the verified annotated `v0.1.0` release tag and
+contains `src/agentic_intent_gate/runtime.py`. Pin this full commit for reproducible Git
+installs. The Git tag does not imply PyPI publication. Private Git access requires separate
+authentication. Never embed credentials in Git URLs, source, or documentation.
 
 ## Browser E2E and complete offline regression
 

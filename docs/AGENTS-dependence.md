@@ -7,10 +7,10 @@ This repository is a **Hackathon application that consumes an existing Python Ag
 **Shared runtime:** [Agentic Intent Gate](https://github.com/miku-wwl/agentic-intent-gate)<br>
 **Python distribution:** `agentic-intent-gate`<br>
 **Public integration module:** `agentic_intent_gate.runtime`<br>
-**Qualified version target:** `v0.1.0` (verify that the release tag exists before relying on it)<br>
-**Pinned release commit:** `<VERIFIED_40_CHARACTER_RELEASE_COMMIT_SHA>`
+**Qualified version target:** `v0.1.0` (verified annotated Git tag)<br>
+**Pinned release commit:** `fd742b783058a53400c465b4ab59c6e80715895a`
 
-> **Setup required:** Replace the placeholder with the actual, verified release commit SHA. Never install from a moving `main` branch for reproducible builds. Private-repository access requires authenticated Git in local development and CI; never embed tokens in URLs, code, or logs.
+> The tag above peels to the pinned commit. Use the full commit SHA, not a moving `main` branch, for reproducible builds. When upgrading, verify the new release tag and pin its peeled commit. Private-repository access requires authenticated Git in local development and CI; never embed tokens in URLs, code, or logs.
 
 ## Dependency Setup
 
@@ -19,7 +19,7 @@ Declare the dependency in this project's `pyproject.toml` (adapt to its existing
 ```toml
 [project]
 dependencies = [
-  "agentic-intent-gate @ git+https://github.com/miku-wwl/agentic-intent-gate.git@<VERIFIED_40_CHARACTER_RELEASE_COMMIT_SHA>",
+  "agentic-intent-gate @ git+https://github.com/miku-wwl/agentic-intent-gate.git@fd742b783058a53400c465b4ab59c6e80715895a",
 ]
 ```
 

@@ -61,3 +61,66 @@ The later reliability design is one Python application with bounded synchronous 
 For the later execution system, read the [project charter](docs/stage1-project-charter.md), [architecture](docs/stage1-architecture.md), [contracts](docs/stage1-contracts.md), and [historical consistency review](docs/stage1-review.md). Its [implementation plan](docs/stage1-implementation-plan.md) remains the deferred reliability roadmap, rather than the next sprint task.
 
 `research/` contains immutable Stage 0 source-study and Stage 0.5 local-reproduction reports. Their observations explain the reliability requirements; they are not our implementation. [STAGE1_HANDOFF.md](STAGE1_HANDOFF.md) is preserved as supplied. Its archived manifest, reproduction code, and review-package references are not prerequisites for this architecture; only the reports included here were used.
+
+## Day 4 — Competition Adapter Boundary
+
+The Day 3 local execution MVP is frozen at annotated tag `day3-final-freeze`; its [accepted freeze report](docs/day3-final-freeze-rerun-3.md) is historical full-suite evidence. Day 4 follows [Option A in the frozen adapter contract](docs/day4-adapter-contract.md): `DeterministicDummyExecutor` implements the existing `ToolExecutor` interface, but only trusted Python tests invoke it with a synthetic `ExecutionSpec`, UUID scope and stable effect key. It records bounded literal text through an injected receipt-store interface; record text cannot choose an implementation, command, endpoint or file path.
+
+This is **DIRECT ADAPTER BOUNDARY E2E**: the real adapter calls the already reviewed, test-only `SQLiteDummyStore` in `tests/test_dummy_adapter_contract.py`. A separate file under pytest `tmp_path` atomically retains the effect key, full adapter payload identity, scope, literal record and unique receipt. Fresh SQL reads and new store/executor instances verify restart replay, unchanged data on conflict and retained receipts after commit acknowledgment loss. Uncertainty stays `Unknown`, without automatic retry. These local tests do not establish provider-side exactly-once behavior or power-loss durability.
+
+Approval, Action authorization and controlled execution remain separate in the frozen demo. The test lane calls the existing result classifier for compatibility only: it does not admit, authorize, claim or persist a production Action, and the classifier's success text remains demo-specific. The SQLite helper is not shipped as a production provider. There is no dummy production registry registration, generic plugin loader, new HTTP endpoint or real external competition API. Future provider adapters require separately reviewed registration, authorization, identity, result-presentation and fault-injection contracts.
+
+```mermaid
+flowchart TD
+  subgraph DAY3["Frozen Day 3 local demo — production code path"]
+    U[User Intent / Model Plan] --> V[Validation and exact approval binding]
+    V --> A[Action Admission]
+    A --> Z[Verified Authorization]
+    Z --> C[Durable Claim and Attempt]
+    C --> R[Trusted Demo Registry]
+    R --> D[DemoNoteExecutor]
+    D --> O[Result CAS and Recovery]
+  end
+  subgraph DAY4["Day 4 DIRECT ADAPTER BOUNDARY E2E — test only"]
+    T[Trusted synthetic ExecutionSpec] --> X[DeterministicDummyExecutor]
+    X --> S[(Test-only SQLite Receipt Store)]
+    S --> E[Durable Receipt / Close and Reopen / Replay and Conflict]
+    E --> K[Frozen outcome classifier compatibility]
+  end
+```
+
+### Run the local adapter checks
+
+From the repository root in PowerShell, with Python 3.13 and `uv` installed:
+
+```powershell
+# Existing locked setup workflow; do not download a different Python runtime.
+$env:UV_PYTHON_DOWNLOADS = 'never'
+uv sync --frozen --python 3.13
+
+# Contract tests; direct boundary E2E; then both together.
+.venv\Scripts\python.exe -m pytest -q tests/test_dummy_adapter_contract.py
+.venv\Scripts\python.exe -m pytest -q tests/test_dummy_adapter_e2e.py
+.venv\Scripts\python.exe -m pytest -q tests/test_dummy_adapter_contract.py tests/test_dummy_adapter_e2e.py
+
+# Lint and Python formatting, followed by the separate full-repository check.
+.venv\Scripts\ruff.exe check .
+.venv\Scripts\ruff.exe format --check src/ tests/
+.venv\Scripts\ruff.exe format --check tests/test_dummy_adapter_e2e.py
+git diff --check
+.venv\Scripts\ruff.exe format --check .
+```
+
+No live model, cloud API or credentials are required. These commands do not start an HTTP server or invoke Ollama. The full-repository formatter currently exits nonzero only for the pre-existing committed Python code-block spacing in `docs/day4-adapter-contract.md` (`DOCUMENTED_P2`); this is not a full-format PASS. Python lint/format and new-file whitespace are separate gates. The full deterministic suite and Day 4 final freeze belong to Prompt 5.
+
+| Evidence boundary | Status | What is supported |
+| --- | --- | --- |
+| Frozen Day 3 execution core | VERIFIED | Annotated freeze and historical accepted report; bounded adjacent regression, not a new full-suite freeze |
+| Day 4 executor implementation | VERIFIED | Actual executor, exact trusted binding and inert bounded record |
+| Real SQLite contract tests | VERIFIED | Isolated file-backed store, atomic effect/receipt and contract matrix |
+| Direct adapter boundary E2E | VERIFIED | Trusted synthetic spec → actual adapter → test SQLite → classifier |
+| Restart/replay persistence | VERIFIED | New store/executor and fresh SQL retain the original receipt; conflict cannot replace it |
+| Unknown on commit uncertainty | VERIFIED | Real commit followed by lost acknowledgment; no implicit retry |
+| Production Action integration for dummy | NOT IMPLEMENTED | No compiler, authorization, registry or composition expansion |
+| HTTP/browser integration for dummy | NOT IMPLEMENTED | No new route/UI; HTTP/browser dummy E2E is NOT VERIFIED |
+| External provider integration | DEFERRED | Separate provider contracts and integration review required |

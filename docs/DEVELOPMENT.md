@@ -135,6 +135,17 @@ Use a new private local directory; the example provisions an exclusive capabilit
 retains scope/identity, and stores effects separately from the gate. It uses deterministic
 planning and scripted reviewed approval for demonstration only. No live LLM is needed.
 
+The shared runtime accepts a trusted external `ModelProvider`, but its bundled
+`LocalOpenAIProvider` prompt remains tailored to `service-demo` and
+`arguments.service_id`; it is not a general non-demo planner. Consumers needing
+model-based planning for another domain must supply their own appropriate provider and
+retain the runtime's strict Plan validation. The shipped UI's Action admission control
+also remains specific to `append_service_note/1` on `service-demo`. A consumer can admit
+through the supported HTTP/API interface or provide its own UI, then use the existing
+Runtime authorization and execution capabilities within their documented binding and
+approval boundaries. The reference consumer's scripted approval is example behavior,
+not production-grade multi-user authentication.
+
 From the checkout, build and prepare an **outside-checkout** installation:
 
 ~~~powershell
@@ -166,14 +177,15 @@ just to test installation. The current package version remains `0.1.0`.
 For Git-based installation, pin a reviewed **full commit SHA**, never a moving branch:
 
 ~~~powershell
-uv pip install 'agentic-intent-gate @ git+https://github.com/miku-wwl/agentic-intent-gate.git@c81692116437c9b4ba668af23966d0c18d02898d'
+uv pip install 'agentic-intent-gate @ git+https://github.com/miku-wwl/agentic-intent-gate.git@d9f5a5c91b2e5cf73914642ac28411c36f5978ff'
 ~~~
 
-That concrete pin is the committed package-structure baseline **before** the uncommitted
-consumer API changes; it does not provide the new consumer API. Until these changes are
-reviewed and committed, use the local wheel above. After review, pin the new actual SHA.
-Private repositories need separately authenticated Git installation; do not put tokens
-in URLs/source/docs. This is not a public hosted package release claim.
+The SHA above identifies a verified Runtime candidate containing
+`src/agentic_intent_gate/runtime.py`; it is not a formal release tag. Future Hackathon
+consumers should pin the exact verified release commit after publication, rather than
+assuming this candidate has already been released. Private Git access requires separate
+authentication. Never embed credentials in Git URLs, source, or documentation. No GitHub
+release or PyPI publication is implied.
 
 ## Browser E2E and complete offline regression
 

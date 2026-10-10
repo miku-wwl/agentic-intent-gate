@@ -161,8 +161,22 @@ registration, the browser UI, or the planning catalog.
 
 The separate [consumer example](../examples/consumer/app.py) uses its own audit executor
 and durable receipt store through the actual core Action gateway. It is distinct from
-both the demo composition and the direct Dummy tests. Its optional `Runtime.http_app()`
-reuses existing HTTP contracts/UI without automatically altering either demo entrypoint.
+both the demo composition and the direct Dummy tests. The shared runtime accepts a trusted,
+consumer-defined `ModelProvider`; the reference example instead uses deterministic
+planning and scripted reviewed approval.
+
+The bundled `LocalOpenAIProvider` prompt remains tailored to `service-demo` and
+`arguments.service_id`. Passing a consumer capability does not make that built-in prompt
+general-purpose. A non-demo consumer that needs model-based planning must provide its own
+appropriate trusted `ModelProvider`; the runtime still applies the consumer's strict Plan
+validation. The bundled browser UI's Action admission control also remains limited to the
+demo `append_service_note/1` tool on `service-demo`. `Runtime.http_app()` exposes the
+existing HTTP/API contracts but does not make that UI generic. Consumers may admit Actions
+through the supported HTTP/API interface or implement their own UI. Subsequent
+authorization and execution can use the existing Runtime capabilities, within the
+startup-bound single-tool, exact-approval, and verified-capability boundaries documented
+above. This reference integration is not production-grade multi-user authentication.
+
 Consumer tools have a generic confirmed-effect result message; legacy demo results retain
 their original message. Each consumer ledger must retain the trusted schemas/identities
 needed to validate its historical Plans when upgrading host configuration.

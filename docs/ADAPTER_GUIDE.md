@@ -46,6 +46,25 @@ retain its identity and token across restarts. The predecessor flag is an operat
 attestation, not a process-stopping command. Serve inside the context so the existing
 single-owner fence remains held. Existing v1 files are never silently migrated.
 
+## Consumer planning and admission boundary
+
+The shared runtime accepts a trusted external `ModelProvider` supplied by the consumer.
+The bundled `LocalOpenAIProvider` prompt is still tailored to the demo target
+`service-demo` and the `arguments.service_id` convention; it is not a generic prompt for
+non-demo capabilities. A consumer needing model-based planning for another domain must
+provide its own appropriate trusted provider. Provider output remains subject to the
+consumer's strict schema, semantic, and deterministic risk validation.
+
+The shipped browser UI's Action admission control remains tailored to the demo
+`append_service_note/1` action on `service-demo`; it is not a generic consumer UI. A host
+can admit through the supported HTTP/API interface (including the existing Action
+admission endpoint) or implement its own UI. Subsequent authorization and execution can
+use the existing Runtime capabilities only within the explicitly registered single
+SIDE_EFFECT binding, exact approved-Plan binding, and verified-capability policy. The
+reference consumer uses deterministic planning and scripted reviewed approval. That
+example is not production-grade multi-user authentication or proof of authenticated human
+consent.
+
 ## Capability and Plan validation
 
 Frozen bindings contain exact tool/version/target, adapter/revision, and canonical UUIDv4

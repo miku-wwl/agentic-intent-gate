@@ -115,6 +115,7 @@ Default pytest settings exclude opt-in `live` tests:
 
 ~~~powershell
 uv run pytest -q tests/test_sqlite_run_repository.py
+uv run pytest -q tests/test_consumer_runtime.py
 uv run pytest -q tests/test_dummy_adapter_contract.py tests/test_dummy_adapter_e2e.py
 uv run pytest -q tests/test_service_demo_adapter.py tests/test_action_execution.py tests/test_execution_hardening.py
 ~~~
@@ -125,6 +126,54 @@ schema invariant and the real database structure/pragma checks.
 Adapter tests run the Dummy directly with test-owned real SQLite stores; they are not
 production Action registration tests. Use nearby persistence, capability, and compiler
 tests when changing those boundaries.
+
+## Independent consumer and wheel verification
+
+The supported public integration module is `agentic_intent_gate.runtime`.
+See [Adapter guide](ADAPTER_GUIDE.md) and [consumer app](../examples/consumer/app.py).
+Use a new private local directory; the example provisions an exclusive capability file,
+retains scope/identity, and stores effects separately from the gate. It uses deterministic
+planning and scripted reviewed approval for demonstration only. No live LLM is needed.
+
+From the checkout, build and prepare an **outside-checkout** installation:
+
+~~~powershell
+$consumerRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('aig-consumer-' + [guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Path $consumerRoot | Out-Null
+uv build --offline --out-dir (Join-Path $consumerRoot 'dist')
+uv venv --python 3.13 (Join-Path $consumerRoot 'venv')
+$consumerPython = Join-Path $consumerRoot 'venv\Scripts\python.exe'
+$consumerWheel = Join-Path $consumerRoot 'dist\agentic_intent_gate-0.1.0-py3-none-any.whl'
+uv pip install --python $consumerPython $consumerWheel
+uv pip install --python $consumerPython 'pytest>=8,<10' 'pytest-asyncio>=1,<2'
+New-Item -ItemType Directory -Path (Join-Path $consumerRoot 'examples\consumer'), (Join-Path $consumerRoot 'tests') | Out-Null
+Copy-Item examples\consumer\app.py (Join-Path $consumerRoot 'examples\consumer\app.py')
+Copy-Item tests\test_consumer_runtime.py (Join-Path $consumerRoot 'tests\test_consumer_runtime.py')
+Push-Location $consumerRoot
+try {
+    & $consumerPython -I examples\consumer\app.py data --provision --predecessor-stopped
+    & $consumerPython -I -m pytest -q -o asyncio_mode=auto tests\test_consumer_runtime.py
+} finally {
+    Pop-Location
+}
+~~~
+
+These commands copy only example/test code, not core implementation. `-I` prevents
+source PYTHONPATH injection. A fresh wheel install may need network access for dependencies;
+offline builds require cached Hatch dependencies. Do not publish or change package version
+just to test installation. The current package version remains `0.1.0`.
+
+For Git-based installation, pin a reviewed **full commit SHA**, never a moving branch:
+
+~~~powershell
+uv pip install 'agentic-intent-gate @ git+https://github.com/miku-wwl/agentic-intent-gate.git@c81692116437c9b4ba668af23966d0c18d02898d'
+~~~
+
+That concrete pin is the committed package-structure baseline **before** the uncommitted
+consumer API changes; it does not provide the new consumer API. Until these changes are
+reviewed and committed, use the local wheel above. After review, pin the new actual SHA.
+Private repositories need separately authenticated Git installation; do not put tokens
+in URLs/source/docs. This is not a public hosted package release claim.
 
 ## Browser E2E and complete offline regression
 
@@ -152,6 +201,8 @@ enable them or substitute mocks merely to claim a real-provider result.
 ~~~powershell
 uv run ruff check src tests
 uv run ruff format --check src tests
+uv run ruff check examples
+uv run ruff format --check examples
 uv lock --check --offline
 git diff --check
 ~~~

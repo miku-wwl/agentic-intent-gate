@@ -86,7 +86,13 @@ def validated_action(connection, runs, row, compiler=None):
     except ActionError:
         fail("ACTION_RETAINED_TOOL_CONTRACT")
     compiler = ActionCompiler(runs.validator, (retained,))
-    compiler.validate_spec(action.spec, run, decision, binding)
+    try:
+        compiler.validate_spec(action.spec, run, decision, binding)
+    except ActionError:
+        # Invalid RETAINED identity is storage corruption, not current-registry retirement.
+        # Admission still reports current binding denial separately; HTTP must never turn
+        # a tampered durable row into a harmless eligibility conflict.
+        fail("ACTION_RETAINED_TOOL_CONTRACT")
     if action.created_at < run.updated_at:
         fail("ACTION_SPEC_LINK")
     from agentic_intent_gate.infrastructure.persistence.sqlite_action_ledger import validate_history

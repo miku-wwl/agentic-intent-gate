@@ -28,8 +28,9 @@ claims as trusted. The capability is not a human login or general RBAC service.
 `LocalDemoAuthorization` checks subject, operation, and execution binding. Compiler and
 repository validation enforce exact approval. A persisted grant binds the policy revision
 and compiled specification. The trusted
-compiler admits only the supported single-step demo note Plan, and the concrete registry
-resolves only the bound demo executor. Approval, admission, authorization, and execution
+compiler admits one approved SIDE_EFFECT step with an exact trusted binding. The unchanged
+demo resolves only its note executor; a consumer explicitly registers one host-owned
+executor before serving. Approval, admission, authorization, and execution
 are separate boundaries.
 
 Tool identity/version, adapter identity/revision, target, and execution scope come from
@@ -37,6 +38,14 @@ trusted configuration. Immutable arguments cross the ToolExecutor port, not Run 
 capability secrets, or arbitrary control-plane authority. Adapters must revalidate inputs,
 limit targets, and return correlated outcome evidence. Strict HTTP parsing/origin handling
 and safe browser text rendering reduce local misuse; they do not authenticate a human.
+
+The consumer API uses a closed bounded scalar schema and a pinned tool/version/target;
+optional semantic rules are trusted host callables, not model-selected validators.
+`BoundCapabilityAuthorization` freezes one verifier-issued principal identity, operation
+set, complete binding, and policy revision. A token does not grant authority over arbitrary
+tools. The registry has no mutation/registration HTTP API, discovery, or global state.
+Installed host/adapter Python code remains trusted: the runtime cannot sandbox malicious
+code or prevent host code from calling its own executor outside the gateway.
 
 ## Persistence, concurrency, and duplicate effects
 
@@ -55,7 +64,11 @@ promise for arbitrary external services.
 Persisted results must match the claimed effect key, scope, target, and payload digest.
 Success needs valid receipt evidence; confirmed failure needs recognized no-effect
 evidence. Malformed/uncorrelated outcomes fail closed. The current demo digest and
-Dummy's full adapter receipt digest are distinct, revisioned identities.
+Dummy's full adapter receipt digest are distinct, revisioned identities. External compiled
+Actions retain `action-compiler-v2`/`action-spec-v2`; `tool-payload-v1` includes canonical
+arguments plus exact tool, version, target, adapter, binding revision, and scope. Altering
+any authority field changes the digest; a trusted registry also checks it independently.
+Legacy demo and direct Dummy identities are not silently reinterpreted.
 
 ## Ambiguity, Unknown, and recovery
 
@@ -83,6 +96,9 @@ proven distributed fencing or HA.
   distributed HA, and operational incident/reconciliation procedures are not validated.
 - General-purpose adapter registration, arbitrary tools, MCP, and multi-agent execution
   are not implemented.
+- The supported consumer baseline is one startup-bound SIDE_EFFECT capability, not
+  unrestricted tool routing, multi-target authorization, READ_ONLY dispatch, or a
+  general schema/plugin framework. Use separate ledgers and private effect stores.
 
 Before adding an external API, review credentials, allowed destinations, payload privacy,
 bounded failures, provider idempotency/receipt guarantees, and authorization integration.

@@ -211,10 +211,23 @@ class SQLiteExecutionRepository(SQLiteActionRepository):
             "EXECUTION_CONFIRMED_FAILED": ActionState.Failed,
             "EXECUTION_OUTCOME_UNKNOWN": ActionState.Unknown,
         }.get(result.get("code"))
-        if state is None or result != safe_result(state, result.get("receipt_reference")):
+        if state is None or result not in (
+            safe_result(state, result.get("receipt_reference")),
+            safe_result(
+                state, result.get("receipt_reference"), compiler_revision="action-compiler-v2"
+            ),
+        ):
             raise ActionError(ActionCode.INVALID_REQUEST)
         with self._transaction(write=True) as connection:
             action = self._load(connection, action_id)
+            if action is None:
+                raise ActionError(ActionCode.NOT_FOUND)
+            if result != safe_result(
+                state,
+                result.get("receipt_reference"),
+                compiler_revision=action.spec.compiler_revision,
+            ):
+                raise ActionError(ActionCode.INVALID_REQUEST)
             return self._finish(connection, action, attempt_id, state, result, "adapter")
 
     def recover(self, *, owners_stopped=False):

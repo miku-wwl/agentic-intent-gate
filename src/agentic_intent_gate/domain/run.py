@@ -1,6 +1,6 @@
 """Immutable persistent Run snapshots and the exhaustive frozen state graph."""
 
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass
 from enum import StrEnum
 
 from agentic_intent_gate.domain.approval import requires_approval
@@ -10,7 +10,7 @@ from agentic_intent_gate.domain.run_validation import (
     parse_timestamp,
     valid_uuid,
 )
-from agentic_intent_gate.domain.validation import INTENT_BYTES, fail
+from agentic_intent_gate.domain.validation import INTENT_BYTES, PlanValidator, fail
 
 
 class RunState(StrEnum):
@@ -114,8 +114,9 @@ class Run:
     created_at: str
     updated_at: str
     error: RunError | None = None
+    plan_validator: InitVar[PlanValidator | None] = None
 
-    def __post_init__(self) -> None:
+    def __post_init__(self, plan_validator) -> None:
         if not valid_uuid(self.run_id) or not isinstance(self.state, RunState):
             fail("RUN_ID_OR_STATE")
         if type(self.version) is not int or not isinstance(self.intent, Intent):
@@ -139,7 +140,10 @@ class Run:
             fail("RUN_ERROR")
         if parse_timestamp(self.updated_at) < parse_timestamp(self.created_at):
             fail("RUN_TIME_ORDER")
-        check_contract("day2-run.schema.json", self.to_dict())
+        if plan_validator is None:
+            check_contract("day2-run.schema.json", self.to_dict())
+        else:
+            plan_validator.validate_run_snapshot(self.to_dict())
 
     @property
     def approval_required(self) -> bool | None:

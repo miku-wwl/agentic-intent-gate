@@ -8,6 +8,7 @@ from agentic_intent_gate.domain.run_validation import valid_uuid
 from agentic_intent_gate.ports.action_repository import CommandResult
 from agentic_intent_gate.ports.authorization import DenyAuthorization
 from agentic_intent_gate.ports.tool_executor import (
+    EXTERNAL_PAYLOAD_REVISION,
     AttemptContext,
     DenyToolRegistry,
     ExecutionSpec,
@@ -30,7 +31,15 @@ def classify(outcome, spec, effect_key):
         and valid_uuid(outcome.receipt_reference)
         and outcome.no_effect_reason is None
     ):
-        return safe_result(ActionState.Succeeded, outcome.receipt_reference)
+        return safe_result(
+            ActionState.Succeeded,
+            outcome.receipt_reference,
+            compiler_revision=(
+                "action-compiler-v2"
+                if spec.identity_revision == EXTERNAL_PAYLOAD_REVISION
+                else "action-compiler-v1"
+            ),
+        )
     if (
         outcome.category is Outcome.CONFIRMED_FAILURE
         and outcome.receipt_reference is None

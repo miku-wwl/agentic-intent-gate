@@ -1,7 +1,7 @@
 """Strict parsing plus the canonical schema and trusted semantic rules."""
 
 import json
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from importlib.resources import files
 from itertools import islice
@@ -17,6 +17,7 @@ from agentic_intent_gate.domain.contracts import (
     Tool,
     ValidationIssue,
     freeze_json,
+    thaw_json,
 )
 
 REQUEST_BYTES = 16 * 1024
@@ -144,13 +145,37 @@ class PlanValidator:
         intent_schema: dict,
         plan_schema: dict,
         target_revisions: Mapping[str, int],
+        argument_rules: Mapping[tuple[str, str], Callable] | None = None,
     ) -> None:
         self.tools = tuple(tools)
         self._catalog = {(tool.name, tool.version): tool for tool in self.tools}
+        if len(self._catalog) != len(self.tools):
+            raise ValueError("Duplicate trusted tool definitions")
         self._targets = dict(target_revisions)
+        self._argument_rules = dict(argument_rules) if argument_rules is not None else None
+        if self._argument_rules is not None and set(self._argument_rules) != set(self._catalog):
+            raise ValueError("Every trusted tool requires an explicit semantic rule")
         self.plan_schema = freeze_json(plan_schema)
         self._intent_validator = Draft202012Validator(deepcopy(intent_schema))
         self._plan_validator = Draft202012Validator(deepcopy(plan_schema))
+        self._run_validator = None
+        if self._argument_rules is not None:
+            from agentic_intent_gate.domain.run_validation import build_contract_validator
+
+            self._run_validator = build_contract_validator(
+                "day2-run.schema.json", plan_schema=thaw_json(self.plan_schema)
+            )
+
+    def validate_run_snapshot(self, value):
+        """Retain every Run schema rule; only its trusted Plan resource is composed."""
+        if self._run_validator is None:
+            from agentic_intent_gate.domain.run_validation import check_contract
+
+            check_contract("day2-run.schema.json", value)
+        else:
+            _check_schema(self._run_validator, value)
+            if value["plan"] is not None:
+                self.parse_plan(json.dumps(value["plan"]))
 
     def parse_intent(self, raw: bytes) -> Intent:
         value = strict_object(raw, max_bytes=REQUEST_BYTES)
@@ -183,8 +208,13 @@ class PlanValidator:
             if tool is None:
                 fail("SEMANTIC_UNTRUSTED_TOOL", path)
             arguments = step["arguments"]
-            if arguments["service_id"] != value["target"]:
-                fail("SEMANTIC_TARGET_MISMATCH", path + "/arguments/service_id")
+            if self._argument_rules is None:
+                if arguments["service_id"] != value["target"]:
+                    fail("SEMANTIC_TARGET_MISMATCH", path + "/arguments/service_id")
+            else:
+                self._argument_rules[(tool.name, tool.version)](
+                    freeze_json(arguments), value["target"]
+                )
             canonical = json.dumps(
                 arguments, ensure_ascii=False, sort_keys=True, separators=(",", ":")
             )
@@ -201,7 +231,7 @@ class PlanValidator:
                 if key in mutation_keys:
                     fail("SEMANTIC_DUPLICATE_MUTATION", path)
                 mutation_keys.add(key)
-            if "expected_revision" in arguments:
+            if self._argument_rules is None and "expected_revision" in arguments:
                 if arguments["expected_revision"] != self._targets[value["target"]]:
                     fail("SEMANTIC_REVISION_MISMATCH", path + "/arguments/expected_revision")
             if rank[tool.risk_class] > rank[computed_risk]:

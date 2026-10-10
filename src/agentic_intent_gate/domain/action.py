@@ -208,6 +208,11 @@ class Action:
                     "The external effect outcome is unknown.",
                 ),
             }[self.state]
+            if (
+                self.state is ActionState.Succeeded
+                and self.spec.compiler_revision == "action-compiler-v2"
+            ):
+                expected = ("EXECUTION_SUCCEEDED", "The tool effect was confirmed.")
             value = strict_object(canonical_json(thaw_json(self.result)), max_bytes=1024)
             if (
                 set(value) != {"code", "message", "receipt_reference"}
@@ -267,7 +272,7 @@ def guard_action(action: Action | None, expected_version: int, allowed_states):
         raise ActionError(ActionCode.NOT_EXECUTABLE)
 
 
-def safe_result(state, receipt=None):
+def safe_result(state, receipt=None, *, compiler_revision="action-compiler-v1"):
     code, message = {
         ActionState.Succeeded: ("EXECUTION_SUCCEEDED", "The demo note effect was confirmed."),
         ActionState.Failed: (
@@ -279,4 +284,6 @@ def safe_result(state, receipt=None):
             "The external effect outcome is unknown.",
         ),
     }[state]
+    if state is ActionState.Succeeded and compiler_revision == "action-compiler-v2":
+        message = "The tool effect was confirmed."
     return {"code": code, "message": message, "receipt_reference": receipt}

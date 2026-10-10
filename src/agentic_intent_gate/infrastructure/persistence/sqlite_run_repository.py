@@ -162,6 +162,7 @@ class SQLiteRunRepository:
             row["created_at"],
             row["updated_at"],
             error,
+            plan_validator=self.validator,
         )
         self._validate_history(connection, run)
         return run
@@ -228,6 +229,7 @@ class SQLiteRunRepository:
                 run.created_at,
                 event["created_at"],
                 run.error if state == RunState.PlanRejected else None,
+                plan_validator=self.validator,
             )
             if before is not None and after.updated_at < before.updated_at:
                 fail("STORED_AUDIT_TIME_ORDER")
@@ -321,6 +323,7 @@ class SQLiteRunRepository:
             state=state,
             version=before.version + 1,
             updated_at=max(now, before.updated_at),
+            plan_validator=self.validator,
             **changes,
         )
 

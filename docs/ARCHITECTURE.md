@@ -1,7 +1,8 @@
 # Architecture
 
-The implemented system is a local, approval-gated runtime with two entry points and an
-independent adapter-test lane. Source lives under `src/agentic_intent_gate/`.
+The system is a local approval-gated runtime with two unchanged demo entry points, an
+explicit independent-consumer composition, and an isolated adapter-test lane.
+Source lives under `src/agentic_intent_gate/`.
 
 ## Source layers
 
@@ -33,8 +34,8 @@ flowchart TD
     B --> C[Trusted ActionCompiler]
     C --> A[Verified capability + authorization]
     A --> L[SQLite Action ledger / CAS claim]
-    L --> E[ToolExecutor: DemoNoteExecutor]
-    E --> S[Separate demo receipt store]
+    L --> E[Exact registered ToolExecutor]
+    E --> S[Host-owned effect / receipt store]
     E --> O[Durable Succeeded / Failed / Unknown]
     subgraph Isolated_tests[Day 4 isolated tests: no production registration]
         T[Direct contract / integration calls] --> D[DeterministicDummyExecutor]
@@ -87,10 +88,18 @@ It does not compose an Action gateway or expose Action controls.
 Runs/Actions before serving. New empty gate files can be initialized; existing v1 files
 are not silently migrated. The demo store is provisioned separately.
 
-The registry accepts the concrete demo executor, not arbitrary adapters. The compiler
-admits only an exactly bound `Approved` Run at version 5 containing one supported
-`append_service_note/1` side-effect step. Adapter identity/revision and execution scope
-come from trusted configuration, never model-generated authority.
+The unchanged demo still registers only `DemoNoteExecutor`. Independent hosts use
+`runtime.ToolCapability` and `open_runtime` to compose one non-demo tool: closed bounded
+scalar arguments, one pinned target, SIDE_EFFECT risk, optional trusted semantics,
+one explicit executor registration, a verifier, and a separate policy. `open_runtime`
+holds the single-owner lock until its context exits and performs existing recovery.
+There is no package scanning, model-selected executor, global registry, or implicit tool.
+
+The compiler admits only an exactly bound `Approved` Run at version 5 with one SIDE_EFFECT
+step matching the configured binding. The complete registry and capability policy identity
+includes tool/version/target, adapter/revision, and UUIDv4 scope. The consumer's Run contract
+reuses every existing lifecycle rule with a composed in-memory Plan resource. Bundled
+schemas, SQLite DDL, legacy Plan semantics, and demo entrypoints remain unchanged.
 
 ## Authorization and durable Actions
 
@@ -119,9 +128,13 @@ it. Request `Idempotency-Key` values identify commands, not new effects. The com
 identity also retains Run/approval IDs, approved version, step index, compiler revision,
 Plan digest, and specification digest. `ExecutionSpec`
 freezes tool/version, target, arguments, adapter identity/revision, and execution scope.
-The demo's frozen payload digest uses `demo-note-payload-v1`; the Dummy store additionally
-binds its complete adapter identity using `dummy-record-v1`. These are not interchangeable
-generic digest formats.
+The legacy demo retains `action-compiler-v1`, `action-spec-v1`, and
+`demo-note-payload-v1` exactly. External identities use persisted `action-compiler-v2`,
+`action-spec-v2`, and `tool-payload-v1`; their payload hash includes **all six binding
+fields** and canonical arguments. `ExecutionSpec.from_compiled` selects the payload
+revision from the verified persisted compiler revision, never model output. The direct
+Dummy retains its legacy correlation digest plus its own complete `dummy-record-v1`
+store digest. No existing Action is rehashed or migrated.
 
 The separate demo store atomically binds an effect key to payload/scope and a receipt:
 identical replay returns the original receipt; conflicting payload or store identity
@@ -145,6 +158,14 @@ See [Adapter guide](ADAPTER_GUIDE.md) for outcome and receipt requirements.
 `DeterministicDummyExecutor` is a direct contract/reference implementation. Its real
 SQLite receipt store is owned by tests. It is not wired into production Action
 registration, the browser UI, or the planning catalog.
+
+The separate [consumer example](../examples/consumer/app.py) uses its own audit executor
+and durable receipt store through the actual core Action gateway. It is distinct from
+both the demo composition and the direct Dummy tests. Its optional `Runtime.http_app()`
+reuses existing HTTP contracts/UI without automatically altering either demo entrypoint.
+Consumer tools have a generic confirmed-effect result message; legacy demo results retain
+their original message. Each consumer ledger must retain the trusted schemas/identities
+needed to validate its historical Plans when upgrading host configuration.
 
 ## Actual HTTP surface
 

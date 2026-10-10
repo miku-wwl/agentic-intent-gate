@@ -17,6 +17,10 @@ Prefer additive, removable competition adapters. Keep competition policies, prov
 credentials, and external API details out of the core runtime. Any integration into the
 compiler, registry, authorization, schema, or composition needs explicit review.
 The isolated Dummy Adapter is not a production registration mechanism.
+Independent consumers use `agentic_intent_gate.runtime` with one startup-frozen binding,
+one approved SIDE_EFFECT step, a bounded schema, and separate authorization. Preserve
+legacy demo identities and explicit external digest revisions; never silently migrate
+persisted Actions. Keep adapter code in the consumer repository, not core policy/ledger.
 
 Minimize unrelated changes. Use focused tests during development; run broad regression
 when the change or requested acceptance justifies it. Never silently weaken assertions,

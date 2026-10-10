@@ -10,6 +10,8 @@ from agentic_intent_gate.domain.run import RunState
 from agentic_intent_gate.domain.run_validation import canonical_json, valid_uuid
 
 COMPILER_REVISION = "action-compiler-v1"
+EXTERNAL_COMPILER_REVISION = "action-compiler-v2"
+LEGACY_TOOL = ("append_service_note", "1", "service-demo")
 
 
 @dataclass(frozen=True)
@@ -22,20 +24,38 @@ class ToolBinding:
     execution_scope: str
 
     def __post_init__(self):
-        if (
-            (self.tool_name, self.tool_version, self.target)
-            != ("append_service_note", "1", "service-demo")
-            or not identifier(self.adapter_id)
-            or not identifier(self.binding_revision)
-            or not valid_uuid(self.execution_scope)
-        ):
+        if not all(
+            identifier(v)
+            for v in (
+                self.tool_name,
+                self.tool_version,
+                self.target,
+                self.adapter_id,
+                self.binding_revision,
+            )
+        ) or not valid_uuid(self.execution_scope):
             raise ActionError(ActionCode.TOOL_NOT_BOUND)
+
+    @property
+    def compiler_revision(self):
+        return (
+            COMPILER_REVISION
+            if (self.tool_name, self.tool_version, self.target) == LEGACY_TOOL
+            else EXTERNAL_COMPILER_REVISION
+        )
+
+    def matches(self, spec):
+        return all(getattr(spec, key, None) == value for key, value in vars(self).items())
 
 
 def specification_digest(facts, binding):
     return digest(
         {
-            "identity_revision": "action-spec-v1",
+            "identity_revision": (
+                "action-spec-v1"
+                if facts["compiler_revision"] == COMPILER_REVISION
+                else "action-spec-v2"
+            ),
             **facts,
             "approval_identity_revision": binding.identity_revision,
             "approval_plan_digest": binding.approval_plan_digest,
@@ -64,19 +84,14 @@ class ActionCompiler:
             raise ActionError(ActionCode.RUN_NOT_ELIGIBLE)
         binding.verify(decision, run.plan, self.validator, admission=True)
         plan = self.validator.parse_plan(canonical_json(run.plan.to_dict()))
-        if (
-            len(plan.steps) != 1
-            or plan.risk_class is not Risk.SIDE_EFFECT
-            or plan.target != "service-demo"
-            or (plan.steps[0].tool_name, plan.steps[0].tool_version) != ("append_service_note", "1")
-        ):
+        if len(plan.steps) != 1 or plan.risk_class is not Risk.SIDE_EFFECT:
             raise ActionError(ActionCode.PLAN_NOT_EXECUTABLE)
         selected = next(
             (
                 b
                 for b in self.bindings
                 if (b.tool_name, b.tool_version, b.target)
-                == ("append_service_note", "1", plan.target)
+                == (plan.steps[0].tool_name, plan.steps[0].tool_version, plan.target)
             ),
             None,
         )
@@ -93,7 +108,7 @@ class ActionCompiler:
             "target": plan.target,
             "normalized_arguments": dict(plan.steps[0].arguments),
             "risk_class": plan.risk_class.value,
-            "compiler_revision": COMPILER_REVISION,
+            "compiler_revision": selected.compiler_revision,
             "adapter_id": selected.adapter_id,
             "binding_revision": selected.binding_revision,
             "execution_scope": selected.execution_scope,

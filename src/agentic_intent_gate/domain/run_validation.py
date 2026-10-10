@@ -48,6 +48,11 @@ def utc_now() -> str:
 
 @lru_cache(maxsize=2)
 def contract_validator(name: str) -> Draft202012Validator:
+    return build_contract_validator(name)
+
+
+def build_contract_validator(name: str, *, plan_schema=None) -> Draft202012Validator:
+    """Compose trusted consumer Plan shape without changing Run lifecycle rules/resources."""
     # Registry has no remote retriever. Every reference resolves to a bundled resource.
     registry = Registry()
     schemas = {}
@@ -57,7 +62,11 @@ def contract_validator(name: str) -> Draft202012Validator:
         "day2-run.schema.json",
         "day2-approval.schema.json",
     ):
-        schema = load_schema(filename) | {"$id": SCHEMA_BASE + filename}
+        schema = (
+            plan_schema
+            if filename == "day1-plan.schema.json" and plan_schema is not None
+            else load_schema(filename)
+        ) | {"$id": SCHEMA_BASE + filename}
         schemas[filename] = schema
         registry = registry.with_resource(SCHEMA_BASE + filename, Resource.from_contents(schema))
     return Draft202012Validator(schemas[name], registry=registry)

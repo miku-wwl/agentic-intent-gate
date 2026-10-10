@@ -2,8 +2,8 @@
 
 A local-first agent runtime that turns natural-language requests into strictly validated
 Plans, persists their lifecycle, and separates human approval from authorized tool execution.
-The completed Day 4 implementation is a development/demo foundation for removable
-Hackathon integrations, not a production deployment.
+The shared baseline supports explicitly trusted, removable single-tool Hackathon consumers.
+It remains a local development/demo runtime, not a production deployment or plugin framework.
 
 ## What works
 
@@ -15,11 +15,15 @@ Hackathon integrations, not a production deployment.
   authorization, an Action ledger, stable effect keys, and one SQLite-backed demo effect.
 - A backend-served browser UI for planning, Runs, approval, and optional Action controls.
 - An isolated Dummy Adapter reference with real SQLite contract/integration tests.
+- An explicit single-binding consumer API, bounded non-demo Plan schemas, frozen registration
+  and capability policy, and an independent SQLite-backed audit consumer.
 
 ## Current limits
 
-Only `append_service_note/1` against `service-demo` is executable in the explicit demo
-composition. Planning catalog entries do not imply executable tools. The Dummy Adapter
+The unchanged demo composition executes only `append_service_note/1` against `service-demo`.
+Independent hosts can explicitly register one trusted SIDE_EFFECT tool through
+`agentic_intent_gate.runtime`; only one approved step is executable. Planning catalog
+entries do not imply executable tools. The Dummy Adapter
 is **not** registered there or exposed in the browser. There is no dynamic adapter/plugin
 system, MCP integration, multi-agent orchestration, or general-purpose tool execution.
 Local bearer capabilities are not production user authentication. Distributed HA,
@@ -35,8 +39,8 @@ claim → ToolExecutor → persistent outcome.
 Approval alone never executes a tool. The default entry point stops at Runs/approval;
 the explicitly configured v2 entry point enables the local execution demo.
 Source is separated into API, Application, Domain, Ports, Infrastructure, and Configuration
-layers; this package reorganization adds no runtime capabilities.
-See [Architecture](docs/ARCHITECTURE.md) for the two execution paths and actual APIs.
+layers. See [Architecture](docs/ARCHITECTURE.md) for the demo, consumer, and isolated Dummy
+paths and actual APIs.
 
 ## Quick start: planning and approval
 
@@ -93,6 +97,7 @@ memory-only input. Refresh/deep links read state; they do not replay mutations.
 
 ~~~powershell
 uv run pytest -q tests/test_sqlite_run_repository.py
+uv run pytest -q tests/test_consumer_runtime.py
 uv run pytest -q tests/test_dummy_adapter_contract.py tests/test_dummy_adapter_e2e.py
 uv run ruff check src tests
 uv run ruff format --check src tests
@@ -100,6 +105,19 @@ uv run ruff format --check src tests
 
 Test selection, browser prerequisites, and the complete offline command are in
 [Development](docs/DEVELOPMENT.md). Live LLM tests are opt-in and excluded by default.
+
+## Independent consumer
+
+Use `ToolCapability`, `ToolBinding`, `ExecutableRegistry`, `BoundCapabilityAuthorization`,
+and `open_runtime` from `agentic_intent_gate.runtime`. Registration is trusted Python
+startup code, never a model or HTTP command. The consumer defines its own executor and
+effect store; the package provides existing Run/approval/Action persistence and gates.
+
+[examples/consumer/app.py](examples/consumer/app.py) demonstrates deterministic
+`append_audit_entry/1` against `consumer-demo`, without Ollama or paid APIs. Its scripted
+approval is test/example consent, not authenticated human approval. Build a local wheel
+and run it outside the checkout using [Development](docs/DEVELOPMENT.md). This working-tree
+API has not been published; no hosted package release is implied.
 
 ## Documentation
 

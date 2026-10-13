@@ -28,7 +28,10 @@ class SQLiteExecutionRepository(SQLiteActionRepository):
             s.target,
             s.execution_scope,
         )
-        if binding not in self.compiler.bindings:
+        if (
+            binding not in self.compiler.bindings
+            or s.compiler_revision != self.compiler.compiler_revision_for(binding)
+        ):
             raise ActionError(ActionCode.TOOL_NOT_BOUND)
 
     def _checked(self, connection, command, principal, policy, operation):

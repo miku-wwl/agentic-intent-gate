@@ -2,8 +2,10 @@
 
 import asyncio
 import math
+from dataclasses import dataclass
 
 from agentic_intent_gate.domain.action import ActionCode, ActionError, ActionState, safe_result
+from agentic_intent_gate.domain.execution_budget import execution_timeout
 from agentic_intent_gate.domain.run_validation import valid_uuid
 from agentic_intent_gate.ports.action_repository import CommandResult
 from agentic_intent_gate.ports.authorization import DenyAuthorization
@@ -50,18 +52,27 @@ def classify(outcome, spec, effect_key):
     return unknown
 
 
+@dataclass(frozen=True, init=False)
 class ActionExecutionGateway:
+    repository: object
+    policy: object
+    registry: object
+    tool_timeout_seconds: float
+
     def __init__(self, repository, policy=None, registry=None, *, tool_timeout_seconds=5):
-        self.repository = repository
-        self.policy = policy if policy is not None else DenyAuthorization()
-        self.registry = registry if registry is not None else DenyToolRegistry()
+        budget = execution_timeout(tool_timeout_seconds)
+        object.__setattr__(self, "repository", repository)
+        object.__setattr__(self, "policy", policy if policy is not None else DenyAuthorization())
+        object.__setattr__(
+            self, "registry", registry if registry is not None else DenyToolRegistry()
+        )
         if (
-            not math.isfinite(tool_timeout_seconds)
-            or not 0 < tool_timeout_seconds <= 5
-            or repository.compiler.bindings != self.registry.bindings
+            repository.compiler.bindings != self.registry.bindings
+            or (budget > 5 and budget != repository.compiler.execution_timeout_seconds)
+            or (budget <= 5 and repository.compiler.execution_timeout_seconds > 5)
         ):
             raise ActionError(ActionCode.TOOL_NOT_BOUND)
-        self.tool_timeout_seconds = tool_timeout_seconds
+        object.__setattr__(self, "tool_timeout_seconds", budget)
 
     def require(self, principal, operation):
         self.policy.require(principal, operation)
@@ -93,6 +104,13 @@ class ActionExecutionGateway:
 
     async def execute(self, command, principal, *, deadline=None):
         self.require(principal, "execute")
+        if deadline is not None:
+            try:
+                valid_deadline = type(deadline) in (int, float) and math.isfinite(deadline)
+            except OverflowError:
+                valid_deadline = False
+            if not valid_deadline:
+                raise ActionError(ActionCode.INVALID_REQUEST)
         claim = self.repository.claim(command, principal, self.policy)
         if claim.replayed:
             return CommandResult(claim.action, True)
@@ -108,14 +126,18 @@ class ActionExecutionGateway:
         try:
             executor = self.registry.resolve(spec)
             async with asyncio.timeout_at(context.deadline):
-                outcome = await executor.execute(spec, action.effect_key, context)
-            result = classify(outcome, spec, action.effect_key)
+                # timeout_at cannot preempt synchronous work or an adapter swallowing cancellation.
+                if not context.expired():
+                    outcome = await executor.execute(spec, action.effect_key, context)
+                    if not context.expired() and not asyncio.current_task().cancelling():
+                        result = classify(outcome, spec, action.effect_key)
         except asyncio.CancelledError:
             cancelled = True
         except Exception:
             # A deadline or arbitrary adapter/storage fault is not authoritative no-effect proof.
             pass
         finally:
+            cancelled = cancelled or bool(asyncio.current_task().cancelling())
             context.cancelled.set()
         # No gate transaction was held while awaiting the adapter; no detach/retry/helper spawn.
         finished = self.repository.finish(action.action_id, claim.attempt_id, result)

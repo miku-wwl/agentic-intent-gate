@@ -17,6 +17,8 @@ It remains a local development/demo runtime, not a production deployment or plug
 - An isolated Dummy Adapter reference with real SQLite contract/integration tests.
 - An explicit single-binding consumer API, bounded non-demo Plan schemas, frozen registration
   and capability policy, and an independent SQLite-backed audit consumer.
+- A trusted adapter execution budget: five seconds by default, explicit opt-in up to
+  fifteen seconds, with a durable extended-profile identity that cannot elevate old Actions.
 
 ## Current limits
 
@@ -117,8 +119,15 @@ effect store; the package provides existing Run/approval/Action persistence and 
 `append_audit_entry/1` against `consumer-demo`, without Ollama or paid APIs. Its scripted
 approval is test/example consent, not authenticated human approval. Build a local wheel
 and run it outside the checkout using [Development](docs/DEVELOPMENT.md). The shared
-runtime is released as the annotated `v0.1.0` Git tag; reproducible consumers should pin
-its verified peeled commit as shown there. This Git release does not imply PyPI publication.
+runtime package is `0.2.0`; reproducible consumers should pin the verified peeled commit
+of `v0.2.0` as recorded in the [consumer handoff](docs/V0.2.0-CONSUMER-HANDOFF.md).
+This Git release does not imply PyPI publication. The project is [MIT licensed](LICENSE).
+
+`open_runtime(..., execution_timeout_seconds=15)` opts into a longer ToolExecutor budget.
+Omitting the parameter retains five seconds and the v0.1.0 identities. An extended profile
+also requires an explicitly reviewed `execution_budget_binding(binding, 15)`; the
+compiler and Gateway enforce its identity and ceiling. See the executable examples and
+deadline/receipt rules in the [Adapter guide](docs/ADAPTER_GUIDE.md).
 
 ## Documentation
 

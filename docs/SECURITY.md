@@ -47,6 +47,39 @@ tools. The registry has no mutation/registration HTTP API, discovery, or global 
 Installed host/adapter Python code remains trusted: the runtime cannot sandbox malicious
 code or prevent host code from calling its own executor outside the gateway.
 
+## Trusted execution budgets
+
+Five seconds remains the backward-compatible default authority. A host can explicitly choose
+a finite built-in int/float in `(0, 15]`; booleans/coercible objects are rejected. Fifteen
+seconds is the enforced maximum, not authority available from a model or HTTP request.
+`open_runtime` freezes the value through the compiler and Gateway. Direct Gateway construction
+enforces the same ceiling and checks compiler/profile compatibility.
+
+Above five seconds, a reviewed binding revision must carry its exact canonical budget suffix
+from `execution_budget_binding`. New Actions use compiler/spec revision v3 and existing durable
+digest/grant/attempt links. Current binding **and compiler revision** must match before claim.
+Default v1/v2 Actions remain readable/recoverable, but cannot inherit extended execution authority,
+even when their historical revision name coincides with the suffix. Never edit persisted Actions,
+relabel old effect stores, or transfer grants to a new profile. For a consumer upgrade, provision
+a fresh scope and private ledger/store identity, obtain a fresh Plan review, and authorize its
+new Action separately. Approval binds the Plan; it does not independently record a host budget
+before admission. Consumers must present the reviewed execution profile alongside human consent.
+
+Adapter time starts after durable claim and uses event-loop monotonic time. Caller deadlines
+can shorten it, never enlarge it. Invalid values fail before claim; expiration after claim is
+terminal Unknown. Pre-dispatch and post-return checks prevent late evidence being accepted
+when synchronous work or swallowed cancellation delays asyncio's timer. Cancellation finishes
+Unknown and propagates after durable finish; a finish failure remains a storage error requiring
+fail-closed recovery. The Gateway creates no detached execution or retry task.
+
+This is a cooperative execution limit, not a preemptive wall-clock or exactly-once remote effect
+guarantee. Blocking code may return late; a provider may commit despite timeout/cancellation.
+An acknowledged effect whose receipt handling crosses the deadline, or an effect whose
+acknowledgement is lost, becomes Unknown. Consumers must reserve time inside the adapter
+budget for provider verification and durable receipts, and additional request time for Gateway
+claim/finish. A confirmed on-time receipt retains its classification if the later gate finish
+is merely slow; an ambiguous/failed finish is never reported as a confirmed durable response.
+
 ## Persistence, concurrency, and duplicate effects
 
 SQLite enforces schema/foreign-key expectations. Transactional writes and expected-version

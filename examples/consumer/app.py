@@ -22,6 +22,7 @@ from agentic_intent_gate.runtime import (
     ToolBinding,
     ToolCapability,
     ToolOutcome,
+    execution_budget_binding,
     open_runtime,
     provision_capability,
 )
@@ -34,10 +35,11 @@ ARGUMENT_SCHEMA = {
 }
 
 
-def binding_for(scope):
-    return ToolBinding(
+def binding_for(scope, execution_timeout_seconds=5):
+    binding = ToolBinding(
         "append_audit_entry", "1", "consumer-audit", "audit-v1", "consumer-demo", scope
     )
+    return execution_budget_binding(binding, execution_timeout_seconds)
 
 
 class DeterministicProvider:
@@ -155,12 +157,12 @@ class AuditExecutor:
             return ToolOutcome(Outcome.UNKNOWN_OUTCOME)
 
 
-def provision(directory):
+def provision(directory, *, execution_timeout_seconds=5):
     directory = Path(directory).resolve()
     directory.mkdir(parents=True, exist_ok=True)
     if any(directory.iterdir()):
         raise ValueError("Provision only a new empty private consumer directory")
-    binding = binding_for(str(uuid4()))
+    binding = binding_for(str(uuid4()), execution_timeout_seconds)
     provision_capability(directory / "capability")
     # Configuration has no credentials; scope is generated once and retained across restart.
     (directory / "identity.json").write_text(json.dumps(vars(binding)), encoding="utf-8")
@@ -168,7 +170,14 @@ def provision(directory):
 
 
 @contextmanager
-def consumer(directory, *, provider=None, lose_ack=False, predecessor_stopped=False):
+def consumer(
+    directory,
+    *,
+    provider=None,
+    lose_ack=False,
+    predecessor_stopped=False,
+    execution_timeout_seconds=5,
+):
     directory = Path(directory).resolve()
     binding = ToolBinding(**json.loads((directory / "identity.json").read_text("utf-8")))
     capability = ToolCapability(binding, "Append one audit entry", ARGUMENT_SCHEMA)
@@ -189,6 +198,7 @@ def consumer(directory, *, provider=None, lose_ack=False, predecessor_stopped=Fa
         verifier=verifier,
         policy=policy,
         predecessor_stopped=predecessor_stopped,
+        execution_timeout_seconds=execution_timeout_seconds,
     ) as runtime:
         yield runtime, executor
 
@@ -216,10 +226,15 @@ def main():
     parser.add_argument("directory", type=Path)
     parser.add_argument("--provision", action="store_true")
     parser.add_argument("--predecessor-stopped", action="store_true", required=True)
+    parser.add_argument("--execution-timeout-seconds", type=float, default=5)
     args = parser.parse_args()
     if args.provision:
-        provision(args.directory)
-    with consumer(args.directory, predecessor_stopped=args.predecessor_stopped) as (runtime, _):
+        provision(args.directory, execution_timeout_seconds=args.execution_timeout_seconds)
+    with consumer(
+        args.directory,
+        predecessor_stopped=args.predecessor_stopped,
+        execution_timeout_seconds=args.execution_timeout_seconds,
+    ) as (runtime, _):
         header = "Bearer " + (args.directory / "capability").read_text("ascii")
         action = asyncio.run(workflow(runtime, header))
         assert action.state.value == "Succeeded"

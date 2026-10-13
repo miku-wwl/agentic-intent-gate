@@ -208,10 +208,10 @@ class Action:
                     "The external effect outcome is unknown.",
                 ),
             }[self.state]
-            if (
-                self.state is ActionState.Succeeded
-                and self.spec.compiler_revision == "action-compiler-v2"
-            ):
+            if self.state is ActionState.Succeeded and self.spec.compiler_revision in {
+                "action-compiler-v2",
+                "action-compiler-v3",
+            }:
                 expected = ("EXECUTION_SUCCEEDED", "The tool effect was confirmed.")
             value = strict_object(canonical_json(thaw_json(self.result)), max_bytes=1024)
             if (
@@ -284,6 +284,9 @@ def safe_result(state, receipt=None, *, compiler_revision="action-compiler-v1"):
             "The external effect outcome is unknown.",
         ),
     }[state]
-    if state is ActionState.Succeeded and compiler_revision == "action-compiler-v2":
+    if state is ActionState.Succeeded and compiler_revision in {
+        "action-compiler-v2",
+        "action-compiler-v3",
+    }:
         message = "The tool effect was confirmed."
     return {"code": code, "message": message, "receipt_reference": receipt}

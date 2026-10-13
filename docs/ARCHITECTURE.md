@@ -101,6 +101,13 @@ includes tool/version/target, adapter/revision, and UUIDv4 scope. The consumer's
 reuses every existing lifecycle rule with a composed in-memory Plan resource. Bundled
 schemas, SQLite DDL, legacy Plan semantics, and demo entrypoints remain unchanged.
 
+`open_runtime` accepts immutable trusted `execution_timeout_seconds` in `(0, 15]`,
+defaulting to five. It passes the same validated budget to the frozen compiler and Gateway.
+Budgets above five require a canonical profile suffix on the reviewed binding revision,
+created by public `execution_budget_binding`. No Plan, HTTP body, or tool argument selects it.
+The existing internal Gateway keyword `tool_timeout_seconds` names the same setting;
+it is validated even for direct construction, and cannot elevate a default-profile compiler.
+
 ## Authorization and durable Actions
 
 A verified local bearer capability carries the configured subject, operations, and
@@ -135,6 +142,23 @@ fields** and canonical arguments. `ExecutionSpec.from_compiled` selects the payl
 revision from the verified persisted compiler revision, never model output. The direct
 Dummy retains its legacy correlation digest plus its own complete `dummy-record-v1`
 store digest. No existing Action is rehashed or migrated.
+
+Extended profiles persist `action-compiler-v3`/`action-spec-v3` in the existing v2 columns.
+The canonical budget suffix (for example `audit-v2.exec-15s`) is part of the hashed binding
+revision, compiled specification, grant, attempt, and `tool-payload-v1` identity. Historical
+validation reconstructs the retained budget only for compiler v3; v1/v2 are always interpreted
+as the default authority. Current eligibility checks both complete binding and compiler
+revision. Thus even an old v2 Action with a coincidentally identical profile name cannot
+execute under the extended compiler. No DDL migration or retrospective authorization occurs.
+
+The monotonic adapter deadline is established after a confirmed durable claim. A finite
+caller `gateway.execute(..., deadline=...)` value can only shorten it. Invalid deadline
+types/non-finite values are rejected before claim. Expired deadlines and deadlines crossed
+during synchronous registry/adapter work finish Unknown without late success/no-effect
+classification. The Gateway checks expiration before dispatch and after return, and uses
+`asyncio.timeout_at` for cooperative cancellation. Claim and durable finish can take additional
+time; a valid on-time adapter result is not discarded merely because finish takes longer.
+There is no detached execution task, preemptive stop of blocking Python, or remote rollback.
 
 The separate demo store atomically binds an effect key to payload/scope and a receipt:
 identical replay returns the original receipt; conflicting payload or store identity

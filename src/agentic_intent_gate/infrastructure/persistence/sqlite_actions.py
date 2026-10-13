@@ -3,7 +3,11 @@
 from contextlib import contextmanager
 from uuid import uuid4
 
-from agentic_intent_gate.application.action_compiler import ActionCompiler, ToolBinding
+from agentic_intent_gate.application.action_compiler import (
+    BUDGET_COMPILER_REVISION,
+    ActionCompiler,
+    ToolBinding,
+)
 from agentic_intent_gate.domain.action import (
     Action,
     ActionCode,
@@ -13,6 +17,7 @@ from agentic_intent_gate.domain.action import (
 )
 from agentic_intent_gate.domain.approval_binding import BindingError, digest
 from agentic_intent_gate.domain.contracts import Risk
+from agentic_intent_gate.domain.execution_budget import binding_timeout
 from agentic_intent_gate.domain.run import RunErrorCode, RunStoreError
 from agentic_intent_gate.domain.run_validation import (
     canonical_json,
@@ -85,10 +90,15 @@ def validated_action(connection, runs, row, compiler=None):
         )
     except ActionError:
         fail("ACTION_RETAINED_TOOL_CONTRACT")
-    compiler = ActionCompiler(runs.validator, (retained,))
     try:
+        budget = (
+            binding_timeout(spec.binding_revision)
+            if spec.compiler_revision == BUDGET_COMPILER_REVISION
+            else 5
+        )
+        compiler = ActionCompiler(runs.validator, (retained,), execution_timeout_seconds=budget)
         compiler.validate_spec(action.spec, run, decision, binding)
-    except ActionError:
+    except (ActionError, ValueError):
         # Invalid RETAINED identity is storage corruption, not current-registry retirement.
         # Admission still reports current binding denial separately; HTTP must never turn
         # a tampered durable row into a harmless eligibility conflict.

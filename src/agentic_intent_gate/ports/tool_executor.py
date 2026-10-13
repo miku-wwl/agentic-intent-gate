@@ -33,11 +33,16 @@ class ExecutionSpec:
     @classmethod
     def from_compiled(cls, spec: CompiledSpec):
         from agentic_intent_gate.application.action_compiler import (
+            BUDGET_COMPILER_REVISION,
             COMPILER_REVISION,
             EXTERNAL_COMPILER_REVISION,
         )
 
-        if spec.compiler_revision not in {COMPILER_REVISION, EXTERNAL_COMPILER_REVISION}:
+        if spec.compiler_revision not in {
+            COMPILER_REVISION,
+            EXTERNAL_COMPILER_REVISION,
+            BUDGET_COMPILER_REVISION,
+        }:
             raise ActionError(ActionCode.TOOL_NOT_BOUND)
         return cls(
             spec.tool_name,

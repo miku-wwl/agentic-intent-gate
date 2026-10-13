@@ -500,7 +500,8 @@ def test_toctou_writer_cannot_change_checked_plan(actions, runs, compiler, monke
     original = compiler.compile
     blocked = []
 
-    def compile_guarded(*args):
+    def compile_guarded(self, *args):
+        assert self is compiler
         result = original(*args)
         with closing(sqlite3.connect(runs.path, timeout=0.01)) as outsider:
             value = run.plan.to_dict()
@@ -513,7 +514,7 @@ def test_toctou_writer_cannot_change_checked_plan(actions, runs, compiler, monke
             blocked.append(True)
         return result
 
-    monkeypatch.setattr(compiler, "compile", compile_guarded)
+    monkeypatch.setattr(ActionCompiler, "compile", compile_guarded)
     result = actions.admit(command(run))
     assert blocked and result.action.spec.normalized_arguments["note"] == "note 😀"
     assert runs.get(run.run_id) == run
@@ -556,7 +557,7 @@ def test_queries_validate_but_never_compile_new_spec(actions, runs, compiler, mo
     def forbidden(*args):
         raise AssertionError("A query must never call the new-spec compilation entry point")
 
-    monkeypatch.setattr(compiler, "compile", forbidden)
+    monkeypatch.setattr(ActionCompiler, "compile", forbidden)
     assert actions.get(action.action_id) == action
     assert actions.list_for_run(run.run_id) == (action,)
     assert before == (ledger(runs.path), database_rows(runs.path))

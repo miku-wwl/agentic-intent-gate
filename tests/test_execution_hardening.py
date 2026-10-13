@@ -17,6 +17,7 @@ from run_helpers import advance, database_rows
 from test_service_demo_adapter import downstream, invoke
 
 import agentic_intent_gate.infrastructure.persistence.sqlite_actions as sqlite_actions
+from agentic_intent_gate.application.action_execution import ActionExecutionGateway
 from agentic_intent_gate.domain.action import ActionCode, ActionError, ActionState, safe_result
 from agentic_intent_gate.domain.run import RunState
 
@@ -354,7 +355,7 @@ async def test_blocking_sqlite_soft_timeout_is_not_preemptive(execution_env):
     e = execution_env
     blocker = sqlite3.connect(e.demo_path, isolation_level=None)
     blocker.execute("BEGIN IMMEDIATE")
-    e.gateway.tool_timeout_seconds = 0.01
+    e.gateway = ActionExecutionGateway(e.repo, e.policy, e.registry, tool_timeout_seconds=0.01)
     ticks = []
 
     async def heartbeat():

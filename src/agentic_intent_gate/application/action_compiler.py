@@ -1,16 +1,23 @@
 """Pure trusted compilation. This registry contains identifiers, never executable callables."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from agentic_intent_gate.domain.action import ActionCode, ActionError, CompiledSpec, identifier
 from agentic_intent_gate.domain.approval import ApprovalChoice
 from agentic_intent_gate.domain.approval_binding import digest, plan_digest
 from agentic_intent_gate.domain.contracts import Risk
+from agentic_intent_gate.domain.execution_budget import (
+    PROFILE_MARKER,
+    binding_timeout,
+    execution_timeout,
+    profile_suffix,
+)
 from agentic_intent_gate.domain.run import RunState
 from agentic_intent_gate.domain.run_validation import canonical_json, valid_uuid
 
 COMPILER_REVISION = "action-compiler-v1"
 EXTERNAL_COMPILER_REVISION = "action-compiler-v2"
+BUDGET_COMPILER_REVISION = "action-compiler-v3"
 LEGACY_TOOL = ("append_service_note", "1", "service-demo")
 
 
@@ -48,13 +55,35 @@ class ToolBinding:
         return all(getattr(spec, key, None) == value for key, value in vars(self).items())
 
 
+def execution_budget_binding(binding, execution_timeout_seconds):
+    """Create an explicit extended profile from a freshly reviewed host ToolBinding.
+
+    For example, revision 'audit-v2' at 15 seconds becomes 'audit-v2.exec-15s'.
+    Retain the result across restarts; do not relabel existing Actions or effect stores.
+    """
+    if type(binding) is not ToolBinding:
+        raise TypeError("A ToolBinding is required")
+    value = execution_timeout(execution_timeout_seconds)
+    if value <= 5:
+        return binding
+    if (binding.tool_name, binding.tool_version, binding.target) == LEGACY_TOOL:
+        raise ValueError("Extended budgets require a non-demo consumer binding")
+    if PROFILE_MARKER in binding.binding_revision:
+        raise ValueError("Use a fresh reviewed binding revision without an execution suffix")
+    return replace(binding, binding_revision=binding.binding_revision + profile_suffix(value))
+
+
 def specification_digest(facts, binding):
     return digest(
         {
             "identity_revision": (
                 "action-spec-v1"
                 if facts["compiler_revision"] == COMPILER_REVISION
-                else "action-spec-v2"
+                else (
+                    "action-spec-v3"
+                    if facts["compiler_revision"] == BUDGET_COMPILER_REVISION
+                    else "action-spec-v2"
+                )
             ),
             **facts,
             "approval_identity_revision": binding.identity_revision,
@@ -63,12 +92,34 @@ def specification_digest(facts, binding):
     )
 
 
+@dataclass(frozen=True, init=False)
 class ActionCompiler:
-    def __init__(self, validator, bindings=()):
-        self.validator = validator
-        self.bindings = tuple(bindings)
+    validator: object
+    bindings: tuple[ToolBinding, ...]
+    execution_timeout_seconds: float
+
+    def __init__(self, validator, bindings=(), *, execution_timeout_seconds=5):
+        object.__setattr__(self, "validator", validator)
+        object.__setattr__(self, "bindings", tuple(bindings))
+        budget = execution_timeout(execution_timeout_seconds)
+        object.__setattr__(self, "execution_timeout_seconds", budget)
         if any(not isinstance(b, ToolBinding) for b in self.bindings) or len(self.bindings) > 1:
             raise ActionError(ActionCode.TOOL_NOT_BOUND)
+        if budget > 5 and (
+            len(self.bindings) != 1
+            or self.bindings[0].compiler_revision == COMPILER_REVISION
+            or binding_timeout(self.bindings[0].binding_revision) != budget
+        ):
+            raise ValueError(
+                "The extended execution budget must match its reviewed binding profile"
+            )
+
+    def compiler_revision_for(self, binding):
+        return (
+            BUDGET_COMPILER_REVISION
+            if self.execution_timeout_seconds > 5
+            else binding.compiler_revision
+        )
 
     def _facts(self, run, decision, binding):
         if (
@@ -108,7 +159,7 @@ class ActionCompiler:
             "target": plan.target,
             "normalized_arguments": dict(plan.steps[0].arguments),
             "risk_class": plan.risk_class.value,
-            "compiler_revision": selected.compiler_revision,
+            "compiler_revision": self.compiler_revision_for(selected),
             "adapter_id": selected.adapter_id,
             "binding_revision": selected.binding_revision,
             "execution_scope": selected.execution_scope,

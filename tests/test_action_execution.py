@@ -10,6 +10,7 @@ from action_helpers import cmd, inject_fault
 from test_service_demo_adapter import downstream
 
 import agentic_intent_gate.infrastructure.tools.service_demo as service_demo
+from agentic_intent_gate.application.action_execution import ActionExecutionGateway
 from agentic_intent_gate.domain.action import ActionCode, ActionError, ActionState
 from agentic_intent_gate.infrastructure.persistence.sqlite_action_execution import safe_result
 from agentic_intent_gate.ports.tool_executor import Outcome, ToolOutcome
@@ -115,7 +116,7 @@ async def test_uncertain_or_malformed_dispatch_evidence_is_unknown(
         return ToolOutcome(Outcome.UNKNOWN_OUTCOME)
 
     monkeypatch.setattr(e.executor, "execute", uncertain)
-    e.gateway.tool_timeout_seconds = 0.01
+    e.gateway = ActionExecutionGateway(e.repo, e.policy, e.registry, tool_timeout_seconds=0.01)
     request = cmd(e.action)
     result = await e.gateway.execute(request, e.principal)
     assert result.action.state is ActionState.Unknown and e.calls == 1

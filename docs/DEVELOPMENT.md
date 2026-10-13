@@ -116,6 +116,7 @@ Default pytest settings exclude opt-in `live` tests:
 ~~~powershell
 uv run pytest -q tests/test_sqlite_run_repository.py
 uv run pytest -q tests/test_consumer_runtime.py
+uv run pytest -q tests/test_execution_budget.py
 uv run pytest -q tests/test_dummy_adapter_contract.py tests/test_dummy_adapter_e2e.py
 uv run pytest -q tests/test_service_demo_adapter.py tests/test_action_execution.py tests/test_execution_hardening.py
 ~~~
@@ -154,16 +155,19 @@ New-Item -ItemType Directory -Path $consumerRoot | Out-Null
 uv build --offline --out-dir (Join-Path $consumerRoot 'dist')
 uv venv --python 3.13 (Join-Path $consumerRoot 'venv')
 $consumerPython = Join-Path $consumerRoot 'venv\Scripts\python.exe'
-$consumerWheel = Join-Path $consumerRoot 'dist\agentic_intent_gate-0.1.0-py3-none-any.whl'
+$consumerWheel = Join-Path $consumerRoot 'dist\agentic_intent_gate-0.2.0-py3-none-any.whl'
 uv pip install --python $consumerPython $consumerWheel
 uv pip install --python $consumerPython 'pytest>=8,<10' 'pytest-asyncio>=1,<2'
 New-Item -ItemType Directory -Path (Join-Path $consumerRoot 'examples\consumer'), (Join-Path $consumerRoot 'tests') | Out-Null
 Copy-Item examples\consumer\app.py (Join-Path $consumerRoot 'examples\consumer\app.py')
 Copy-Item tests\test_consumer_runtime.py (Join-Path $consumerRoot 'tests\test_consumer_runtime.py')
+Copy-Item tests\test_execution_budget.py (Join-Path $consumerRoot 'tests\test_execution_budget.py')
 Push-Location $consumerRoot
 try {
     & $consumerPython -I examples\consumer\app.py data --provision --predecessor-stopped
-    & $consumerPython -I -m pytest -q -o asyncio_mode=auto tests\test_consumer_runtime.py
+    & $consumerPython -I examples\consumer\app.py data15 --provision --predecessor-stopped --execution-timeout-seconds 15
+    & $consumerPython -I -m pytest -q -o asyncio_mode=auto tests\test_consumer_runtime.py tests\test_execution_budget.py
+    uv pip check --python $consumerPython
 } finally {
     Pop-Location
 }
@@ -172,18 +176,21 @@ try {
 These commands copy only example/test code, not core implementation. `-I` prevents
 source PYTHONPATH injection. A fresh wheel install may need network access for dependencies;
 offline builds require cached Hatch dependencies. Do not publish or change package version
-just to test installation. The current package version remains `0.1.0`.
+just to test installation. The current package version is `0.2.0`, with MIT metadata and
+the license included in wheel/sdist. The sdist uses an explicit source/docs/test allowlist;
+ignored local databases, credentials, environments and generated evidence must remain absent.
 
-For Git-based installation, pin a reviewed **full commit SHA**, never a moving branch:
+For Git-based installation, pin the verified **full commit SHA**, never a moving branch.
+The [v0.2.0 consumer handoff](V0.2.0-CONSUMER-HANDOFF.md) records the exact pin and verified
+annotated tag. Historical `v0.1.0` remains at
+`fd742b783058a53400c465b4ab59c6e80715895a`; old consumers may keep that dependency.
+Git tags do not imply PyPI publication. Private Git access requires separate authentication.
+Never embed credentials in Git URLs, source, or documentation.
 
-~~~powershell
-uv pip install 'agentic-intent-gate @ git+https://github.com/miku-wwl/agentic-intent-gate.git@fd742b783058a53400c465b4ab59c6e80715895a'
-~~~
-
-The SHA above is the peeled commit of the verified annotated `v0.1.0` release tag and
-contains `src/agentic_intent_gate/runtime.py`. Pin this full commit for reproducible Git
-installs. The Git tag does not imply PyPI publication. Private Git access requires separate
-authentication. Never embed credentials in Git URLs, source, or documentation.
+The budget tests use fake monotonic clocks and synthetic SQLite effects. They exercise the
+real Gateway, approvals, grants, claims, results and recovery; they do not contact providers.
+The [Adapter guide](ADAPTER_GUIDE.md) documents executable default/extended examples and the
+fresh binding/scope rules. Live Ollama and external side-effect tests are not release checks.
 
 ## Browser E2E and complete offline regression
 

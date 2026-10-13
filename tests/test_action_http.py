@@ -209,7 +209,8 @@ async def test_insufficient_operation_scope_denies_before_any_receipt_lookup(htt
     limited = CapabilityVerifier(
         e.token, subject_id=e.principal.subject_id, binding=e.verifier.binding, operations=("read",)
     )
-    e.gateway.policy = LocalDemoAuthorization(limited, policy_revision=e.policy.policy_revision)
+    policy = LocalDemoAuthorization(limited, policy_revision=e.policy.policy_revision)
+    e.gateway = ActionExecutionGateway(e.repo, policy, e.registry)
     app = create_app(e.planning, action_gateway=e.gateway, capability_verifier=limited)
     before = e.ledger()
     async with httpx.AsyncClient(

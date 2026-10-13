@@ -2,9 +2,10 @@
 
 from dataclasses import dataclass, field
 
-from agentic_intent_gate.application.action_compiler import ToolBinding
+from agentic_intent_gate.application.action_compiler import BUDGET_COMPILER_REVISION, ToolBinding
 from agentic_intent_gate.domain.action import ActionCode, ActionError, identifier
 from agentic_intent_gate.domain.contracts import Risk
+from agentic_intent_gate.domain.execution_budget import binding_timeout
 from agentic_intent_gate.infrastructure.security.local_capability import CapabilityVerifier
 from agentic_intent_gate.ports.authorization import PrincipalContext
 
@@ -50,7 +51,16 @@ class BoundCapabilityAuthorization:
         if (
             not self.binding.matches(spec)
             or spec.risk_class is not Risk.SIDE_EFFECT
-            or spec.compiler_revision != self.binding.compiler_revision
+            or spec.compiler_revision
+            not in {
+                self.binding.compiler_revision,
+                BUDGET_COMPILER_REVISION,
+            }
         ):
             raise ActionError(ActionCode.NOT_AUTHORIZED)
+        if spec.compiler_revision == BUDGET_COMPILER_REVISION:
+            try:
+                binding_timeout(spec.binding_revision)
+            except ValueError:
+                raise ActionError(ActionCode.NOT_AUTHORIZED) from None
         return self.policy_revision

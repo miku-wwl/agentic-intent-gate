@@ -9,42 +9,118 @@ demo entrypoints and the isolated Day 4 Dummy are not automatically extended.
 
 Import from `agentic_intent_gate.runtime`, not the package root. The main objects are
 `ToolBinding`, `ToolCapability`, `ExecutableRegistry`, `CapabilityVerifier`,
-`BoundCapabilityAuthorization`, and `open_runtime`. Model/executor ports, Intent,
+`BoundCapabilityAuthorization`, `execution_budget_binding`, and `open_runtime`. Model/executor ports, Intent,
 approval values, commands, and outcome types are available there too.
 
-~~~python
-from agentic_intent_gate.runtime import (
-    ToolBinding, ToolCapability, ExecutableRegistry, CapabilityVerifier,
-    BoundCapabilityAuthorization, open_runtime,
-)
+The complete executable [consumer](../examples/consumer/app.py) supplies every argument,
+executor, provider, schema, private token and durable effect store. Run it from the checkout
+with a fresh private directory (the UUID makes each invocation independent):
 
-binding = ToolBinding(
-    "append_audit_entry", "1", "consumer-audit", "audit-v1",
-    "consumer-demo", retained_scope_uuid,
-)
-capability = ToolCapability(binding, "Append one audit entry", {
-    "type": "object", "additionalProperties": False, "required": ["entry"],
-    "properties": {"entry": {"type": "string", "minLength": 1, "maxLength": 256}},
-})
-registry = ExecutableRegistry(executor, binding=binding)
-verifier = CapabilityVerifier(
-    privately_loaded_token, subject_id="consumer-operator", binding=binding,
-    operations=("read", "admit", "authorize", "execute"),
-)
-policy = BoundCapabilityAuthorization(verifier, policy_revision="consumer-policy-v1")
-with open_runtime(
-    gate_path=private_gate_path, provider=provider, capability=capability,
-    registry=registry, verifier=verifier, policy=policy, predecessor_stopped=True,
-) as runtime:
-    # Use runtime.run_service / gateway, or serve runtime.http_app() on loopback here.
-    ...
+~~~powershell
+# Omitted configuration: backward-compatible five seconds.
+$defaultDemo = Join-Path $env:LOCALAPPDATA ('AgenticIntentGate\budget5-' + [guid]::NewGuid().ToString('N'))
+uv run python examples/consumer/app.py $defaultDemo --provision --predecessor-stopped
+
+# Explicit trusted fifteen-second opt-in, with a freshly provisioned scope/profile.
+$extendedDemo = Join-Path $env:LOCALAPPDATA ('AgenticIntentGate\budget15-' + [guid]::NewGuid().ToString('N'))
+uv run python examples/consumer/app.py $extendedDemo --provision --predecessor-stopped --execution-timeout-seconds 15
 ~~~
 
-The named variables are host-owned, not implicitly discovered. See the runnable
-[consumer](../examples/consumer/app.py). Provision a new private directory/store separately;
+These are deterministic local effects and scripted example consent. For a real consumer,
+the public composition uses the same `open_runtime` call as `consumer()` in that file.
+Provision a new private directory/store separately;
 retain its identity and token across restarts. The predecessor flag is an operator
 attestation, not a process-stopping command. Serve inside the context so the existing
 single-owner fence remains held. Existing v1 files are never silently migrated.
+
+The following complete Python example runs from the checkout and reuses that consumer-owned
+executor/provider. Its two new temporary ledgers demonstrate omission and explicit opt-in:
+
+~~~python
+import asyncio
+import json
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from examples.consumer.app import (
+    ARGUMENT_SCHEMA, AuditExecutor, DeterministicProvider, provision, workflow,
+)
+from agentic_intent_gate.runtime import (
+    BoundCapabilityAuthorization, CapabilityVerifier, ExecutableRegistry,
+    ToolBinding, ToolCapability, open_runtime,
+)
+
+def host_configuration(directory, seconds):
+    provision(directory, execution_timeout_seconds=seconds)
+    binding = ToolBinding(**json.loads((directory / "identity.json").read_text("utf-8")))
+    executor = AuditExecutor(directory / "effects.sqlite3", binding)
+    verifier = CapabilityVerifier(
+        (directory / "capability").read_text("ascii"), subject_id="consumer-operator",
+        binding=binding, operations=("read", "admit", "authorize", "execute"),
+    )
+    return dict(
+        gate_path=directory / "gate.sqlite3", provider=DeterministicProvider(),
+        capability=ToolCapability(binding, "Append one audit entry", ARGUMENT_SCHEMA),
+        registry=ExecutableRegistry(executor, binding=binding), verifier=verifier,
+        policy=BoundCapabilityAuthorization(verifier, policy_revision="consumer-policy-v1"),
+        predecessor_stopped=True,
+    )
+
+with TemporaryDirectory(prefix="aig-budget-example-") as root:
+    default_directory = Path(root) / "default"
+    with open_runtime(**host_configuration(default_directory, 5)) as runtime:
+        token = "Bearer " + (default_directory / "capability").read_text("ascii")
+        assert asyncio.run(workflow(runtime, token)).state.value == "Succeeded"
+
+    extended_directory = Path(root) / "extended"
+    with open_runtime(
+        **host_configuration(extended_directory, 15), execution_timeout_seconds=15,
+    ) as runtime:
+        token = "Bearer " + (extended_directory / "capability").read_text("ascii")
+        assert asyncio.run(workflow(runtime, token)).state.value == "Succeeded"
+~~~
+
+## Adapter execution budget
+
+`open_runtime` adds keyword-only `execution_timeout_seconds=5`. Accepted values are finite
+built-in int/float values in `(0, 15]`, including 5, 10 and 15. Invalid types/booleans raise
+`TypeError`; non-positive, non-finite or oversized numbers raise `ValueError`. These are
+host configuration failures, not adapter outcome evidence. Values above five require a
+reviewed non-demo binding transformed with `execution_budget_binding(binding, value)`.
+For 15, a base revision `audit-v2` becomes `audit-v2.exec-15s`; the complete revision must
+fit the existing 64-character identifier limit. Use a new base revision when changing profiles.
+The five-second default preserves existing demo/consumer identities; smaller budgets only
+shorten that default authority.
+
+Register the resulting binding consistently in capability, registry, verifier, policy and
+consumer effect store. The extended compiler uses `action-compiler-v3`/`action-spec-v3`;
+the budget suffix is durably hashed through the existing binding and grant identities.
+Old compiler v1/v2 Actions cannot run under it, including coincidentally identical revision
+names. Historical integrity/recovery uses retained metadata without migrating it.
+Use a fresh scope and ledger for the new reviewed profile, fresh Run/Approval, and a separate
+Authorization. A Plan approval predating admission does not itself record host configuration.
+
+After durable claim, the Gateway establishes `loop.time() + configured_budget`, bounds it
+by any finite `gateway.execute(..., deadline=absolute_monotonic_time)` caller deadline,
+and passes the frozen deadline in `AttemptContext`. A caller cannot extend it. Invalid
+deadlines raise `ActionError(INVALID_REQUEST)` before claim; already-expired deadlines
+finish Unknown without adapter dispatch. The Gateway checks before dispatch and after
+return, alongside `asyncio.timeout_at`; late success or no-effect evidence becomes Unknown.
+Cancellation is propagated after durable Unknown finish. No detached retry/task is created.
+
+Claim and finish are synchronous durable operations outside the adapter time allowance.
+Budget enough request time for both. Provider dispatch, remote verification and local adapter
+receipt persistence must fit **inside** the adapter budget. A blocking call cannot be preempted;
+external commit may survive cancellation. Even an acknowledged effect becomes Unknown when
+adapter receipt handling returns after deadline; lost acknowledgements are also Unknown.
+An on-time confirmed receipt keeps its classification if only Gateway finish is delayed.
+Finish ambiguity remains an error/interrupted state for recovery, never a guessed receipt.
+These limits provide no universal remote exactly-once guarantee.
+
+The bundled Action HTTP routes retain their existing ten-second caller request deadline,
+which can shorten an extended budget. A consumer needing the full fifteen seconds supplies
+its own request envelope with claim/finish reserve and calls the public Runtime Gateway;
+changing a transport deadline never changes the approved Action's execution profile.
 
 ## Consumer planning and admission boundary
 

@@ -6,7 +6,12 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 
 from agentic_intent_gate.api.local_http import create_app
-from agentic_intent_gate.application.action_compiler import LEGACY_TOOL, ActionCompiler, ToolBinding
+from agentic_intent_gate.application.action_compiler import (
+    LEGACY_TOOL,
+    ActionCompiler,
+    ToolBinding,
+    execution_budget_binding,
+)
 from agentic_intent_gate.application.action_execution import ActionExecutionGateway
 from agentic_intent_gate.application.generate_plan import PlanningService
 from agentic_intent_gate.application.recover_actions import recover_actions
@@ -16,6 +21,7 @@ from agentic_intent_gate.config.configuration import resolve_database_path
 from agentic_intent_gate.domain.action import ActionCode, ActionError, identifier
 from agentic_intent_gate.domain.approval import ApprovalChoice, ApprovalDecisionRequest
 from agentic_intent_gate.domain.contracts import Intent, Risk, Tool, freeze_json, thaw_json
+from agentic_intent_gate.domain.execution_budget import execution_timeout
 from agentic_intent_gate.domain.validation import PlanValidator, fail, load_schema, strict_object
 from agentic_intent_gate.infrastructure.persistence.sqlite_action_execution import (
     SQLiteExecutionRepository,
@@ -62,6 +68,7 @@ __all__ = [
     "ToolCapability",
     "ToolExecutor",
     "ToolOutcome",
+    "execution_budget_binding",
     "open_runtime",
     "provision_capability",
 ]
@@ -199,13 +206,24 @@ class Runtime:
 
 @contextmanager
 def open_runtime(
-    *, gate_path, provider, capability, registry, verifier, policy, predecessor_stopped=False
+    *,
+    gate_path,
+    provider,
+    capability,
+    registry,
+    verifier,
+    policy,
+    predecessor_stopped=False,
+    execution_timeout_seconds=5,
 ):
     """Hold the existing single-owner fence through the entire consumer lifetime.
 
     No implicit registration, credentials, v1 migration or external effects on startup.
     A new private v2 gate is initialized by the existing repository implementation.
+    execution_timeout_seconds is immutable trusted host configuration in (0, 15],
+    defaulting to five seconds. Extended profiles require execution_budget_binding.
     """
+    budget = execution_timeout(execution_timeout_seconds)
     if (
         type(capability) is not ToolCapability
         or type(registry) is not ExecutableRegistry
@@ -216,13 +234,14 @@ def open_runtime(
         or policy is None
     ):
         raise ActionError(ActionCode.TOOL_NOT_BOUND)
+    validator = capability.build_validator()
+    compiler = ActionCompiler(validator, registry.bindings, execution_timeout_seconds=budget)
     gate_path = resolve_database_path(gate_path)
     with single_owner(gate_path, predecessor_stopped=predecessor_stopped):
-        validator = capability.build_validator()
         planning = PlanningService(provider, validator)
         runs = SQLiteV2RunRepository(gate_path, validator)
-        actions = SQLiteExecutionRepository(runs, ActionCompiler(validator, registry.bindings))
-        gateway = ActionExecutionGateway(actions, policy, registry)
+        actions = SQLiteExecutionRepository(runs, compiler)
+        gateway = ActionExecutionGateway(actions, policy, registry, tool_timeout_seconds=budget)
         recover_runs(runs)
         recover_actions(actions, predecessor_stopped=predecessor_stopped)
         yield Runtime(planning, runs, actions, RunService(runs, planning), gateway, verifier)

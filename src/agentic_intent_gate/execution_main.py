@@ -17,7 +17,7 @@ from agentic_intent_gate.application.runs import RunService
 from agentic_intent_gate.config.configuration import ConfigurationError, Settings
 from agentic_intent_gate.domain.action import ActionCode, ActionError
 from agentic_intent_gate.domain.run import RunStoreError
-from agentic_intent_gate.infrastructure.llm.local_openai import LocalOpenAIProvider
+from agentic_intent_gate.infrastructure.llm.provider_factory import create_model_provider
 from agentic_intent_gate.infrastructure.persistence.sqlite_action_execution import (
     SQLiteExecutionRepository,
 )
@@ -83,7 +83,7 @@ def main():
         settings = Settings.from_environment()
         validator = build_validator()
         planning = PlanningService(
-            LocalOpenAIProvider(settings.endpoint, settings.model),
+            create_model_provider(settings),
             validator,
             model_timeout_seconds=settings.model_timeout_seconds,
         )

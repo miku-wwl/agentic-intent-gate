@@ -8,8 +8,8 @@ Use Python 3.13, uv, and PowerShell from the repository root:
 uv sync --locked
 ~~~
 
-This installs the existing FastAPI/HTTPX/jsonschema/Uvicorn runtime and the pytest,
-Ruff, and Playwright development group. Do not add dependencies for documentation work.
+This installs the FastAPI/HTTPX/jsonschema/python-dotenv/Uvicorn runtime and the pytest,
+Ruff, and Playwright development group. `python-dotenv` reads the optional `.env` file.
 The packaged UI is `src/agentic_intent_gate/api/static/index.html`; no Node install,
 `frontend/` build, or separate frontend server is required.
 
@@ -20,9 +20,21 @@ not package-root re-exports. `api/` owns HTTP/assets, `config/` owns settings, a
 retain their existing boundaries. UI resources resolve from the top-level package via
 `files("agentic_intent_gate").joinpath("api", "static", "index.html")`.
 
-## Local LLM
+## Model provider configuration
 
-The implemented provider uses a local OpenAI-compatible HTTP API. Required settings:
+`aig-plans` and the explicit execution demo read `.env` from the current working directory
+when it exists. Process environment variables override values in that file. The file is
+optional; existing environment-only setups keep working. Start from the commented examples:
+
+~~~powershell
+Copy-Item .env.example .env
+~~~
+
+Uncomment one provider block, remove other active provider settings, and replace every
+model/key placeholder. When `AIG_LLM_PROVIDER` is omitted, the selected provider remains
+Ollama. Existing `LOCAL_LLM_BASE_URL` and `LOCAL_LLM_MODEL` settings remain valid.
+
+**Ollama (local default):**
 
 ~~~powershell
 $env:LOCAL_LLM_BASE_URL = 'http://127.0.0.1:11434/v1'
@@ -36,11 +48,54 @@ terminal; downloading a missing model is a separate operator decision. The read-
 verification script checks the Ollama CLI, local health, and model listing, not inference.
 The provider is protocol-based, not an Ollama SDK integration.
 
-Only HTTP loopback URLs with explicit ports are accepted; `/v1` is normalized.
-`MODEL_TIMEOUT_SECONDS` defaults to 28 and cannot exceed 28. Requests use one
-non-streaming JSON completion, bounded output, no retries/repair, and no cloud fallback.
-The runtime does not set Ollama keep-alive, CPU/GPU selection, or model residency.
-Do not claim model quality or successful inference from a healthy model-list endpoint.
+The existing `LOCAL_LLM_*` values select Ollama without needing `AIG_LLM_PROVIDER`. The
+new names are `AIG_LLM_PROVIDER=ollama`, `AIG_LLM_MODEL`, and `AIG_LLM_BASE_URL`. Ollama
+URLs must be HTTP loopback with an explicit port; `/v1` is normalized.
+
+**OpenAI:**
+
+~~~dotenv
+AIG_LLM_PROVIDER=openai
+AIG_LLM_MODEL=<supported-openai-model-id>
+OPENAI_API_KEY=<OpenAI-secret>
+~~~
+
+This uses the fixed `https://api.openai.com/v1` endpoint and OpenAI Chat Completions JSON
+mode. The selected model must accept that request format; unsupported model/parameter
+responses fail closed without retry.
+
+**Anthropic Claude:**
+
+~~~dotenv
+AIG_LLM_PROVIDER=anthropic
+AIG_LLM_MODEL=<supported-claude-model-id>
+ANTHROPIC_API_KEY=<Anthropic-secret>
+~~~
+
+This uses the native Anthropic Messages API at `https://api.anthropic.com/v1`, with the
+required `x-api-key` and `anthropic-version` headers. It accepts one completed text block;
+refusal, tool-use, truncation, and malformed responses fail closed.
+
+**OpenAI-compatible HTTPS provider:**
+
+~~~dotenv
+AIG_LLM_PROVIDER=openai-compatible
+AIG_LLM_MODEL=<provider-model-id>
+AIG_LLM_BASE_URL=https://<trusted-provider-host>/v1
+AIG_LLM_API_KEY=<provider-secret>
+~~~
+
+The host is operator-configured, must resolve only to public addresses at configuration
+time, and uses HTTPS on port 443. Redirects are disabled. This adapter sends only common
+`model`, `messages`, `stream`, and `max_tokens` fields; it deliberately omits `response_format`
+because compatible services differ in their structured-output support. The model must follow
+the JSON prompt, then AIG's existing strict Plan validator checks its output.
+
+`MODEL_TIMEOUT_SECONDS` defaults to 28 and cannot exceed 28. Cloud and local requests use one
+non-streaming attempt, strict timeouts, bounded uncompressed JSON responses, no implicit
+retry, no repair, and no provider fallback. A missing cloud key fails before the app serves.
+The runtime does not set Ollama keep-alive, CPU/GPU selection, or model residency. Do not
+claim model quality or successful inference from configuration or endpoint health alone.
 
 ## Default planning/Run application
 
@@ -52,8 +107,8 @@ uv run aig-plans
 ~~~
 
 Open `http://127.0.0.1:8000/`. This v1 entry point supports preview, persistent Runs,
-approval/rejection, and Run recovery, not Action execution. The environment is read
-directly; `.env.example` is not loaded automatically. Use local file-backed SQLite, not
+approval/rejection, and Run recovery, not Action execution. Settings load optional `.env`
+values and then apply process environment overrides. Use local file-backed SQLite, not
 memory databases, SQLite URI paths, UNC paths, or mapped network drives.
 
 ## Explicit v2 local execution demo
@@ -114,6 +169,7 @@ Only `service-demo` note append is executable; the other catalog tools and Dummy
 Default pytest settings exclude opt-in `live` tests:
 
 ~~~powershell
+uv run pytest -q tests/test_configuration.py tests/test_local_runtime_configuration.py tests/test_model_provider.py tests/test_cloud_providers.py
 uv run pytest -q tests/test_sqlite_run_repository.py
 uv run pytest -q tests/test_consumer_runtime.py
 uv run pytest -q tests/test_execution_budget.py
@@ -155,7 +211,7 @@ New-Item -ItemType Directory -Path $consumerRoot | Out-Null
 uv build --offline --out-dir (Join-Path $consumerRoot 'dist')
 uv venv --python 3.13 (Join-Path $consumerRoot 'venv')
 $consumerPython = Join-Path $consumerRoot 'venv\Scripts\python.exe'
-$consumerWheel = Join-Path $consumerRoot 'dist\agentic_intent_gate-0.2.0-py3-none-any.whl'
+$consumerWheel = Join-Path $consumerRoot 'dist\agentic_intent_gate-0.3.0-py3-none-any.whl'
 uv pip install --python $consumerPython $consumerWheel
 uv pip install --python $consumerPython 'pytest>=8,<10' 'pytest-asyncio>=1,<2'
 New-Item -ItemType Directory -Path (Join-Path $consumerRoot 'examples\consumer'), (Join-Path $consumerRoot 'tests') | Out-Null
@@ -176,8 +232,9 @@ try {
 These commands copy only example/test code, not core implementation. `-I` prevents
 source PYTHONPATH injection. A fresh wheel install may need network access for dependencies;
 offline builds require cached Hatch dependencies. Do not publish or change package version
-just to test installation. The current package version is `0.2.0`, with MIT metadata and
-the license included in wheel/sdist. The sdist uses an explicit source/docs/test allowlist;
+just to test installation. This working tree targets package version `0.3.0`; it is not
+tagged or published. MIT metadata and the license are included in wheel/sdist. The sdist
+uses an explicit source/docs/test allowlist;
 ignored local databases, credentials, environments and generated evidence must remain absent.
 
 For Git-based installation, pin the verified **full commit SHA**, never a moving branch.

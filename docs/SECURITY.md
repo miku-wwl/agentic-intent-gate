@@ -12,6 +12,35 @@ Strict JSON/envelope limits, schema validation, semantic tool/argument checks, a
 deterministic risk gate reject unsupported Plans. No automatic repair, retry, or fallback
 turns rejected output into execution. Validation cannot prove intent fidelity.
 
+## Model provider boundary
+
+Provider selection and the endpoint are frozen from operator settings at startup; Intent,
+Plan fields, HTTP request bodies, and model output cannot choose a provider or destination.
+Ollama remains restricted to HTTP loopback. OpenAI and Anthropic use their fixed HTTPS
+origins. The OpenAI-compatible adapter accepts only operator-configured HTTPS endpoints on
+port 443 whose configured hostname resolves to public addresses. Redirects and environment
+proxy settings are disabled, so an Authorization header is not forwarded to a redirect or
+ambient proxy.
+
+Cloud credentials are read from provider-specific environment variables or `.env`, used
+only in authentication headers, excluded from the frozen Settings representation, and never
+included in AIG provider errors or response-body diagnostics. AIG makes one bounded,
+non-streaming request, caps response envelopes, rejects unsupported/refused/malformed output,
+and does not retry or repair. OpenAI's structured JSON mode and the generic adapter's smaller
+common request shape are intentionally different.
+
+When a cloud provider is selected, the full user Intent is sent to that provider over TLS.
+AIG does not redact Intent text before the provider call, and existing Run persistence may
+retain the Intent locally. Provider retention, training, account access, and regional data
+handling depend on that provider and are outside AIG's control. Do not put credentials or
+unnecessary sensitive material in Intent text. API keys should be stored in a private local
+`.env` or process environment and must not be committed, pasted into reports, or added to a
+Plan.
+
+These controls do not make the browser app a public service or prove production deployment
+security. Keep the application bound to loopback and review provider data terms and endpoint
+ownership before using sensitive Intent data.
+
 Runs persist state/version/audit data. Approval/rejection uses an expected version and
 does not execute anything. SQLite v2 binds approval to the complete canonical Plan,
 Run, and decision identity. Admission recomputes and checks the exact binding, rejecting
@@ -125,15 +154,17 @@ proven distributed fencing or HA.
 - The Dummy is an isolated reference with a trusted injected store and test-owned SQLite.
   It is not production-registered or exposed in the browser. UUID receipts are not
   cryptographic proof from malicious store code.
-- Provider security, remote idempotency, credential rotation, network deployment,
-  distributed HA, and operational incident/reconciliation procedures are not validated.
+- Cloud adapters have deterministic mocked-transport coverage, but provider account controls,
+  retention policy, credential rotation, DNS ownership/rebinding, remote idempotency, network
+  deployment, distributed HA, and operational incident/reconciliation procedures are not
+  validated.
 - General-purpose adapter registration, arbitrary tools, MCP, and multi-agent execution
   are not implemented.
 - The supported consumer baseline is one startup-bound SIDE_EFFECT capability, not
   unrestricted tool routing, multi-target authorization, READ_ONLY dispatch, or a
   general schema/plugin framework. Use separate ledgers and private effect stores.
 
-Before adding an external API, review credentials, allowed destinations, payload privacy,
+Before using an external API, review credentials, allowed destinations, payload privacy,
 bounded failures, provider idempotency/receipt guarantees, and authorization integration.
-Never log bearer tokens or unnecessary sensitive data. See [Adapter guide](ADAPTER_GUIDE.md)
+Never log API keys, bearer tokens, or unnecessary sensitive data. See [Adapter guide](ADAPTER_GUIDE.md)
 and [Architecture](ARCHITECTURE.md) for the actual boundaries.

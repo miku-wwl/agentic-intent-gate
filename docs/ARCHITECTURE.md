@@ -13,18 +13,19 @@ Source lives under `src/agentic_intent_gate/`.
 | `domain/` | Immutable contracts, state graphs, exact binding, and validation invariants |
 | `ports/` | Repository, model, authorization, and executor Protocols/contracts |
 | `infrastructure/persistence/` | SQLite repositories, ledger, schemas, and explicit migration |
-| `infrastructure/llm/` | Concrete local OpenAI-compatible provider |
+| `infrastructure/llm/` | Local, first-party cloud, compatible-provider adapters, and trusted factory |
 | `infrastructure/security/` | Local capability verification/policy and single-owner lock |
 | `infrastructure/tools/` | Demo executor, isolated Dummy, proposal catalog, and concrete registry |
 | `config/` | Environment loading and loopback/model/database settings validation |
 
 `main.py` and `execution_main.py` remain composition/CLI entry points. Only the top-level
-package has `__init__.py`; internal directories use PEP 420 namespaces. No plugin discovery,
-new API, database migration, or security behavior is introduced by this source layout.
+package has `__init__.py`; internal directories use PEP 420 namespaces. Provider selection
+is startup configuration only. The v0.3.0 provider work leaves the consumer API, Plan schema,
+domain state machines, persistence schema, and execution authorization unchanged.
 
 ~~~mermaid
 flowchart TD
-    I[Natural-language Intent] --> P[Local LLM / PlanningService]
+    I[Natural-language Intent] --> P[Configured provider / PlanningService]
     P --> V[Schema + semantic validation]
     V --> G[Deterministic risk Gate]
     G --> R[Persistent Run]
@@ -45,10 +46,21 @@ flowchart TD
 
 ## Intent, Plan, and deterministic Gate
 
-`PlanningService` passes natural-language Intent to `LocalOpenAIProvider`, which requests
-one non-streaming JSON chat completion. Provider/envelope limits, duplicate-key rejection,
-JSON Schema, and semantic validation reject malformed or unsupported Plans; there is no
-automatic repair or fallback. Validation does not prove fidelity to the user's intent.
+`PlanningService` passes natural-language Intent to the startup-selected `ModelProvider`.
+Ollama and generic compatible endpoints use chat completions, OpenAI uses its JSON mode, and
+Anthropic uses its native Messages API. Each makes one non-streaming call. Bounded envelope
+parsing, duplicate-key rejection, JSON Schema, and semantic validation reject malformed or
+unsupported Plans; there is no automatic repair or fallback. Validation does not prove
+fidelity to the user's intent.
+
+`Settings.from_environment` merges an optional working-directory `.env` with process
+environment values, with the process taking precedence. If no provider is selected, it
+retains Ollama and the legacy `LOCAL_LLM_BASE_URL`/`LOCAL_LLM_MODEL` names. The CLI-only
+`create_model_provider` factory constructs one implementation from those frozen settings.
+Named cloud services use fixed HTTPS origins. The generic endpoint is operator-controlled,
+HTTPS-only, limited to port 443, and checked for public DNS/IP addresses before use. HTTP
+redirects and environment proxies are disabled. The independent consumer API still accepts
+an injected `ModelProvider`; it does not require this factory.
 
 The catalog describes `get_service_record/1` (read-only), `append_service_note/1`
 (side-effect), and `set_maintenance_mode/1` (approval-required), all for `service-demo`.
@@ -77,11 +89,12 @@ of an authenticated human. Approval and Action authorization are distinct operat
 
 ## Two application entry points
 
-**Default `aig-plans`:** `main.py` composes the local provider, validator,
+**Default `aig-plans`:** `main.py` composes the configured provider, validator,
 `SQLiteRunRepository` (v1), `PlanningService`, `RunService`, startup Run recovery, and HTTP/UI.
 It does not compose an Action gateway or expose Action controls.
 
-**Explicit v2 demo:** `execution_main.py` requires private execution configuration and
+**Explicit v2 demo:** `execution_main.py` uses the same configured planning provider and
+requires private execution configuration and
 `--predecessor-stopped`. It holds a single-owner lock, composes `SQLiteV2RunRepository`,
 `ActionCompiler`, `SQLiteExecutionRepository`, `CapabilityVerifier`,
 `LocalDemoAuthorization`, `ExecutableRegistry`, and `DemoNoteExecutor`, then recovers

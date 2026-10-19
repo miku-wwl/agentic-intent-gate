@@ -4,11 +4,12 @@ A local-first agent runtime that turns natural-language requests into strictly v
 Plans, persists their lifecycle, and separates human approval from authorized tool execution.
 The shared baseline supports explicitly trusted, removable single-tool Hackathon consumers.
 It remains a local development/demo runtime, not a production deployment or plugin framework.
+This working tree targets v0.3.0; it has not been tagged or published.
 
 ## What works
 
-- Local OpenAI-compatible LLM planning, JSON Schema validation, semantic checks, and a
-  deterministic risk gate.
+- Configurable Ollama, OpenAI, Anthropic Claude, or operator-trusted OpenAI-compatible
+  planning, followed by JSON Schema validation, semantic checks, and a deterministic risk gate.
 - Durable Runs, human approval/rejection, exact approved-Plan binding in SQLite v2,
   compare-and-swap (CAS), audit events, and fail-closed recovery.
 - Explicit local execution composition: capability verification, trusted compilation,
@@ -46,8 +47,9 @@ paths and actual APIs.
 
 ## Quick start: planning and approval
 
-Prerequisites: Python 3.13, [uv](https://docs.astral.sh/uv/), and an installed local LLM
-server exposing the OpenAI-compatible API. Core dependencies are FastAPI, HTTPX,
+Prerequisites: Python 3.13 and [uv](https://docs.astral.sh/uv/). The default Ollama setup
+also needs a local server exposing the OpenAI-compatible API; cloud providers need their
+own account/key configuration. Core dependencies are FastAPI, HTTPX, python-dotenv,
 jsonschema, and Uvicorn; development tools include pytest, Ruff, and Playwright.
 
 From the repository root in PowerShell:
@@ -71,8 +73,26 @@ approval does not dispatch an effect.
 
 ## Configuration and local execution demo
 
-`LOCAL_LLM_BASE_URL` and `LOCAL_LLM_MODEL` are required. The URL must be HTTP on loopback
-with an explicit port; `/v1` is normalized. Optional settings:
+Select one planner in `.env` or the process environment. Copy the example first:
+
+~~~powershell
+Copy-Item .env.example .env
+~~~
+
+Uncomment one provider block in `.env` and replace the model/key placeholders. The default
+provider is Ollama; existing `LOCAL_LLM_BASE_URL` and `LOCAL_LLM_MODEL` settings continue
+to work unchanged. `AIG_LLM_PROVIDER`, when present, accepts `ollama`, `openai`,
+`anthropic`, or `openai-compatible`. `AIG_LLM_MODEL` selects the model. The process
+environment overrides `.env`; a missing `.env` is allowed. `.env` is ignored by Git.
+
+Ollama accepts only HTTP loopback URLs with an explicit port; `/v1` is normalized. The
+OpenAI and Anthropic adapters use their fixed official HTTPS APIs and require their own
+provider key variables. The compatible adapter requires `AIG_LLM_BASE_URL`, an HTTPS
+public host on port 443, and `AIG_LLM_API_KEY`; it sends only common chat-completion fields
+and does not assume support for a structured-output extension. Every provider uses one
+bounded request, a bounded response, and the same downstream AIG Plan validation. Choosing
+a cloud provider sends the user's Intent to that provider over HTTPS. There is no automatic
+cloud selection or fallback from Ollama.
 
 | Variable | Default |
 | --- | --- |
@@ -80,10 +100,10 @@ with an explicit port; `/v1` is normalized. Optional settings:
 | `API_HOST` / `API_PORT` | `127.0.0.1` / `8000` |
 | `AIG_DB_PATH` | `.runtime/day2-runs.sqlite3` for the default v1 entry point |
 
-Environment variables must actually be exported; `.env.example` is a reference, not an
-automatically loaded configuration file. The provider uses bounded, non-streaming JSON
-chat completions without retries, repair, or cloud fallback. Ollama is supported through
-that protocol, not a dedicated SDK. The runtime does not manage model residency or hardware.
+`MODEL_TIMEOUT_SECONDS` defaults to `28` and cannot exceed `28`. The API host remains
+loopback-only by default. Provider-specific `.env` examples and limitations are in
+[Development](docs/DEVELOPMENT.md). Ollama is supported through its local OpenAI-compatible
+protocol, not a dedicated SDK. The runtime does not manage model residency or hardware.
 
 For executable Actions, use the explicit v2 setup in [Development](docs/DEVELOPMENT.md).
 It requires a new/compatible v2 gate database, a separate provisioned demo receipt store,
@@ -119,9 +139,11 @@ effect store; the package provides existing Run/approval/Action persistence and 
 `append_audit_entry/1` against `consumer-demo`, without Ollama or paid APIs. Its scripted
 approval is test/example consent, not authenticated human approval. Build a local wheel
 and run it outside the checkout using [Development](docs/DEVELOPMENT.md). The shared
-runtime package is `0.2.0`; reproducible consumers should pin the verified peeled commit
-of `v0.2.0` as recorded in the [consumer handoff](docs/V0.2.0-CONSUMER-HANDOFF.md).
-This Git release does not imply PyPI publication. The project is [MIT licensed](LICENSE).
+consumer API remains `agentic_intent_gate.runtime`; external consumers can still inject
+their own `ModelProvider` without using the CLI provider factory. Reproducible v0.2.0
+consumers should keep their existing pin from the [consumer handoff](docs/V0.2.0-CONSUMER-HANDOFF.md).
+This upgrade does not change consumer dependency pins or imply publication. The project is
+[MIT licensed](LICENSE).
 
 `open_runtime(..., execution_timeout_seconds=15)` opts into a longer ToolExecutor budget.
 Omitting the parameter retains five seconds and the v0.1.0 identities. An extended profile

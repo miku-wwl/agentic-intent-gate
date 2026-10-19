@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "agentic-intent-gate"
-version = "0.2.0"
-description = "Reliable, approval-gated local AI agent runtime"
+version = "0.3.0"
+description = "Reliable, approval-gated AI agent runtime with configurable model providers"
 requires-python = ">=3.13,<3.14"
 license = "MIT"
 license-files = ["LICENSE"]
@@ -13,6 +13,7 @@ dependencies = [
   "fastapi>=0.115,<1",
   "httpx>=0.28,<0.29",
   "jsonschema>=4.23,<5",
+  "python-dotenv>=1,<2",
   "uvicorn>=0.34,<1",
 ]
 
@@ -33,7 +34,7 @@ packages = ["src/agentic_intent_gate"]
 [tool.hatch.build.targets.sdist]
 include = [
   "/src", "/schemas", "/tests", "/examples", "/scripts", "/docs",
-  "/README.md", "/AGENTS.md", "/LICENSE", "/pyproject.toml", "/uv.lock",
+  "/README.md", "/AGENTS.md", "/.env.example", "/LICENSE", "/pyproject.toml", "/uv.lock",
 ]
 
 [tool.hatch.build.targets.wheel.force-include]

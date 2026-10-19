@@ -122,6 +122,7 @@ def test_json_mode_does_not_require_an_sdk_or_agent_framework():
         "fastapi",
         "httpx",
         "jsonschema",
+        "python-dotenv",
         "uvicorn",
     }
     lock = tomllib.loads((root / "uv.lock").read_text("utf-8"))

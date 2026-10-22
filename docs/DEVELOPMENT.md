@@ -232,14 +232,17 @@ try {
 These commands copy only example/test code, not core implementation. `-I` prevents
 source PYTHONPATH injection. A fresh wheel install may need network access for dependencies;
 offline builds require cached Hatch dependencies. Do not publish or change package version
-just to test installation. This working tree targets package version `0.3.0`; it is not
-tagged or published. MIT metadata and the license are included in wheel/sdist. The sdist
+just to test installation. Package version `0.3.0` is distributed through the
+[v0.3.0 GitHub Release](https://github.com/miku-wwl/agentic-intent-gate/releases/tag/v0.3.0),
+not PyPI. MIT metadata and the license are included in wheel/sdist. The sdist
 uses an explicit source/docs/test allowlist;
 ignored local databases, credentials, environments and generated evidence must remain absent.
 
 For Git-based installation, pin the verified **full commit SHA**, never a moving branch.
-The [v0.2.0 consumer handoff](V0.2.0-CONSUMER-HANDOFF.md) records the exact pin and verified
-annotated tag. Historical `v0.1.0` remains at
+The [v0.3.0 consumer handoff](V0.3.0-CONSUMER-HANDOFF.md) records release qualification
+and immutable dependency instructions. GitHub Release notes record the full release SHA;
+the tag is never moved to a later documentation commit. Existing consumers may retain the
+pin in the [v0.2.0 handoff](V0.2.0-CONSUMER-HANDOFF.md). Historical `v0.1.0` remains at
 `fd742b783058a53400c465b4ab59c6e80715895a`; old consumers may keep that dependency.
 Git tags do not imply PyPI publication. Private Git access requires separate authentication.
 Never embed credentials in Git URLs, source, or documentation.

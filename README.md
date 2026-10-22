@@ -4,7 +4,11 @@ A local-first agent runtime that turns natural-language requests into strictly v
 Plans, persists their lifecycle, and separates human approval from authorized tool execution.
 The shared baseline supports explicitly trusted, removable single-tool Hackathon consumers.
 It remains a local development/demo runtime, not a production deployment or plugin framework.
-This working tree targets v0.3.0; it has not been tagged or published.
+The [v0.3.0 GitHub Release](https://github.com/miku-wwl/agentic-intent-gate/releases/tag/v0.3.0)
+provides an annotated Git tag, wheel, source distribution, and SHA-256 checksums.
+See the [v0.3.0 consumer handoff](docs/V0.3.0-CONSUMER-HANDOFF.md) for qualification
+evidence and immutable dependency instructions. This is a GitHub release; there is no
+PyPI publication.
 
 ## What works
 
@@ -140,10 +144,11 @@ effect store; the package provides existing Run/approval/Action persistence and 
 approval is test/example consent, not authenticated human approval. Build a local wheel
 and run it outside the checkout using [Development](docs/DEVELOPMENT.md). The shared
 consumer API remains `agentic_intent_gate.runtime`; external consumers can still inject
-their own `ModelProvider` without using the CLI provider factory. Reproducible v0.2.0
-consumers should keep their existing pin from the [consumer handoff](docs/V0.2.0-CONSUMER-HANDOFF.md).
-This upgrade does not change consumer dependency pins or imply publication. The project is
-[MIT licensed](LICENSE).
+their own `ModelProvider` without using the CLI provider factory. New integrations should
+use the [v0.3.0 consumer handoff](docs/V0.3.0-CONSUMER-HANDOFF.md) and pin the exact
+release commit rather than `main`. Existing v0.2.0 consumers may retain the pin in their
+[historical handoff](docs/V0.2.0-CONSUMER-HANDOFF.md); upgrading requires an explicit
+dependency and lockfile update in the consumer repository. The project is [MIT licensed](LICENSE).
 
 `open_runtime(..., execution_timeout_seconds=15)` opts into a longer ToolExecutor budget.
 Omitting the parameter retains five seconds and the v0.1.0 identities. An extended profile
@@ -158,6 +163,8 @@ deadline/receipt rules in the [Adapter guide](docs/ADAPTER_GUIDE.md).
 - [Adapter guide](docs/ADAPTER_GUIDE.md): safe competition-specific integration workflow.
 - [Development](docs/DEVELOPMENT.md): environment, startup, tests, and troubleshooting.
 - [Security](docs/SECURITY.md): guarantees, failure behavior, and limitations.
+- [Changelog](CHANGELOG.md): release scope and compatibility.
+- [v0.3.0 consumer handoff](docs/V0.3.0-CONSUMER-HANDOFF.md): release evidence and adoption.
 
 Historical development documents are recoverable from the permanent annotated
 `day4-final-freeze` tag; they are not the current documentation system.

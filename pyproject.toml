@@ -34,7 +34,7 @@ packages = ["src/agentic_intent_gate"]
 [tool.hatch.build.targets.sdist]
 include = [
   "/src", "/schemas", "/tests", "/examples", "/scripts", "/docs",
-  "/README.md", "/AGENTS.md", "/.env.example", "/LICENSE", "/pyproject.toml", "/uv.lock",
+  "/README.md", "/CHANGELOG.md", "/AGENTS.md", "/.env.example", "/LICENSE", "/pyproject.toml", "/uv.lock",
 ]
 
 [tool.hatch.build.targets.wheel.force-include]

@@ -139,6 +139,13 @@ async def test_provider_specific_wire_requests_and_authentication(validator, kin
             assert "response_format" not in body
             response = openai_response()
         assert SECRET not in str(request.url)
+        assert request.headers["accept-encoding"] == "identity"
+        assert request.extensions["timeout"] == {
+            "connect": 1,
+            "read": 1,
+            "write": 1,
+            "pool": 1,
+        }
         assert body["model"] == "test-model"
         if kind != "anthropic":
             assert body["stream"] is False
@@ -168,7 +175,7 @@ async def test_provider_specific_wire_requests_and_authentication(validator, kin
         (408, ErrorCode.MODEL_TIMEOUT),
     ],
 )
-@pytest.mark.parametrize("kind", ["openai", "compatible"])
+@pytest.mark.parametrize("kind", ["openai", "anthropic", "compatible"])
 async def test_http_statuses_fail_closed_without_retry(validator, status, code, kind):
     calls = []
 
@@ -221,6 +228,9 @@ async def test_network_errors_are_classified_without_leaking_details(
         openai_response(refusal="no"),
         openai_response(tool_calls=[{"id": "call"}]),
         openai_response(content=None),
+        openai_response(content=""),
+        {**openai_response(), "choices": [{"finish_reason": "length"}]},
+        {**openai_response(), "choices": [{"finish_reason": "content_filter"}]},
     ],
 )
 async def test_openai_response_rejections(validator, kind, response):
@@ -238,8 +248,18 @@ async def test_openai_response_rejections(validator, kind, response):
     [
         anthropic_response(model="wrong-model"),
         anthropic_response(stop_reason="refusal"),
+        anthropic_response(stop_reason="max_tokens"),
+        anthropic_response(stop_reason="pause_turn"),
+        anthropic_response(stop_reason="tool_use"),
+        anthropic_response(stop_reason=None),
+        anthropic_response(content=""),
+        anthropic_response(content="x" * (16 * 1024 + 1)),
         {**anthropic_response(), "content": []},
         {**anthropic_response(), "content": [{"type": "tool_use", "id": "toolu"}]},
+        {
+            **anthropic_response(),
+            "content": [{"type": "text", "text": "{}"}, {"type": "text", "text": "{}"}],
+        },
     ],
 )
 async def test_anthropic_response_rejections(validator, response):
@@ -264,11 +284,10 @@ async def test_anthropic_response_rejections(validator, response):
     ],
     ids=["invalid-json", "invalid-utf8", "duplicate-key", "nonfinite", "oversized"],
 )
-async def test_malformed_and_oversized_envelopes_are_rejected(validator, body):
-    provider = OpenAICloudProvider(
-        "test-model",
-        SECRET,
-        transport=httpx.MockTransport(lambda _request: httpx.Response(200, content=body)),
+@pytest.mark.parametrize("kind", ["openai", "anthropic", "compatible"])
+async def test_malformed_and_oversized_envelopes_are_rejected(validator, body, kind):
+    provider = make_provider(
+        kind, httpx.MockTransport(lambda _request: httpx.Response(200, content=body))
     )
     with pytest.raises(ModelProviderError) as caught:
         await invoke(provider, validator)
@@ -323,3 +342,66 @@ async def test_provider_text_that_is_not_json_is_rejected_by_the_existing_valida
     result = await PlanningService(provider, validator).generate_plan(Intent("Read service-demo"))
     assert result.plan is None
     assert result.error is not None and result.error.code == ErrorCode.PLAN_VALIDATION_ERROR
+
+
+@pytest.mark.parametrize("kind", ["openai", "anthropic", "compatible"])
+async def test_cancellation_propagates_and_closes_response_without_retry(validator, kind):
+    started = asyncio.Event()
+    closed = asyncio.Event()
+    calls = []
+
+    class WaitingStream(httpx.AsyncByteStream):
+        async def __aiter__(self):
+            started.set()
+            await asyncio.Event().wait()
+            yield b"{}"
+
+        async def aclose(self):
+            closed.set()
+
+    def handle(_request):
+        calls.append(1)
+        return httpx.Response(200, stream=WaitingStream())
+
+    provider = make_provider(kind, httpx.MockTransport(handle))
+    task = asyncio.create_task(invoke(provider, validator))
+    try:
+        await asyncio.wait_for(started.wait(), timeout=1)
+    finally:
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+    assert closed.is_set()
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize("status", [200, 503])
+async def test_default_provider_never_sends_cloud_credentials_or_falls_back(
+    validator, valid_plan, status
+):
+    settings = Settings.from_environment(
+        {
+            "LOCAL_LLM_BASE_URL": "http://127.0.0.1:11434/v1",
+            "LOCAL_LLM_MODEL": "test-model",
+            "OPENAI_API_KEY": SECRET,
+            "ANTHROPIC_API_KEY": SECRET,
+            "AIG_LLM_API_KEY": SECRET,
+        }
+    )
+    calls = []
+
+    def handle(request):
+        calls.append(request)
+        assert request.url == "http://127.0.0.1:11434/v1/chat/completions"
+        assert "authorization" not in request.headers and "x-api-key" not in request.headers
+        assert SECRET not in request.content.decode() and SECRET not in str(request.headers)
+        return httpx.Response(status, json=openai_response(content=json.dumps(valid_plan)))
+
+    provider = create_model_provider(settings, transport=httpx.MockTransport(handle))
+    assert isinstance(provider, LocalOpenAIProvider)
+    result = await PlanningService(provider, validator).generate_plan(Intent("Read service-demo"))
+    if status == 200:
+        assert result.plan is not None and result.error is None
+    else:
+        assert result.plan is None and result.error.code == ErrorCode.MODEL_UNAVAILABLE
+    assert len(calls) == 1

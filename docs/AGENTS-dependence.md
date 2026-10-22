@@ -7,10 +7,10 @@ This repository is a **Hackathon application that consumes an existing Python Ag
 **Shared runtime:** [Agentic Intent Gate](https://github.com/miku-wwl/agentic-intent-gate)<br>
 **Python distribution:** `agentic-intent-gate`<br>
 **Public integration module:** `agentic_intent_gate.runtime`<br>
-**Qualified release:** `v0.2.0` (verified annotated Git tag; Python 3.13; MIT)<br>
-**Pinned release commit:** `7261fdd2f47d2b15fabe8faac527eeee37338eb1`
+**Qualified release:** `v0.3.0` (verified annotated Git tag; Python 3.13; MIT)<br>
+**Pinned release commit:** `bb8e8fb1234128613a750bee17967b225072bb14`
 
-The annotated tag `v0.2.0` peels to the pinned commit above. This is a **Git release, not a PyPI publication**. Use the immutable full commit SHA, **not** a moving `main` branch. When upgrading in the future, verify the tag, peeled commit, installed version, and lockfile. Never embed private Git credentials or external-service secrets in URLs, code, screenshots, or logs.
+The annotated tag `v0.3.0` peels to the pinned commit above. This is a **Git release, not a PyPI publication**. Use the immutable full commit SHA, **not** a moving `main` branch. When upgrading in the future, verify the tag, peeled commit, installed version, and lockfile. Never embed private Git credentials or external-service secrets in URLs, code, screenshots, or logs.
 
 **Template use:** Copy this document into a **new consumer repository** as its root `AGENTS.md`. Add the competition's own scope, security rules, environment constraints, and human-approval requirements. If that repository already has `AGENTS.md`, **merge** the instructions instead of overwriting its product-specific rules. Do not copy the core repository's developer-only root `AGENTS.md` into a consumer project.
 
@@ -21,11 +21,11 @@ Declare this exact dependency in the consumer's existing `pyproject.toml` and up
 ```toml
 [project]
 dependencies = [
-  "agentic-intent-gate @ git+https://github.com/miku-wwl/agentic-intent-gate.git@7261fdd2f47d2b15fabe8faac527eeee37338eb1",
+  "agentic-intent-gate @ git+https://github.com/miku-wwl/agentic-intent-gate.git@bb8e8fb1234128613a750bee17967b225072bb14",
 ]
 ```
 
-**Merge the dependency entry**; do not replace an existing `[project]` section or other dependencies blindly. Verify the installed distribution reports `agentic-intent-gate==0.2.0`, resolves to the pinned source commit, and is imported from the installed environment, **not an adjacent source checkout**. Use the [v0.2.0 consumer handoff](https://github.com/miku-wwl/agentic-intent-gate/blob/main/docs/V0.2.0-CONSUMER-HANDOFF.md) and [adapter guide](https://github.com/miku-wwl/agentic-intent-gate/blob/v0.2.0/docs/ADAPTER_GUIDE.md) as the detailed integration references.
+**Merge the dependency entry**; do not replace an existing `[project]` section or other dependencies blindly. Verify the installed distribution reports `agentic-intent-gate==0.3.0`, resolves to the pinned source commit, and is imported from the installed environment, **not an adjacent source checkout**. Use the [v0.3.0 consumer handoff](https://github.com/miku-wwl/agentic-intent-gate/blob/main/docs/V0.3.0-CONSUMER-HANDOFF.md) and [adapter guide](https://github.com/miku-wwl/agentic-intent-gate/blob/v0.3.0/docs/ADAPTER_GUIDE.md) as the detailed integration references.
 
 ## Reuse the Core
 
@@ -45,7 +45,7 @@ Within its supported scope, Agentic Intent Gate already provides:
 
 ## Public Integration Entry Point
 
-Inspect the **installed v0.2.0 API** and the core repository's `examples/consumer/app.py` before implementing integration. Supported imports include:
+Inspect the **installed v0.3.0 API** and the core repository's `examples/consumer/app.py` before implementing integration. Supported imports include:
 
 ```python
 from agentic_intent_gate.runtime import (
@@ -61,7 +61,7 @@ from agentic_intent_gate.runtime import (
 
 Check the actual constructor/function signatures; do not invent methods. Register trusted executors at startup with exact tool/version/target/adapter identity, reviewed binding revision, canonical execution scope, strict argument schema and appropriate independent authorization. Model output and untrusted HTTP input cannot register code or select trusted identities.
 
-### Trusted Execution Budget (v0.2.0)
+### Trusted Execution Budget (v0.3.0)
 
 - `open_runtime(..., execution_timeout_seconds=5)` is the **backward-compatible default**. Finite built-in `int`/`float` values in `(0, 15]` are supported. Booleans, invalid types, NaN, infinity, non-positive values and values over 15 are rejected.
 - For values **above 5**, trusted host code must explicitly opt in, use a **fresh reviewed base `ToolBinding` revision**, and apply `execution_budget_binding(base_binding, 15)` to produce a canonical binding revision ending in `.exec-15s`. The complete revision must fit the 64-character limit.
@@ -91,7 +91,7 @@ Implement **only** the product-specific requirements:
 
 ## Supported Scope and Non-Goals
 
-v0.2.0 supports **one explicitly registered trusted `SIDE_EFFECT` tool per Runtime composition and single-step execution**. It is **not** a general-purpose multi-agent engine. Do not assume general `READ_ONLY` tool execution, multi-tool/multi-step workflow orchestration, dynamic plugin discovery, arbitrary MCP execution, production multi-user authentication, distributed HA, malicious-Python isolation, or guaranteed exactly-once remote side effects.
+v0.3.0 supports **one explicitly registered trusted `SIDE_EFFECT` tool per Runtime composition and single-step execution**. It is **not** a general-purpose multi-agent engine. Do not assume general `READ_ONLY` tool execution, multi-tool/multi-step workflow orchestration, dynamic plugin discovery, arbitrary MCP execution, production multi-user authentication, distributed HA, malicious-Python isolation, or guaranteed exactly-once remote side effects.
 
 If the competition requires unsupported functionality, identify the gap before building. Prefer a thin product-owned layer where safe. Request a separately reviewed core extension only when unavoidable; never silently bypass the core's safety gates.
 
@@ -120,7 +120,7 @@ Before changing code:
 
 1. Read this `AGENTS.md`, other local instructions and actual competition requirements.
 2. Verify the exact pinned dependency, installed public API, package version and lockfile.
-3. Read the shared Runtime's `examples/consumer/app.py`, v0.2.0 handoff and adapter guide.
+3. Read the shared Runtime's `examples/consumer/app.py`, v0.3.0 handoff and adapter guide.
 4. Propose the smallest **consumer-specific** implementation and targeted tests.
 5. Flag missing capabilities rather than inventing public APIs or modifying the shared Runtime.
 
